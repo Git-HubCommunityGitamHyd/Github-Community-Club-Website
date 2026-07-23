@@ -1,9 +1,28 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion, useScroll, useTransform } from "framer-motion"
-import { Github, Users, Star, GitBranch, Code, Zap, Trophy, ChevronDown, Mail, MapPin, Instagram } from "lucide-react"
-import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
+import {
+  Github,
+  Users,
+  Star,
+  GitBranch,
+  Code,
+  Zap,
+  Trophy,
+  ChevronDown,
+  Mail,
+  MapPin,
+  Instagram,
+  Menu,
+  X,
+} from "lucide-react"
+import {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { AnimatedBackground } from "@/components/animated-background"
 import { EnhancedButton } from "@/components/enhanced-button"
 import { PopupCard } from "@/components/popup-card"
@@ -14,38 +33,43 @@ import { BoardMemberPopupCard } from "@/components/board-member-popup-card"
 import { EventPopupCard } from "@/components/event-popup-card"
 import { EnhancedTimeline } from "@/components/enhanced-timeline"
 import { QRPopupCard } from "@/components/qr-popup-card"
+import { JoinForm } from "@/components/join-form"
 import { EnhancedBackgroundElements } from "@/components/enhanced-background-elements"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PageSkeleton } from "@/components/page-skeleton"
 
-export default function GitHubCommunityPortfolio() {
-  const [mounted, setMounted] = useState(false);
-  const [activeSection, setActiveSection] = useState("hero");
-  const [isQrPopupOpen, setIsQrPopupOpen] = useState(false);
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+const NAV_ITEMS = ["About", "Board", "Events", "Timeline", "Join", "Benefits"]
 
-  useEffect(() => setMounted(true), []);
+export default function GitHubCommunityPortfolio() {
+  const [mounted, setMounted] = useState(false)
+  const [activeSection, setActiveSection] = useState("hero")
+  const [isQrPopupOpen, setIsQrPopupOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { scrollYProgress } = useScroll()
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
+
+  useEffect(() => setMounted(true), [])
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["hero", "about", "board", "events", "timeline", "benefits"];
+      const sections = ["hero", ...NAV_ITEMS.map((i) => i.toLowerCase())]
       const currentSection = sections.find((section) => {
-        const element = document.getElementById(section);
+        const element = document.getElementById(section)
         if (element) {
-          const rect = element.getBoundingClientRect();
-          return rect.top <= 100 && rect.bottom >= 100;
+          const rect = element.getBoundingClientRect()
+          return rect.top <= 100 && rect.bottom >= 100
         }
-        return false;
-      });
-      if (currentSection) setActiveSection(currentSection);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+        return false
+      })
+      if (currentSection) setActiveSection(currentSection)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
-  if (!mounted) return <PageSkeleton />;
+  if (!mounted) return <PageSkeleton />
 
   const scrollToSection = (sectionId: string) => {
+    setIsMenuOpen(false)
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" })
   }
 
@@ -200,7 +224,9 @@ export default function GitHubCommunityPortfolio() {
   ]
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gh-bg text-gray-900 dark:text-gh-text relative">
+    // overflow-x-hidden: slide-in reveals animate from ±100px and would otherwise
+    // hand phones a horizontal scrollbar
+    <div className="relative min-h-screen overflow-x-hidden bg-white text-gray-900 dark:bg-gh-bg dark:text-gh-text">
       {/* Animated Background Elements */}
       <AnimatedBackground />
       <FloatingGitHubElements />
@@ -208,29 +234,34 @@ export default function GitHubCommunityPortfolio() {
 
       {/* Navigation */}
       <motion.nav
-        className="fixed top-0 w-full bg-white/90 dark:bg-gh-surface/90 backdrop-blur-md border-b border-gray-200 dark:border-gh-border z-40"
+        className="fixed top-0 z-40 w-full border-b border-gray-200 bg-white/90 backdrop-blur-md dark:border-gh-border dark:bg-gh-surface/90"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
             <motion.div
               className="flex items-center space-x-2"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
-              <motion.div whileHover={{ rotate: 360 }} transition={{ duration: 0.6, ease: "easeInOut" }}>
+              <motion.div
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.6, ease: "easeInOut" }}
+              >
                 <Github className="h-8 w-8" />
               </motion.div>
-              <span className="font-bold text-xl">GitHub Community GITAM</span>
+              <span className="text-base font-bold sm:text-xl">
+                GitHub Community GITAM
+              </span>
             </motion.div>
-            <div className="hidden md:flex items-center space-x-8">
-              {["About", "Board", "Events", "Timeline", "Benefits"].map((item) => (
+            <div className="hidden items-center space-x-8 md:flex">
+              {NAV_ITEMS.map((item) => (
                 <motion.button
                   key={item}
                   onClick={() => scrollToSection(item.toLowerCase())}
-                  className={`text-sm font-medium transition-all duration-300 relative ${
+                  className={`relative text-sm font-medium transition-all duration-300 ${
                     activeSection === item.toLowerCase()
                       ? "text-black dark:text-gh-text"
                       : "text-gray-500 dark:text-gh-muted"
@@ -250,25 +281,78 @@ export default function GitHubCommunityPortfolio() {
               ))}
               <ThemeToggle />
             </div>
+
+            {/* Mobile: theme toggle stays reachable, links collapse into a menu */}
+            <div className="flex items-center gap-2 md:hidden">
+              <ThemeToggle />
+              <button
+                onClick={() => setIsMenuOpen((open) => !open)}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 dark:border-gh-border dark:text-gh-muted"
+                aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={isMenuOpen}
+              >
+                {isMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
+
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              className="overflow-hidden border-t border-gray-200 dark:border-gh-border md:hidden"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="flex flex-col px-4 py-2">
+                {NAV_ITEMS.map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => scrollToSection(item.toLowerCase())}
+                    className={`py-3 text-left text-base font-medium ${
+                      activeSection === item.toLowerCase()
+                        ? "text-black dark:text-gh-text"
+                        : "text-gray-500 dark:text-gh-muted"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.nav>
 
       {/* Hero Section */}
-      <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section
+        id="hero"
+        className="relative flex min-h-screen items-center justify-center overflow-hidden pt-16"
+      >
         <motion.div className="absolute inset-0 opacity-5" style={{ y }}>
-          <div className="absolute top-20 left-10 w-32 h-32 border-2 border-gray-300 dark:border-gh-elevated rounded-full" />
-          <div className="absolute top-40 right-20 w-24 h-24 border-2 border-gray-300 dark:border-gh-elevated rounded-full" />
-          <div className="absolute bottom-40 left-1/4 w-16 h-16 border-2 border-gray-300 dark:border-gh-elevated rounded-full" />
-          <GitBranch className="absolute top-1/3 right-1/3 w-20 h-20 text-gray-300 dark:text-gh-elevated" />
-          <Code className="absolute bottom-1/3 left-1/3 w-16 h-16 text-gray-300 dark:text-gh-elevated" />
+          <div className="absolute left-10 top-20 h-32 w-32 rounded-full border-2 border-gray-300 dark:border-gh-elevated" />
+          <div className="absolute right-20 top-40 h-24 w-24 rounded-full border-2 border-gray-300 dark:border-gh-elevated" />
+          <div className="absolute bottom-40 left-1/4 h-16 w-16 rounded-full border-2 border-gray-300 dark:border-gh-elevated" />
+          <GitBranch className="absolute right-1/3 top-1/3 h-20 w-20 text-gray-300 dark:text-gh-elevated" />
+          <Code className="absolute bottom-1/3 left-1/3 h-16 w-16 text-gray-300 dark:text-gh-elevated" />
         </motion.div>
 
-        <div className="text-center z-10 max-w-4xl mx-auto px-4">
+        <div className="z-10 mx-auto max-w-4xl px-4 text-center">
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
-            transition={{ duration: 1, delay: 0.2, type: "spring", stiffness: 100 }}
+            transition={{
+              duration: 1,
+              delay: 0.2,
+              type: "spring",
+              stiffness: 100,
+            }}
             className="mb-8"
             whileHover={{
               scale: 1.1,
@@ -276,14 +360,14 @@ export default function GitHubCommunityPortfolio() {
               transition: { duration: 0.5 },
             }}
           >
-            <Github className="h-24 w-24 mx-auto mb-6 cursor-pointer" />
+            <Github className="mx-auto mb-6 h-24 w-24 cursor-pointer" />
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-5xl md:text-7xl font-bold mb-6"
+            className="mb-6 text-4xl font-bold sm:text-5xl md:text-7xl"
           >
             <motion.span
               whileHover={{
@@ -307,28 +391,38 @@ export default function GitHubCommunityPortfolio() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-xl md:text-2xl text-gray-600 dark:text-gh-muted mb-8 max-w-2xl mx-auto"
+            className="mx-auto mb-8 max-w-2xl text-xl text-gray-600 dark:text-gh-muted md:text-2xl"
           >
-            Empowering developers, fostering collaboration, and building the future of open source at GITAM University
+            Empowering developers, fostering collaboration, and building the
+            future of open source at GITAM University
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
+            className="flex flex-col justify-center gap-4 sm:flex-row"
           >
-            <EnhancedButton size="lg" type="primary" onClick={() => scrollToSection("about")}>
+            <EnhancedButton
+              size="lg"
+              type="primary"
+              onClick={() => scrollToSection("about")}
+            >
               Learn More
             </EnhancedButton>
-            <EnhancedButton size="lg" variant="outline" type="secondary" onClick={() => setIsQrPopupOpen(true)}>
+            <EnhancedButton
+              size="lg"
+              variant="outline"
+              type="secondary"
+              onClick={() => setIsQrPopupOpen(true)}
+            >
               Join Community
             </EnhancedButton>
           </motion.div>
         </div>
 
         <motion.div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 cursor-pointer"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 transform cursor-pointer"
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
           whileHover={{ scale: 1.2 }}
@@ -339,29 +433,50 @@ export default function GitHubCommunityPortfolio() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-20 bg-gray-50 dark:bg-gh-surface relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section
+        id="about"
+        className="relative z-10 bg-gray-50 py-20 dark:bg-gh-surface"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="mb-16 text-center"
           >
-            <motion.h2 className="text-4xl font-bold mb-6" whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
+            <motion.h2
+              className="mb-6 text-3xl font-bold md:text-4xl"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            >
               About Our Community
             </motion.h2>
-            <p className="text-xl text-gray-600 dark:text-gh-muted max-w-3xl mx-auto">
-              We are a vibrant community of developers, designers, and tech enthusiasts at GITAM University, dedicated
-              to promoting open source culture and collaborative development.
+            <p className="mx-auto max-w-3xl text-xl text-gray-600 dark:text-gh-muted">
+              We are a vibrant community of developers, designers, and tech
+              enthusiasts at GITAM University, dedicated to promoting open
+              source culture and collaborative development.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid gap-8 md:grid-cols-3">
             {[
-              { icon: Code, title: "Open Source", description: "Contributing to and maintaining open source projects" },
-              { icon: Users, title: "Community", description: "Building connections and fostering collaboration" },
-              { icon: Zap, title: "Innovation", description: "Driving technological innovation and learning" },
+              {
+                icon: Code,
+                title: "Open Source",
+                description:
+                  "Contributing to and maintaining open source projects",
+              },
+              {
+                icon: Users,
+                title: "Community",
+                description: "Building connections and fostering collaboration",
+              },
+              {
+                icon: Zap,
+                title: "Innovation",
+                description: "Driving technological innovation and learning",
+              },
             ].map((item, index) => (
               <motion.div
                 key={index}
@@ -370,7 +485,7 @@ export default function GitHubCommunityPortfolio() {
                 transition={{ duration: 0.8, delay: index * 0.2 }}
                 viewport={{ once: true }}
               >
-                <InteractiveCard className="text-center h-full" glowEffect>
+                <InteractiveCard className="h-full text-center" glowEffect>
                   <CardHeader>
                     <motion.div
                       whileHover={{
@@ -379,12 +494,14 @@ export default function GitHubCommunityPortfolio() {
                       }}
                       transition={{ duration: 0.5 }}
                     >
-                      <item.icon className="h-12 w-12 mx-auto mb-4" />
+                      <item.icon className="mx-auto mb-4 h-12 w-12" />
                     </motion.div>
                     <CardTitle>{item.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-base">{item.description}</CardDescription>
+                    <CardDescription className="text-base">
+                      {item.description}
+                    </CardDescription>
                   </CardContent>
                 </InteractiveCard>
               </motion.div>
@@ -394,21 +511,27 @@ export default function GitHubCommunityPortfolio() {
       </section>
 
       {/* Executive Board Section */}
-      <section id="board" className="py-20 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="board" className="relative z-10 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="mb-16 text-center"
           >
-            <motion.h2 className="text-4xl font-bold mb-6" whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
+            <motion.h2
+              className="mb-6 text-3xl font-bold md:text-4xl"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            >
               Executive Board
             </motion.h2>
-            <p className="text-xl text-gray-600 dark:text-gh-muted mb-4">Meet the leaders driving our community forward</p>
+            <p className="mb-4 text-xl text-gray-600 dark:text-gh-muted">
+              Meet the leaders driving our community forward
+            </p>
             <motion.p
-              className="text-sm text-gray-500 dark:text-gh-muted bg-gray-100 dark:bg-gh-elevated inline-block px-4 py-2 rounded-full"
+              className="inline-block rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-500 dark:bg-gh-elevated dark:text-gh-muted"
               animate={{ opacity: [0.7, 1, 0.7] }}
               transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
             >
@@ -416,19 +539,14 @@ export default function GitHubCommunityPortfolio() {
             </motion.p>
           </motion.div>
 
-          {/* First row: first 3 members */}
-          <div className="flex justify-center gap-8">
-            {boardMembers.slice(0, 3).map((member, idx) => (
-              <div key={idx} className="w-full md:w-1/3">
+          {/* Wraps to 3 + 2 centered on desktop, 2 up on tablet, 1 up on phones */}
+          <div className="flex flex-wrap justify-center gap-8">
+            {boardMembers.map((member, idx) => (
+              <div
+                key={idx}
+                className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)]"
+              >
                 <BoardMemberPopupCard member={member} index={idx} />
-              </div>
-            ))}
-          </div>
-          {/* Second row: remaining members centered */}
-          <div className="flex justify-center gap-8 mt-8">
-            {boardMembers.slice(3).map((member, idx) => (
-              <div key={idx + 3} className="w-full md:w-1/3">
-                <BoardMemberPopupCard member={member} index={idx + 3} />
               </div>
             ))}
           </div>
@@ -436,29 +554,39 @@ export default function GitHubCommunityPortfolio() {
       </section>
 
       {/* Events Gallery */}
-      <section id="events" className="py-20 bg-gray-50 dark:bg-gh-surface relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section
+        id="events"
+        className="relative z-10 bg-gray-50 py-20 dark:bg-gh-surface"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="mb-16 text-center"
           >
-            <motion.h2 className="text-4xl font-bold mb-6" whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
+            <motion.h2
+              className="mb-6 text-3xl font-bold md:text-4xl"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            >
               Events from last year
             </motion.h2>
-            <p className="text-xl text-gray-600 dark:text-gh-muted mb-4">Highlights from our community gatherings and workshops</p>
+            <p className="mb-4 text-xl text-gray-600 dark:text-gh-muted">
+              Highlights from our community gatherings and workshops
+            </p>
             <motion.p
-              className="text-sm text-gray-500 dark:text-gh-muted bg-gray-100 dark:bg-gh-elevated inline-block px-4 py-2 rounded-full"
+              className="inline-block rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-500 dark:bg-gh-elevated dark:text-gh-muted"
               animate={{ opacity: [0.7, 1, 0.7] }}
               transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
             >
-              📸 Click on any event card to see detailed information and photo gallery
+              📸 Click on any event card to see detailed information and photo
+              gallery
             </motion.p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {events.map((event, index) => (
               <EventPopupCard key={index} event={event} index={index} />
             ))}
@@ -467,19 +595,25 @@ export default function GitHubCommunityPortfolio() {
       </section>
 
       {/* Timeline Section */}
-      <section id="timeline" className="py-20 relative z-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="timeline" className="relative z-10 py-20">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="mb-16 text-center"
           >
-            <motion.h2 className="text-4xl font-bold mb-6" whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
+            <motion.h2
+              className="mb-6 text-3xl font-bold md:text-4xl"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            >
               Our Journey
             </motion.h2>
-            <p className="text-xl text-gray-600 dark:text-gh-muted">From the start</p>
+            <p className="text-xl text-gray-600 dark:text-gh-muted">
+              From the start
+            </p>
           </motion.div>
 
           <EnhancedTimeline
@@ -487,95 +621,144 @@ export default function GitHubCommunityPortfolio() {
               {
                 date: "February 2022",
                 title: "Community Founded",
-                description: "GitHub in GITAM was initiated by Srinija Dharani. She was the campus expert from GitHub and the pioneer of GitHub in GITAM.",
+                description:
+                  "GitHub in GITAM was initiated by Srinija Dharani. She was the campus expert from GitHub and the pioneer of GitHub in GITAM.",
               },
               {
                 date: "February 2023",
                 title: "First Flagship Event",
-                description: "Conducted our first major event, EPOCH, with participants from multiple colleges",
+                description:
+                  "Conducted our first major event, EPOCH, with participants from multiple colleges",
               },
               {
                 date: "May 2023",
                 title: "GITAM Ace Award",
-                description: "We were awarded the GITAM Ace Award for outstanding contributions to the tech community and got promoted from SIG to Club",
+                description:
+                  "We were awarded the GITAM Ace Award for outstanding contributions to the tech community and got promoted from SIG to Club",
               },
               {
                 date: "July 2023",
                 title: "New Executive Board",
-                description: "One president from Vizag and 3 vice presidents from Vizag, Hyderabad and Bengaluru were appointed",
+                description:
+                  "One president from Vizag and 3 vice presidents from Vizag, Hyderabad and Bengaluru were appointed",
               },
               {
                 date: "December 2023",
                 title: "Second Flagship Event",
-                description: "Hosted our second flagship event, EPOCH 2.0, with over 200 participants with multiple workshops and competitions across three campuses.",
+                description:
+                  "Hosted our second flagship event, EPOCH 2.0, with over 200 participants with multiple workshops and competitions across three campuses.",
               },
               {
                 date: "July 2024",
                 title: "New Club Structure and Executive Board",
-                description: "Decentralized the club structure with each campus having it's own executive board",
+                description:
+                  "Decentralized the club structure with each campus having it's own executive board",
               },
               {
                 date: "October 2024",
                 title: "700+ Members",
-                description: "The community reached over 700 members across all campuses",
+                description:
+                  "The community reached over 700 members across all campuses",
               },
               {
                 date: "December 2024",
                 title: "Third Flagship Event",
-                description: "Hosted our third flagship event, EPOCH 3.0, with over 200 participants and multiple workshops and competitions in the Hyderabad campus.",
+                description:
+                  "Hosted our third flagship event, EPOCH 3.0, with over 200 participants and multiple workshops and competitions in the Hyderabad campus.",
               },
             ]}
           />
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section id="benefits" className="py-20 bg-gray-50 dark:bg-gh-surface relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Join Section */}
+      <section id="join" className="relative z-10 py-20">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="mb-16 text-center"
           >
-            <motion.h2 className="text-4xl font-bold mb-6" whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
-              Why Join Us?
+            <motion.h2
+              className="mb-6 text-3xl font-bold md:text-4xl"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            >
+              Join Us
             </motion.h2>
-            <p className="text-xl text-gray-600 dark:text-gh-muted">Discover the benefits of being part of our community</p>
+            <p className="text-xl text-gray-600 dark:text-gh-muted">
+              Apply to become a member of the community
+            </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <JoinForm />
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section
+        id="benefits"
+        className="relative z-10 bg-gray-50 py-20 dark:bg-gh-surface"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="mb-16 text-center"
+          >
+            <motion.h2
+              className="mb-6 text-3xl font-bold md:text-4xl"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            >
+              Why Join Us?
+            </motion.h2>
+            <p className="text-xl text-gray-600 dark:text-gh-muted">
+              Discover the benefits of being part of our community
+            </p>
+          </motion.div>
+
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {[
               {
                 icon: Code,
                 title: "Skill Development",
-                description: "Learn cutting-edge technologies and best practices through workshops and peer learning",
+                description:
+                  "Learn cutting-edge technologies and best practices through workshops and peer learning",
               },
               {
                 icon: Users,
                 title: "Networking",
-                description: "Connect with like-minded developers, industry professionals, and potential collaborators",
+                description:
+                  "Connect with like-minded developers, industry professionals, and potential collaborators",
               },
               {
                 icon: Trophy,
                 title: "Recognition",
-                description: "Showcase your contributions and achievements within the community and beyond",
+                description:
+                  "Showcase your contributions and achievements within the community and beyond",
               },
               {
                 icon: GitBranch,
                 title: "Open Source",
-                description: "Contribute to meaningful projects and build a strong portfolio of open source work",
+                description:
+                  "Contribute to meaningful projects and build a strong portfolio of open source work",
               },
               {
                 icon: Star,
                 title: "Mentorship",
-                description: "Get guidance from experienced developers and mentor newcomers to the field",
+                description:
+                  "Get guidance from experienced developers and mentor newcomers to the field",
               },
               {
                 icon: Zap,
                 title: "Innovation",
-                description: "Work on cutting-edge projects and stay ahead of technology trends",
+                description:
+                  "Work on cutting-edge projects and stay ahead of technology trends",
               },
             ].map((benefit, index) => (
               <motion.div
@@ -585,7 +768,11 @@ export default function GitHubCommunityPortfolio() {
                 transition={{ duration: 0.8, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <InteractiveCard className="h-full border-l-4 border-l-black dark:border-l-gh-accent" hoverScale={1.05} glowEffect>
+                <InteractiveCard
+                  className="h-full border-l-4 border-l-black dark:border-l-gh-accent"
+                  hoverScale={1.05}
+                  glowEffect
+                >
                   <CardHeader>
                     <motion.div
                       whileHover={{
@@ -594,12 +781,14 @@ export default function GitHubCommunityPortfolio() {
                       }}
                       transition={{ duration: 0.5 }}
                     >
-                      <benefit.icon className="h-10 w-10 mb-4" />
+                      <benefit.icon className="mb-4 h-10 w-10" />
                     </motion.div>
                     <CardTitle>{benefit.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-base">{benefit.description}</CardDescription>
+                    <CardDescription className="text-base">
+                      {benefit.description}
+                    </CardDescription>
                   </CardContent>
                 </InteractiveCard>
               </motion.div>
@@ -611,9 +800,14 @@ export default function GitHubCommunityPortfolio() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mt-16"
+            className="mt-16 text-center"
           >
-            <EnhancedButton size="lg" type="primary" colorScheme="community" onClick={() => setIsQrPopupOpen(true)}>
+            <EnhancedButton
+              size="lg"
+              type="primary"
+              colorScheme="community"
+              onClick={() => setIsQrPopupOpen(true)}
+            >
               <motion.span
                 animate={{
                   textShadow: [
@@ -632,33 +826,39 @@ export default function GitHubCommunityPortfolio() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-black dark:bg-gh-surface border-t border-transparent dark:border-gh-border text-white py-12 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8">
+      <footer className="relative z-10 border-t border-transparent bg-black py-12 text-white dark:border-gh-border dark:bg-gh-surface">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 md:grid-cols-3">
             <div>
               <motion.div
-                className="flex items-center space-x-2 mb-4"
+                className="mb-4 flex items-center space-x-2"
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.3 }}
               >
-                <motion.div whileHover={{ rotate: 360 }} transition={{ duration: 0.6, ease: "easeInOut" }}>
+                <motion.div
+                  whileHover={{ rotate: 360 }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                >
                   <Github className="h-8 w-8" />
                 </motion.div>
-                <span className="font-bold text-xl">GitHub Community GITAM</span>
+                <span className="text-xl font-bold">
+                  GitHub Community GITAM
+                </span>
               </motion.div>
               <p className="text-gray-400">
-                Empowering the next generation of developers through collaboration and open source.
+                Empowering the next generation of developers through
+                collaboration and open source.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold text-lg mb-4">Quick Links</h3>
+              <h3 className="mb-4 text-lg font-semibold">Quick Links</h3>
               <ul className="space-y-2 text-gray-400">
-                {["About", "Board", "Events", "Benefits"].map((link) => (
+                {NAV_ITEMS.map((link) => (
                   <motion.li key={link}>
                     <motion.a
-                      href={`#${link.toLowerCase().replace(" ", "")}`}
-                      className="hover:text-white transition-colors"
+                      href={`#${link.toLowerCase()}`}
+                      className="transition-colors hover:text-white"
                       whileHover={{ x: 5 }}
                       transition={{ duration: 0.2 }}
                     >
@@ -670,7 +870,7 @@ export default function GitHubCommunityPortfolio() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-lg mb-4">Contact</h3>
+              <h3 className="mb-4 text-lg font-semibold">Contact</h3>
               <div className="space-y-2 text-gray-400">
                 <motion.div
                   className="flex items-center space-x-2"
@@ -700,13 +900,16 @@ export default function GitHubCommunityPortfolio() {
             </div>
           </div>
 
-          <div className="border-t border-gray-800 dark:border-gh-border mt-8 pt-8 text-center text-gray-400 dark:text-gh-muted">
+          <div className="mt-8 border-t border-gray-800 pt-8 text-center text-gray-400 dark:border-gh-border dark:text-gh-muted">
             <p>&copy; 2025 GitHub Community GITAM. All rights reserved.</p>
           </div>
         </div>
       </footer>
 
-      <QRPopupCard isOpen={isQrPopupOpen} onClose={() => setIsQrPopupOpen(false)} />
+      <QRPopupCard
+        isOpen={isQrPopupOpen}
+        onClose={() => setIsQrPopupOpen(false)}
+      />
     </div>
   )
 }

@@ -8,13 +8,11 @@
 - **React 18** with TypeScript
 - **Tailwind CSS** for styling
 
-
 ### Animation & UI Libraries
 
 - **Framer Motion** (`^10.16.4`) - Advanced animations and transitions
 - **Lucide React** (`^0.294.0`) - Icon library
 - **shadcn/ui** components - Pre-built UI components
-
 
 ### Key Dependencies
 
@@ -77,7 +75,7 @@ const events = [
       "/placeholder.svg?height=200&width=300",
       // Add more images as needed
     ],
-  }
+  },
 ]
 ```
 
@@ -92,30 +90,19 @@ const events = [
 - **description**: Detailed event description (required)
 - **images**: Array of image URLs (required)
 
-
 ### Adding Images to Events
 
 1. **Static Images**: Place images in `public/` folder
 
 ```typescript
-images: [
-  "/images/workshop-1.jpg",
-  "/images/workshop-2.jpg"
-]
+images: ["/images/workshop-1.jpg", "/images/workshop-2.jpg"]
 ```
-
 
 2. **External Images**: Use full URLs
 
 ```typescript
-images: [
-  "https://example.com/image1.jpg",
-  "https://example.com/image2.jpg"
-]
+images: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
 ```
-
-
-
 
 ## How to Add/Edit Board Member Cards
 
@@ -135,7 +122,7 @@ const boardMembers = [
     linkedin: "linkedin-username", // Optional
     twitter: "twitter-username", // Optional
     email: "email@gitam.edu", // Optional
-  }
+  },
 ]
 ```
 
@@ -149,7 +136,6 @@ const boardMembers = [
 - **linkedin**: LinkedIn username (optional)
 - **twitter**: Twitter username (optional)
 - **email**: Email address (optional)
-
 
 ### Removing Board Members
 
@@ -166,7 +152,6 @@ The timeline is powered by the `EnhancedTimeline` component (`components/enhance
 - **Alternating card layout** (left-right pattern)
 - **Scroll-triggered animations** for each timeline item
 
-
 ### Adding New Timeline Items
 
 In `app/page.tsx`, locate the `EnhancedTimeline` component and its `items` prop:
@@ -181,7 +166,7 @@ In `app/page.tsx`, locate the `EnhancedTimeline` component and its `items` prop:
       description: "Description of what happened during this milestone"
     },
     {
-      date: "April 2025", 
+      date: "April 2025",
       title: "Another Achievement",
       description: "Details about this achievement and its impact"
     }
@@ -194,7 +179,6 @@ In `app/page.tsx`, locate the `EnhancedTimeline` component and its `items` prop:
 - **date**: Time period (required) - Format: "Month Year" or "Month DD, Year"
 - **title**: Milestone name (required)
 - **description**: Details about the milestone (required)
-
 
 ### Timeline Animation System
 
@@ -294,7 +278,7 @@ className="relative flex items-center mb-12 justify-start"
 
 // Or create custom alternating pattern
 className={`relative flex items-center mb-12 ${
-  index % 3 === 0 ? "justify-start" : 
+  index % 3 === 0 ? "justify-start" :
   index % 3 === 1 ? "justify-center" : "justify-end"
 }`}
 ```
@@ -316,17 +300,17 @@ interface EnhancedTimelineProps {
 export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
   // Scroll progress tracking
   const { scrollYProgress } = useScroll({...})
-  
+
   // Animated line height
   const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"])
-  
+
   return (
     <div className="relative">
       {/* Animated timeline line */}
       <div className="absolute left-1/2 transform -translate-x-1/2 w-1 bg-gray-200 h-full rounded-full overflow-hidden">
         <motion.div style={{ height: lineHeight }} />
       </div>
-      
+
       {/* Timeline items */}
       {items.map((item, index) => (
         <motion.div key={index}>
@@ -348,13 +332,11 @@ export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
 - **File Formats**: JPG, PNG, WebP
 - **File Size**: < 500KB for optimal loading
 
-
 ### Image Placement Options
 
 1. **Public Folder**: `/public/images/filename.jpg`
 2. **External CDN**: Full URL to hosted images
 3. **Placeholder**: Current placeholder system for development
-
 
 ## Missing Connections & Fixes Needed
 
@@ -369,16 +351,15 @@ export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
 </EnhancedButton>
 
 // Fix: Add onClick handler
-<EnhancedButton 
-  size="lg" 
-  variant="outline" 
+<EnhancedButton
+  size="lg"
+  variant="outline"
   type="secondary"
   onClick={() => window.open('https://discord.gg/your-invite', '_blank')}
 >
   Join Community
 </EnhancedButton>
 ```
-
 
 2. **"🚀 Join Our Community" Button** (Benefits Section)
 
@@ -387,7 +368,6 @@ export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
 // Fix: Add registration/signup functionality
 onClick={() => window.open('https://forms.google.com/your-form', '_blank')}
 ```
-
 
 3. **"View More" Button** (Event Cards)
 
@@ -401,7 +381,6 @@ onClick={() => window.open('https://forms.google.com/your-form', '_blank')}
 }}>
 ```
 
-
 4. **Social Media Links** (Footer)
 
 ```typescript
@@ -412,16 +391,12 @@ onClick={() => window.open('https://forms.google.com/your-form', '_blank')}
 // Should link to: https://github.com/github-community-gitam
 ```
 
-
 5. **Navigation Menu** (Mobile)
 
 ```typescript
 // Currently: Hidden on mobile without hamburger menu
 // Fix: Add mobile navigation component
 ```
-
-
-
 
 ### Required External Integrations
 
@@ -432,50 +407,37 @@ onClick={() => window.open('https://forms.google.com/your-form', '_blank')}
 5. **Email System**: Contact form functionality
 6. **Analytics**: Google Analytics or similar tracking
 
-
 ### Known Issues to Fix
 
 1. **Mobile Responsiveness**:
 
 1. Popup cards need mobile optimization
-2. Timeline cards overlap on small screens
-3. Navigation menu missing on mobile
+1. Timeline cards overlap on small screens
+1. Navigation menu missing on mobile
 
-
-
-2. **Image Loading**:
+1. **Image Loading**:
 
 1. Add loading states and error handling
-2. Implement lazy loading for performance
-3. Add image optimization
+1. Implement lazy loading for performance
+1. Add image optimization
 
-
-
-3. **Accessibility**:
+1. **Accessibility**:
 
 1. Missing ARIA labels and keyboard navigation
-2. Timeline dots need keyboard accessibility
-3. Color contrast improvements needed
+1. Timeline dots need keyboard accessibility
+1. Color contrast improvements needed
 
-
-
-4. **SEO**:
+1. **SEO**:
 
 1. Add meta tags and structured data
-2. Implement proper heading hierarchy
-3. Add alt text for decorative elements
+1. Implement proper heading hierarchy
+1. Add alt text for decorative elements
 
-
-
-5. **Performance**:
+1. **Performance**:
 
 1. Image optimization and lazy loading
-2. Code splitting for large components
-3. Reduce animation complexity on low-end devices
-
-
-
-
+1. Code splitting for large components
+1. Reduce animation complexity on low-end devices
 
 ### Styling Configurations
 
@@ -483,10 +445,16 @@ onClick={() => window.open('https://forms.google.com/your-form', '_blank')}
 
 ```css
 /* In globals.css */
-.perspective-1000 { perspective: 1000px; }
-.preserve-3d { transform-style: preserve-3d; }
-.backface-hidden { backface-visibility: hidden; }
-.custom-scrollbar { 
+.perspective-1000 {
+  perspective: 1000px;
+}
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+}
+.custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 #f1f5f9;
 }
@@ -500,7 +468,6 @@ onClick={() => window.open('https://forms.google.com/your-form', '_blank')}
 - **Background**: White with gray-50 sections
 - **Text**: Gray-900 for headings, Gray-600 for body
 
-
 #### Animation Presets
 
 ```typescript
@@ -508,16 +475,16 @@ onClick={() => window.open('https://forms.google.com/your-form', '_blank')}
 const fadeInUp = {
   initial: { opacity: 0, y: 50 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.8 }
+  transition: { duration: 0.8 },
 }
 
 const scaleOnHover = {
   whileHover: { scale: 1.05 },
-  transition: { duration: 0.2 }
+  transition: { duration: 0.2 },
 }
 
 const staggerChildren = {
-  animate: { transition: { staggerChildren: 0.1 } }
+  animate: { transition: { staggerChildren: 0.1 } },
 }
 ```
 
@@ -545,7 +512,7 @@ npm run dev
 // Update events array
 const events = [/* your events */]
 
-// Update board members array  
+// Update board members array
 const boardMembers = [/* your members */]
 
 // Update timeline items
@@ -573,10 +540,10 @@ public/images/
 ```typescript
 // Update all placeholder links
 const SOCIAL_LINKS = {
-  github: 'https://github.com/your-org',
-  discord: 'https://discord.gg/your-invite',
-  linkedin: 'https://linkedin.com/company/your-company',
-  email: 'mailto:contact@your-domain.com'
+  github: "https://github.com/your-org",
+  discord: "https://discord.gg/your-invite",
+  linkedin: "https://linkedin.com/company/your-company",
+  email: "mailto:contact@your-domain.com",
 }
 ```
 
@@ -598,7 +565,7 @@ npm run build && netlify deploy --prod --dir=.next
 ```plaintext
 GitHubCommunityPortfolio (page.tsx)
 ├── AnimatedBackground
-├── FloatingGitHubElements  
+├── FloatingGitHubElements
 ├── EnhancedBackgroundElements
 ├── Navigation (fixed header)
 ├── Hero Section
@@ -607,7 +574,7 @@ GitHubCommunityPortfolio (page.tsx)
 ├── Board Section
 │   └── BoardMemberPopupCard (×5)
 │       └── PopupCard
-├── Events Section  
+├── Events Section
 │   └── EventPopupCard (×6)
 │       └── PopupCard
 │           └── AutoScrollGallery

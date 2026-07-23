@@ -11,7 +11,8 @@ interface EnhancedButtonProps {
   className?: string
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void
   type?: "primary" | "secondary"
-  colorScheme?: "default" | "github" | "linkedin" | "twitter" | "email" | "community"
+  colorScheme?:
+    "default" | "github" | "linkedin" | "twitter" | "email" | "community"
 }
 
 export function EnhancedButton({
@@ -62,17 +63,14 @@ export function EnhancedButton({
       <Button
         variant={variant}
         size={size}
-        className={`
-          relative z-10 transition-all duration-300 group rounded-xl font-semibold
-          ${getColorScheme()}
-          ${colorScheme === "community" ? "px-8 py-4 text-lg" : ""}
-          ${className}
-        `}
+        className={`group relative z-10 rounded-xl font-semibold transition-all duration-300 ${getColorScheme()} ${colorScheme === "community" ? "px-8 py-4 text-lg" : ""} ${className} `}
         onClick={onClick}
       >
         <motion.span
           className="flex items-center gap-3"
-          whileHover={{ x: colorScheme === "community" ? 2 : isPrimary ? 1 : 0 }}
+          whileHover={{
+            x: colorScheme === "community" ? 2 : isPrimary ? 1 : 0,
+          }}
           transition={{ duration: 0.15, ease: "easeOut" }}
         >
           {children}
@@ -80,14 +78,17 @@ export function EnhancedButton({
 
         {colorScheme === "community" && (
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+            className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent"
             initial={{ x: "-100%" }}
-            whileHover={{ x: "200%", transition: { duration: 0.8, ease: "easeInOut" } }}
+            whileHover={{
+              x: "200%",
+              transition: { duration: 0.8, ease: "easeInOut" },
+            }}
           />
         )}
 
         <motion.div
-          className="absolute inset-0 bg-white rounded-xl opacity-0"
+          className="absolute inset-0 rounded-xl bg-white opacity-0"
           whileTap={{ opacity: [0, 0.2, 0], scale: [0.8, 1.1, 1] }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         />

@@ -33,15 +33,15 @@
 
   /* GitHub dark theme — exact HSL conversions of GitHub's palette */
   .dark {
-    --background: 216 28% 7%;       /* #0d1117 */
-    --foreground: 210 32% 93%;      /* #e6edf3 */
-    --card: 213 21% 11%;            /* #161b22 */
+    --background: 216 28% 7%; /* #0d1117 */
+    --foreground: 210 32% 93%; /* #e6edf3 */
+    --card: 213 21% 11%; /* #161b22 */
     --card-foreground: 210 32% 93%;
     --popover: 213 21% 11%;
     --popover-foreground: 210 32% 93%;
-    --primary: 212 100% 67%;        /* #58a6ff */
+    --primary: 212 100% 67%; /* #58a6ff */
     --primary-foreground: 216 28% 7%;
-    --secondary: 213 15% 15%;       /* #21262d */
+    --secondary: 213 15% 15%; /* #21262d */
     --secondary-foreground: 210 32% 93%;
     --muted: 213 15% 15%;
     --muted-foreground: 211 8% 58%; /* #8b949e */
@@ -49,7 +49,7 @@
     --accent-foreground: 210 32% 93%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 210 12% 21%;          /* #30363d */
+    --border: 210 12% 21%; /* #30363d */
     --input: 210 12% 21%;
     --ring: 212 100% 67%;
     --chart-1: 220 70% 50%;
@@ -162,9 +162,27 @@
   background: #94a3b8;
 }
 
-/* Smooth scrolling for all elements */
-* {
+/* Smooth scrolling — on the scrolling element, not every node */
+html {
   scroll-behavior: smooth;
+}
+
+/* Keep section headings clear of the 4rem fixed nav when jumped to */
+section[id] {
+  scroll-margin-top: 4rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Enhanced focus styles for better accessibility */
@@ -181,8 +199,12 @@ a:focus-visible {
 
 /* Skeleton shimmer — transform-only so the browser composites on the GPU */
 @keyframes skeleton-shimmer {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(100%); }
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
 }
 
 .skeleton {
@@ -192,10 +214,15 @@ a:focus-visible {
 }
 
 .skeleton::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.6) 50%, transparent 75%);
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 75%
+  );
   animation: skeleton-shimmer 1.6s ease-in-out infinite;
 }
 
@@ -204,9 +231,14 @@ a:focus-visible {
 }
 
 .dark .skeleton::after {
-  background: linear-gradient(90deg, transparent 25%, rgba(33,38,45,0.8) 50%, transparent 75%);
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    rgba(33, 38, 45, 0.8) 50%,
+    transparent 75%
+  );
 }
-  
+
 /* Utility to hide native scrollbars */
 .hide-scrollbar {
   -ms-overflow-style: none; /* IE and Edge */
