@@ -10,7 +10,7 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
+    --primary: 137 66% 30%; /* #1a7f37 */
     --primary-foreground: 0 0% 98%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
@@ -39,7 +39,7 @@
     --card-foreground: 210 32% 93%;
     --popover: 213 21% 11%;
     --popover-foreground: 210 32% 93%;
-    --primary: 212 100% 67%; /* #58a6ff */
+    --primary: 128 49% 49%; /* #3fb950 */
     --primary-foreground: 216 28% 7%;
     --secondary: 213 15% 15%; /* #21262d */
     --secondary-foreground: 210 32% 93%;
@@ -51,7 +51,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 210 12% 21%; /* #30363d */
     --input: 210 12% 21%;
-    --ring: 212 100% 67%;
+    --ring: 128 49% 49%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -194,7 +194,7 @@ a:focus-visible {
 
 .dark button:focus-visible,
 .dark a:focus-visible {
-  outline-color: #58a6ff;
+  outline-color: #3fb950;
 }
 
 /* Skeleton shimmer — transform-only so the browser composites on the GPU */

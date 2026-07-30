@@ -2,7 +2,7 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { listApplications } from "@/lib/db"
 import { COOKIE_NAME, verifySessionValue } from "@/lib/session"
-import { Button } from "@/components/ui/button"
+import { AdminNav } from "@/components/admin/admin-nav"
 
 export default async function AdminPage() {
   const session = cookies().get(COOKIE_NAME)?.value
@@ -13,18 +13,14 @@ export default async function AdminPage() {
   return (
     <main className="min-h-screen bg-white px-4 py-10 dark:bg-gh-bg dark:text-gh-text">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex items-center justify-between">
+        <AdminNav active="/admin" />
+        <div className="mb-6">
           <h1 className="text-2xl font-semibold">
             Applications{" "}
             <span className="text-gray-400 dark:text-gh-muted">
               ({applications.length})
             </span>
           </h1>
-          <form action="/api/admin/logout" method="POST">
-            <Button variant="outline" type="submit">
-              Log out
-            </Button>
-          </form>
         </div>
 
         <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gh-border">

@@ -34,7 +34,7 @@ export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
       {/* Animated timeline line */}
       <div className="absolute left-4 h-full w-1 -translate-x-1/2 transform overflow-hidden rounded-full bg-gray-200 dark:bg-gh-elevated md:left-1/2">
         <motion.div
-          className="w-full rounded-full bg-gradient-to-b from-black via-gray-600 to-black dark:from-gh-accent dark:via-gh-muted dark:to-gh-accent"
+          className="w-full rounded-full bg-gradient-to-b from-gh-accent-light via-gh-accent to-gh-accent-light dark:from-gh-accent dark:via-gh-muted dark:to-gh-accent"
           style={{ height: lineHeight }}
           transition={{ duration: 0.3 }}
         />
@@ -102,10 +102,10 @@ export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
             transition={{ duration: 0.3 }}
           >
             <motion.div
-              className="relative h-6 w-6 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-black shadow-lg dark:border-gh-bg dark:bg-gh-accent"
+              className="relative h-6 w-6 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-gh-accent-light shadow-lg dark:border-gh-bg dark:bg-gh-accent"
               whileHover={{
                 scale: 1.5,
-                boxShadow: "0 0 20px rgba(88,166,255,0.4)",
+                boxShadow: "0 0 20px rgba(63,185,80,0.4)",
               }}
               initial={{ scale: 0 }}
               whileInView={{ scale: 1 }}
@@ -113,7 +113,7 @@ export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
               viewport={{ once: true }}
             >
               <motion.div
-                className="absolute inset-0 rounded-full bg-black dark:bg-gh-accent"
+                className="absolute inset-0 rounded-full bg-gh-accent-light dark:bg-gh-accent"
                 animate={{ scale: [1, 1.5, 1], opacity: [1, 0, 1] }}
                 transition={{
                   duration: 2,

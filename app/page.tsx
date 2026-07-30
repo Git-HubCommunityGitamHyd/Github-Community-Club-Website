@@ -1,54 +1,127 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
-import {
-  Github,
-  Users,
-  Star,
-  GitBranch,
-  Code,
-  Zap,
-  Trophy,
-  ChevronDown,
-  Mail,
-  MapPin,
-  Instagram,
-  Menu,
-  X,
-} from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Github, Mail, MapPin, Instagram, Menu, X } from "lucide-react"
 import {
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card"
-import { AnimatedBackground } from "@/components/animated-background"
 import { EnhancedButton } from "@/components/enhanced-button"
-import { PopupCard } from "@/components/popup-card"
 import { InteractiveCard } from "@/components/interactive-card"
-import Image from "next/image"
-import { FloatingGitHubElements } from "@/components/floating-github-elements"
 import { BoardMemberPopupCard } from "@/components/board-member-popup-card"
 import { EventPopupCard } from "@/components/event-popup-card"
 import { EnhancedTimeline } from "@/components/enhanced-timeline"
 import { QRPopupCard } from "@/components/qr-popup-card"
 import { JoinForm } from "@/components/join-form"
-import { EnhancedBackgroundElements } from "@/components/enhanced-background-elements"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { GhMascotToggle } from "@/components/gh-mascot-toggle"
+import { GhBranchGraph } from "@/components/gh-branch-graph"
+import { GhMarquee } from "@/components/gh-marquee"
+import { JoinSquares } from "@/components/join-squares"
 import { PageSkeleton } from "@/components/page-skeleton"
 
-const NAV_ITEMS = ["About", "Board", "Events", "Timeline", "Join", "Benefits"]
+const NAV_ITEMS = ["About", "Journey", "Board", "Events", "Benefits"]
+
+const STATS = [
+  { value: "2022", label: "Founded" },
+  { value: "700+", label: "Members" },
+  { value: "30+", label: "Events hosted" },
+  { value: "3", label: "Campuses" },
+]
+
+const PILLARS = [
+  {
+    code: "</>",
+    title: "Open Source",
+    desc: "Contributing to and maintaining open source projects",
+  },
+  {
+    code: "CM",
+    title: "Community",
+    desc: "Building connections and fostering collaboration",
+  },
+  {
+    code: "IN",
+    title: "Innovation",
+    desc: "Driving technological innovation and learning",
+  },
+]
+
+const BENEFITS = [
+  {
+    title: "Skill Development",
+    desc: "Learn cutting-edge technologies and best practices through workshops and peer learning",
+  },
+  {
+    title: "Networking",
+    desc: "Connect with like-minded developers, industry professionals, and potential collaborators",
+  },
+  {
+    title: "Recognition",
+    desc: "Showcase your contributions and achievements within the community and beyond",
+  },
+  {
+    title: "Open Source",
+    desc: "Contribute to meaningful projects and build a strong portfolio of open source work",
+  },
+  {
+    title: "Mentorship",
+    desc: "Get guidance from experienced developers and mentor newcomers to the field",
+  },
+  {
+    title: "Innovation",
+    desc: "Work on cutting-edge projects and stay ahead of technology trends",
+  },
+]
+
+type BoardMemberRecord = {
+  id: number
+  name: string
+  role: string
+  image_url: string | null
+  description: string
+  github: string | null
+  linkedin: string | null
+  email: string | null
+}
+
+type EventRecord = {
+  id: number
+  title: string
+  event_date: string
+  location: string | null
+  attendees: number | null
+  category: string
+  duration: string | null
+  description: string
+  images: string[]
+}
 
 export default function GitHubCommunityPortfolio() {
   const [mounted, setMounted] = useState(false)
   const [activeSection, setActiveSection] = useState("hero")
   const [isQrPopupOpen, setIsQrPopupOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { scrollYProgress } = useScroll()
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
+  const [boardMembers, setBoardMembers] = useState<BoardMemberRecord[]>([])
+  const [events, setEvents] = useState<EventRecord[]>([])
+  const [contentLoading, setContentLoading] = useState(true)
 
   useEffect(() => setMounted(true), [])
+  useEffect(() => {
+    if (!mounted) return
+    Promise.all([
+      fetch("/api/board-members").then((res) => res.json()),
+      fetch("/api/events").then((res) => res.json()),
+    ])
+      .then(([membersData, eventsData]) => {
+        setBoardMembers(membersData)
+        setEvents(eventsData)
+      })
+      .finally(() => setContentLoading(false))
+  }, [mounted])
   useEffect(() => {
     const handleScroll = () => {
       const sections = ["hero", ...NAV_ITEMS.map((i) => i.toLowerCase())]
@@ -73,213 +146,48 @@ export default function GitHubCommunityPortfolio() {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" })
   }
 
-  // Board members data with detailed information
-  const boardMembers = [
-    {
-      name: "K Shreya",
-      role: "President",
-      image: "/images/board/k-shreya.jpeg",
-      description:
-        "B.Tech student with a passion for UX/UI designing and crafting impactful digital experiences. She currently serves as the President of the GitHub Community at GITAM, leading tech initiatives and creative collaborations. With a strong focus on user-centered design, she builds intuitive and functional interfaces. Always curious and driven, she blends design thinking with leadership to bring ideas to life.",
-      github: "shreyak-1",
-      linkedin: "shreya-kondur-0291a0293",
-      email: "skondur2@gitam.in",
-    },
-    {
-      name: "C Harshavardhan Reddy",
-      role: "Vice President",
-      image: "/images/board/c-harshavardhan.jpeg",
-      description:
-        "B.Tech CSE (AI/ML) student with a passion for Full Stack Development and AI-driven innovation. He actively explores Web3, Blockchain, and the future of intelligent systems. With a strong interest in building impactful tech, he blends software engineering with machine learning to solve real-world problems. Always curious and hands-on, he enjoys gaming, creative editing, and collaborating on projects that make a difference.",
-      github: "igharsha7",
-      linkedin: "igharsha7",
-      email: "hchallap@gitam.in",
-    },
-    {
-      name: "Inukurthi Sri Venkata Sai Guru",
-      role: "Secretary",
-      image: "/images/board/i-saiguru.jpeg",
-      description:
-        "A driven and curious techie with a strong focus on AI/ML, Data structures, and automation. As Secretary of the GitHub Community Club at GITAM, he leads with a mission to foster innovation, peer learning, and open-source collaboration. With hands-on experience in building intelligent applications and guiding community initiatives, he bridges the gap between learning and real-world impact. Known for his enthusiasm and creative mindset, he’s passionate about empowering fellow students through projects, workshops, and impactful technical events. Always exploring, always building — with purpose and passion.",
-      github: "SaiGuruInukurthi",
-      linkedin: "inukurthisaiguru",
-      email: "sinukurt@gitam.in",
-    },
-    {
-      name: "P Vihaan Rao",
-      role: "Event Coordinator",
-      image: "/images/board/p-vihaan.png",
-      description:
-        "Tech enthusiast with a passion for coding, web development, and organizing impactful events. He enjoys building innovative, user-friendly solutions that blend technology with creativity. With hands-on experience in both development and event coordination, he thrives in collaborative environments that drive meaningful impact. Always eager to learn and grow, he brings energy and purpose to every project he’s part of.",
-      github: "PVihaan",
-      linkedin: "vihaan-rao-paidipelly-43608828b",
-      email: "vpaidipe@gitam.in",
-    },
-    {
-      name: "Arushi Deshpande",
-      role: "Head of Operations",
-      image: "/images/board/arushi.png",
-      description:
-        "B.Tech CSE student with a growing passion for tech and a strong belief in the power of teamwork. She thrives in collaborative spaces leading projects, learning alongside peers, and bringing ideas to life. Driven by personal growth and open conversations, she aims to create environments where everyone feels valued and heard. Still exploring, always evolving and committed to giving her best every step of the way.",
-      github: "ArushiDeshpande27",
-      linkedin: "arushi-deshpande-1b2752319",
-      email: "adeshpan2@gitam.in",
-    },
-  ]
-
-  // Events data with detailed information
-  const events = [
-    {
-      title: "Intro to Web Frameworks",
-      date: "August 12, 2024",
-      location: "J Block - 311",
-      attendees: 45,
-      category: "Workshop",
-      duration: "2 hours",
-      description:
-        "This hands-on workshop, facilitated by Eshway, introduced participants to modern web frameworks. Students explored both frontend and backend technologies, gaining insights into the MVC architecture, server-client interactions, and deployment strategies. By the end of the session, attendees had built functional web applications, making them industry-ready for real-world development projects.",
-      images: [
-        "/images/events/eshway-1.jpg",
-        "/images/events/eshway-2.jpg",
-        "/images/events/eshway-3.jpg",
-        "/images/events/eshway-4.jpg",
-        "/images/events/eshway-5.jpg",
-        "/images/events/eshway-6.jpg",
-      ],
-    },
-    {
-      title: "Git Set Go",
-      date: "September 26, 2024",
-      location: "J Block - 311",
-      attendees: 50,
-      category: "Theory Session",
-      duration: "2 hours",
-      description:
-        "Git Set Go served as an introductory workshop on Git and GitHub. Tailored for beginners, the session covered essential version control concepts, including repository creation, branching, pull requests, and collaborative workflows. The practical exercises enabled students to navigate Git commands and understand open-source contribution pipelines, laying a strong foundation for collaborative coding.",
-      images: [
-        "/images/events/gsg-1.jpg",
-        "/images/events/gsg-2.jpg",
-        "/images/events/gsg-3.jpeg",
-        "/images/events/gsg-4.jpg",
-        "/images/events/gsg-5.jpg",
-        "/images/events/gsg-6.jpg",
-      ],
-    },
-    {
-      title: "UX/UI Redesign Challenge",
-      date: "October 20–26, 2024",
-      location: "Virtual Competition",
-      attendees: 30,
-      category: "Competition",
-      duration: "7 Days",
-      description:
-        "The UX/UI Redesign Challenge was a week-long initiative focused on enhancing user experience in real-world applications. Participants engaged in identifying usability flaws in existing apps and applied principles of wireframing, prototyping, and user testing. The event emphasized accessibility, responsiveness, and human-centered design, allowing students to develop a critical eye for effective UI/UX.",
-      images: [
-        "/images/events/urc-1.png",
-        "/images/events/urc-2.png",
-        "/images/events/urc-3.png",
-        "/images/events/urc-4.jpeg",
-      ],
-    },
-    {
-      title: "CodeCraft",
-      date: "October 28, 2024",
-      location: "J Block - 311",
-      attendees: 60,
-      category: "Theory Session",
-      duration: "2 hours",
-      description:
-        "Focused on competitive programming and problem-solving, CodeCraft introduced students to Data Structures and Algorithms (DSA) in a practical context. The event included live coding rounds, mentorship from experienced programmers, and algorithmic challenges. Participants enhanced their analytical thinking and improved their preparedness for technical interviews and hackathons.",
-      images: [
-        "/images/events/cc-1.jpg",
-        "/images/events/cc-2.jpg",
-        "/images/events/cc-3.jpg",
-        "/images/events/cc-4.jpg",
-        "/images/events/cc-5.jpg",
-        "/images/events/cc-6.png",
-      ],
-    },
-    {
-      title: "Introduction to AIML with Python",
-      date: "December 18, 2024",
-      location: "J Block - 311",
-      attendees: 80,
-      category: "Theory Session",
-      duration: "2 hours",
-      description:
-        "The Introduction to AIML with Python session offered students a beginner-friendly overview of Artificial Intelligence and Machine Learning. Participants learned about core ML and DL concepts, Python libraries, and how to set up their development environments. It served as a foundational step for those aiming to explore real-world AIML projects in both academia and industry.",
-      images: [],
-    },
-    {
-      title: "Git It Done: Advanced Git Operations",
-      date: "December 18, 2024",
-      location: "J Block - 311",
-      attendees: 60,
-      category: "Theory Session",
-      duration: "2 hours",
-      description:
-        "The Git It Done: Advanced Git Operations workshop focused on version control using Git and GitHub. Attendees practiced branching strategies, pull requests, conflict resolution, and workflow automation with GitHub Actions. The session also highlighted ways to enhance GitHub profiles, offering practical insights for students to showcase their work professionally.",
-      images: [],
-    },
-  ]
-
   return (
-    // overflow-x-hidden: slide-in reveals animate from ±100px and would otherwise
-    // hand phones a horizontal scrollbar
     <div className="relative min-h-screen overflow-x-hidden bg-white text-gray-900 dark:bg-gh-bg dark:text-gh-text">
-      {/* Animated Background Elements */}
-      <AnimatedBackground />
-      <FloatingGitHubElements />
-      <EnhancedBackgroundElements />
-
       {/* Navigation */}
       <motion.nav
-        className="fixed top-0 z-40 w-full border-b border-gray-200 bg-white/90 backdrop-blur-md dark:border-gh-border dark:bg-gh-surface/90"
+        className="fixed top-0 z-40 w-full border-b border-gray-200 bg-white dark:border-gh-border dark:bg-gh-bg"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <motion.div
-              className="flex items-center space-x-2"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-            >
-              <motion.div
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6, ease: "easeInOut" }}
-              >
-                <Github className="h-8 w-8" />
-              </motion.div>
-              <span className="text-base font-bold sm:text-xl">
-                GitHub Community GITAM
+            <div className="flex items-center gap-2.5">
+              <Github className="h-7 w-7" />
+              <span className="text-base font-extrabold tracking-tight sm:text-[17px]">
+                GitHub Community{" "}
+                <span className="font-semibold text-gray-500 dark:text-gh-muted">
+                  GITAM
+                </span>
               </span>
-            </motion.div>
-            <div className="hidden items-center space-x-8 md:flex">
+            </div>
+
+            <div className="hidden items-center gap-7 md:flex">
               {NAV_ITEMS.map((item) => (
-                <motion.button
+                <button
                   key={item}
                   onClick={() => scrollToSection(item.toLowerCase())}
-                  className={`relative text-sm font-medium transition-all duration-300 ${
+                  className={`text-sm font-semibold transition-colors duration-200 ${
                     activeSection === item.toLowerCase()
                       ? "text-black dark:text-gh-text"
-                      : "text-gray-500 dark:text-gh-muted"
+                      : "text-gray-500 hover:text-black dark:text-gh-muted dark:hover:text-gh-text"
                   }`}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
                 >
                   {item}
-                  {activeSection === item.toLowerCase() && (
-                    <motion.div
-                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-black dark:bg-gh-accent"
-                      layoutId="activeSection"
-                      transition={{ duration: 0.3 }}
-                    />
-                  )}
-                </motion.button>
+                </button>
               ))}
-              <ThemeToggle />
+              <button
+                onClick={() => scrollToSection("join")}
+                className="rounded-md bg-gh-accent-light px-4 py-2 font-mono text-[13px] font-semibold text-white hover:opacity-90 dark:bg-gh-accent dark:text-gh-bg"
+              >
+                Join →
+              </button>
+              <GhMascotToggle />
             </div>
 
             {/* Mobile: theme toggle stays reachable, links collapse into a menu */}
@@ -324,297 +232,134 @@ export default function GitHubCommunityPortfolio() {
                     {item}
                   </button>
                 ))}
+                <button
+                  onClick={() => scrollToSection("join")}
+                  className="mt-3 rounded-md bg-gh-accent-light px-4 py-3 text-center font-mono text-sm font-semibold text-white dark:bg-gh-accent dark:text-gh-bg"
+                >
+                  Join Community →
+                </button>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.nav>
 
-      {/* Hero Section */}
+      {/* Hero */}
       <section
         id="hero"
-        className="relative flex min-h-screen items-center justify-center overflow-hidden pt-16"
+        className="relative overflow-hidden pt-16"
+        style={{ minHeight: "480px" }}
       >
-        <motion.div className="absolute inset-0 opacity-5" style={{ y }}>
-          <div className="absolute left-10 top-20 h-32 w-32 rounded-full border-2 border-gray-300 dark:border-gh-elevated" />
-          <div className="absolute right-20 top-40 h-24 w-24 rounded-full border-2 border-gray-300 dark:border-gh-elevated" />
-          <div className="absolute bottom-40 left-1/4 h-16 w-16 rounded-full border-2 border-gray-300 dark:border-gh-elevated" />
-          <GitBranch className="absolute right-1/3 top-1/3 h-20 w-20 text-gray-300 dark:text-gh-elevated" />
-          <Code className="absolute bottom-1/3 left-1/3 h-16 w-16 text-gray-300 dark:text-gh-elevated" />
-        </motion.div>
-
-        <div className="z-10 mx-auto max-w-4xl px-4 text-center">
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{
-              duration: 1,
-              delay: 0.2,
-              type: "spring",
-              stiffness: 100,
-            }}
-            className="mb-8"
-            whileHover={{
-              scale: 1.1,
-              rotate: [0, -10, 10, 0],
-              transition: { duration: 0.5 },
-            }}
-          >
-            <Github className="mx-auto mb-6 h-24 w-24 cursor-pointer" />
-          </motion.div>
-
+        <GhBranchGraph />
+        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-16 pt-24 sm:px-6 md:pt-32 lg:px-8">
           <motion.h1
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="mb-6 text-4xl font-bold sm:text-5xl md:text-7xl"
+            transition={{ duration: 0.7 }}
+            className="mb-7 text-[clamp(44px,8vw,108px)] font-extrabold leading-[0.96] tracking-tight"
           >
-            <motion.span
-              whileHover={{
-                scale: 1.05,
-                textShadow: "0px 0px 8px rgba(0,0,0,0.3)",
-              }}
-              transition={{ duration: 0.3 }}
-            >
-              GitHub Community
-            </motion.span>
-            <motion.span
-              className="block text-gray-600 dark:text-gh-muted"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-            >
-              GITAM
-            </motion.span>
+            GitHub
+            <br />
+            Community
+            <span className="text-black dark:text-gh-accent">.</span>
           </motion.h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="mx-auto mb-8 max-w-2xl text-xl text-gray-600 dark:text-gh-muted md:text-2xl"
-          >
-            Empowering developers, fostering collaboration, and building the
-            future of open source at GITAM University
-          </motion.p>
-
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-col justify-center gap-4 sm:flex-row"
+            transition={{ duration: 0.7, delay: 0.15 }}
+            className="flex flex-wrap items-end justify-between gap-x-12 gap-y-6 pt-4"
           >
-            <EnhancedButton
-              size="lg"
-              type="primary"
-              onClick={() => scrollToSection("about")}
-            >
-              Learn More
-            </EnhancedButton>
-            <EnhancedButton
-              size="lg"
-              variant="outline"
-              type="secondary"
-              onClick={() => setIsQrPopupOpen(true)}
-            >
-              Join Community
-            </EnhancedButton>
+            <p className="max-w-xl text-lg leading-relaxed text-gray-600 dark:text-gh-muted sm:text-xl">
+              Empowering developers, fostering collaboration, and building the
+              future of open source at GITAM University.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <EnhancedButton
+                size="lg"
+                type="primary"
+                onClick={() => scrollToSection("journey")}
+              >
+                Our Story
+              </EnhancedButton>
+              <EnhancedButton
+                size="lg"
+                variant="outline"
+                type="secondary"
+                colorScheme="community"
+                onClick={() => scrollToSection("join")}
+              >
+                Join Community
+              </EnhancedButton>
+            </div>
           </motion.div>
         </div>
-
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 transform cursor-pointer"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-          whileHover={{ scale: 1.2 }}
-          onClick={() => scrollToSection("about")}
-        >
-          <ChevronDown className="h-6 w-6 text-gray-400 dark:text-gh-muted" />
-        </motion.div>
       </section>
 
-      {/* About Section */}
+      <GhMarquee />
+
+      {/* Stats */}
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+          {STATS.map((stat) => (
+            <div
+              key={stat.label}
+              className="border-l border-gray-200 pl-4 dark:border-gh-border"
+            >
+              <div className="font-mono text-[clamp(28px,4vw,44px)] font-bold tracking-tight">
+                {stat.value}
+              </div>
+              <div className="mt-1 text-xs uppercase tracking-wide text-gray-500 dark:text-gh-muted">
+                {stat.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* About */}
       <section
         id="about"
-        className="relative z-10 bg-gray-50 py-20 dark:bg-gh-surface"
+        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="mb-16 text-center"
-          >
-            <motion.h2
-              className="mb-6 text-3xl font-bold md:text-4xl"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-            >
-              About Our Community
-            </motion.h2>
-            <p className="mx-auto max-w-3xl text-xl text-gray-600 dark:text-gh-muted">
-              We are a vibrant community of developers, designers, and tech
-              enthusiasts at GITAM University, dedicated to promoting open
-              source culture and collaborative development.
-            </p>
-          </motion.div>
-
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              {
-                icon: Code,
-                title: "Open Source",
-                description:
-                  "Contributing to and maintaining open source projects",
-              },
-              {
-                icon: Users,
-                title: "Community",
-                description: "Building connections and fostering collaboration",
-              },
-              {
-                icon: Zap,
-                title: "Innovation",
-                description: "Driving technological innovation and learning",
-              },
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.2 }}
-                viewport={{ once: true }}
-              >
-                <InteractiveCard className="h-full text-center" glowEffect>
-                  <CardHeader>
-                    <motion.div
-                      whileHover={{
-                        rotate: [0, -10, 10, 0],
-                        scale: 1.2,
-                      }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <item.icon className="mx-auto mb-4 h-12 w-12" />
-                    </motion.div>
-                    <CardTitle>{item.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base">
-                      {item.description}
-                    </CardDescription>
-                  </CardContent>
-                </InteractiveCard>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Executive Board Section */}
-      <section id="board" className="relative z-10 py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="mb-16 text-center"
-          >
-            <motion.h2
-              className="mb-6 text-3xl font-bold md:text-4xl"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-            >
-              Executive Board
-            </motion.h2>
-            <p className="mb-4 text-xl text-gray-600 dark:text-gh-muted">
-              Meet the leaders driving our community forward
-            </p>
-            <motion.p
-              className="inline-block rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-500 dark:bg-gh-elevated dark:text-gh-muted"
-              animate={{ opacity: [0.7, 1, 0.7] }}
-              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-            >
-              ✨ Click on any card to learn more about our team members
-            </motion.p>
-          </motion.div>
-
-          {/* Wraps to 3 + 2 centered on desktop, 2 up on tablet, 1 up on phones */}
-          <div className="flex flex-wrap justify-center gap-8">
-            {boardMembers.map((member, idx) => (
-              <div
-                key={idx}
-                className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)]"
-              >
-                <BoardMemberPopupCard member={member} index={idx} />
+        <span className="font-mono text-[13px] font-bold text-black dark:text-gh-accent">
+          01 — ABOUT
+        </span>
+        <h2 className="mb-5 mt-4 max-w-3xl text-balance text-[clamp(32px,4.5vw,56px)] font-extrabold leading-tight tracking-tight">
+          A community of builders, designers, and open-source contributors.
+        </h2>
+        <p className="mb-12 max-w-2xl text-lg leading-relaxed text-gray-600 dark:text-gh-muted">
+          We are a vibrant community of developers, designers, and tech
+          enthusiasts at GITAM University, dedicated to promoting open source
+          culture and collaborative development.
+        </p>
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-gray-200 bg-gray-200 dark:border-gh-border dark:bg-gh-border sm:grid-cols-3">
+          {PILLARS.map((pillar) => (
+            <div key={pillar.title} className="bg-white p-7 dark:bg-gh-bg">
+              <div className="mb-3 font-mono text-lg font-bold text-black dark:text-gh-accent">
+                {pillar.code}
               </div>
-            ))}
-          </div>
+              <div className="mb-2 text-lg font-bold">{pillar.title}</div>
+              <div className="text-sm leading-relaxed text-gray-600 dark:text-gh-muted">
+                {pillar.desc}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Events Gallery */}
+      {/* Journey / Timeline */}
       <section
-        id="events"
-        className="relative z-10 bg-gray-50 py-20 dark:bg-gh-surface"
+        id="journey"
+        className="border-y border-gray-200 bg-gray-50 dark:border-gh-border dark:bg-gh-surface"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="mb-16 text-center"
-          >
-            <motion.h2
-              className="mb-6 text-3xl font-bold md:text-4xl"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-            >
-              Events from last year
-            </motion.h2>
-            <p className="mb-4 text-xl text-gray-600 dark:text-gh-muted">
-              Highlights from our community gatherings and workshops
-            </p>
-            <motion.p
-              className="inline-block rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-500 dark:bg-gh-elevated dark:text-gh-muted"
-              animate={{ opacity: [0.7, 1, 0.7] }}
-              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-            >
-              📸 Click on any event card to see detailed information and photo
-              gallery
-            </motion.p>
-          </motion.div>
-
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {events.map((event, index) => (
-              <EventPopupCard key={index} event={event} index={index} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Timeline Section */}
-      <section id="timeline" className="relative z-10 py-20">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="mb-16 text-center"
-          >
-            <motion.h2
-              className="mb-6 text-3xl font-bold md:text-4xl"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-            >
-              Our Journey
-            </motion.h2>
-            <p className="text-xl text-gray-600 dark:text-gh-muted">
-              From the start
-            </p>
-          </motion.div>
+        <div className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
+          <span className="font-mono text-[13px] font-bold text-black dark:text-gh-accent">
+            02 — JOURNEY
+          </span>
+          <h2 className="mb-14 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-tight">
+            From the start.
+          </h2>
 
           <EnhancedTimeline
             items={[
@@ -671,237 +416,299 @@ export default function GitHubCommunityPortfolio() {
         </div>
       </section>
 
-      {/* Join Section */}
-      <section id="join" className="relative z-10 py-20">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="mb-16 text-center"
-          >
-            <motion.h2
-              className="mb-6 text-3xl font-bold md:text-4xl"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-            >
-              Join Us
-            </motion.h2>
-            <p className="text-xl text-gray-600 dark:text-gh-muted">
-              Apply to become a member of the community
-            </p>
-          </motion.div>
+      {/* Executive Board */}
+      <section
+        id="board"
+        className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8"
+      >
+        <span className="font-mono text-[13px] font-bold text-black dark:text-gh-accent">
+          03 — BOARD
+        </span>
+        <h2 className="mb-3 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-tight">
+          Executive Board.
+        </h2>
+        <p className="mb-12 text-lg text-gray-600 dark:text-gh-muted">
+          Meet the leaders driving our community forward — click any card for
+          the full story.
+        </p>
 
-          <JoinForm />
+        {/* Wraps to 3 + 2 centered on desktop, 2 up on tablet, 1 up on phones */}
+        <div className="flex flex-wrap justify-center gap-8">
+          {contentLoading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)]"
+                >
+                  <div className="flex flex-col items-center gap-4 rounded-2xl border border-gray-200 p-8 dark:border-gh-border">
+                    <div className="skeleton h-20 w-20 rounded-full" />
+                    <div className="skeleton h-5 w-32 rounded-lg" />
+                    <div className="skeleton h-4 w-24 rounded-lg" />
+                  </div>
+                </div>
+              ))
+            : boardMembers.map((member, idx) => (
+                <div
+                  key={member.id}
+                  className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)]"
+                >
+                  <BoardMemberPopupCard
+                    index={idx}
+                    member={{
+                      name: member.name,
+                      role: member.role,
+                      image: member.image_url ?? "/placeholder.svg",
+                      description: member.description,
+                      github: member.github ?? undefined,
+                      linkedin: member.linkedin ?? undefined,
+                      email: member.email ?? undefined,
+                    }}
+                  />
+                </div>
+              ))}
         </div>
       </section>
 
-      {/* Benefits Section */}
+      {/* Events */}
+      <section
+        id="events"
+        className="border-y border-gray-200 bg-gray-50 dark:border-gh-border dark:bg-gh-surface"
+      >
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <span className="font-mono text-[13px] font-bold text-black dark:text-gh-accent">
+            04 — EVENTS
+          </span>
+          <h2 className="mb-3 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-tight">
+            Events from last year.
+          </h2>
+          <p className="mb-12 text-lg text-gray-600 dark:text-gh-muted">
+            Highlights from our community gatherings and workshops.
+          </p>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {contentLoading
+              ? Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex h-80 flex-col items-center gap-4 rounded-2xl border border-gray-200 p-8 dark:border-gh-border"
+                  >
+                    <div className="skeleton h-16 w-16 rounded-full" />
+                    <div className="skeleton h-5 w-40 rounded-lg" />
+                    <div className="skeleton h-4 w-32 rounded-lg" />
+                  </div>
+                ))
+              : events.map((event, index) => (
+                  <EventPopupCard
+                    key={event.id}
+                    index={index}
+                    event={{
+                      title: event.title,
+                      date: event.event_date,
+                      location: event.location ?? undefined,
+                      attendees: event.attendees ?? undefined,
+                      category: event.category,
+                      duration: event.duration ?? undefined,
+                      description: event.description,
+                      images: event.images,
+                    }}
+                  />
+                ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits */}
       <section
         id="benefits"
-        className="relative z-10 bg-gray-50 py-20 dark:bg-gh-surface"
+        className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="mb-16 text-center"
-          >
-            <motion.h2
-              className="mb-6 text-3xl font-bold md:text-4xl"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-            >
-              Why Join Us?
-            </motion.h2>
-            <p className="text-xl text-gray-600 dark:text-gh-muted">
-              Discover the benefits of being part of our community
-            </p>
-          </motion.div>
+        <span className="font-mono text-[13px] font-bold text-black dark:text-gh-accent">
+          05 — BENEFITS
+        </span>
+        <h2 className="mb-12 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-tight">
+          Why join us?
+        </h2>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                icon: Code,
-                title: "Skill Development",
-                description:
-                  "Learn cutting-edge technologies and best practices through workshops and peer learning",
-              },
-              {
-                icon: Users,
-                title: "Networking",
-                description:
-                  "Connect with like-minded developers, industry professionals, and potential collaborators",
-              },
-              {
-                icon: Trophy,
-                title: "Recognition",
-                description:
-                  "Showcase your contributions and achievements within the community and beyond",
-              },
-              {
-                icon: GitBranch,
-                title: "Open Source",
-                description:
-                  "Contribute to meaningful projects and build a strong portfolio of open source work",
-              },
-              {
-                icon: Star,
-                title: "Mentorship",
-                description:
-                  "Get guidance from experienced developers and mentor newcomers to the field",
-              },
-              {
-                icon: Zap,
-                title: "Innovation",
-                description:
-                  "Work on cutting-edge projects and stay ahead of technology trends",
-              },
-            ].map((benefit, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-                viewport={{ once: true }}
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {BENEFITS.map((benefit, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.08 }}
+              viewport={{ once: true }}
+            >
+              <InteractiveCard className="h-full border-l-4 border-l-black dark:border-l-gh-accent">
+                <CardHeader>
+                  <CardTitle className="text-lg">{benefit.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm">
+                    {benefit.desc}
+                  </CardDescription>
+                </CardContent>
+              </InteractiveCard>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="mt-16 text-center">
+          <EnhancedButton
+            size="lg"
+            type="primary"
+            colorScheme="community"
+            onClick={() => scrollToSection("join")}
+          >
+            Join Our Community
+          </EnhancedButton>
+        </div>
+      </section>
+
+      {/* Join */}
+      <section id="join" className="relative">
+        <div className="relative overflow-hidden bg-black text-white">
+          <JoinSquares />
+          <div className="pointer-events-none absolute inset-0 z-[1] bg-black/50" />
+          <div className="relative z-10 mx-auto max-w-7xl px-4 py-24 text-center sm:px-6 lg:px-8">
+            <div className="inline-block rounded-3xl bg-black/70 p-10 backdrop-blur-md sm:p-14">
+              <span className="font-mono text-[13px] font-bold text-gh-accent">
+                06 — JOIN
+              </span>
+              <h2 className="mb-5 mt-4 text-[clamp(36px,6vw,72px)] font-extrabold tracking-tight">
+                Build what&apos;s next with us.
+              </h2>
+              <p className="mx-auto mb-10 max-w-lg text-lg text-gray-400">
+                Open to every student at GITAM — no experience required, just
+                curiosity.
+              </p>
+              <EnhancedButton
+                size="lg"
+                type="primary"
+                colorScheme="community"
+                onClick={() =>
+                  document
+                    .getElementById("join-form")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
               >
-                <InteractiveCard
-                  className="h-full border-l-4 border-l-black dark:border-l-gh-accent"
-                  hoverScale={1.05}
-                  glowEffect
-                >
-                  <CardHeader>
-                    <motion.div
-                      whileHover={{
-                        rotate: [0, -15, 15, 0],
-                        scale: 1.2,
-                      }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <benefit.icon className="mb-4 h-10 w-10" />
-                    </motion.div>
-                    <CardTitle>{benefit.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base">
-                      {benefit.description}
-                    </CardDescription>
-                  </CardContent>
-                </InteractiveCard>
-              </motion.div>
-            ))}
+                Join Our Community →
+              </EnhancedButton>
+            </div>
           </div>
+        </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            viewport={{ once: true }}
-            className="mt-16 text-center"
-          >
-            <EnhancedButton
-              size="lg"
-              type="primary"
-              colorScheme="community"
-              onClick={() => setIsQrPopupOpen(true)}
+        <div id="join-form" className="py-20">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="mb-12 text-center"
             >
-              <motion.span
-                animate={{
-                  textShadow: [
-                    "0 0 0px rgba(255,255,255,0)",
-                    "0 0 10px rgba(255,255,255,0.5)",
-                    "0 0 0px rgba(255,255,255,0)",
-                  ],
-                }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-              >
-                🚀 Join Our Community
-              </motion.span>
-            </EnhancedButton>
-          </motion.div>
+              <h3 className="mb-3 text-2xl font-bold md:text-3xl">
+                Apply to join
+              </h3>
+              <p className="text-gray-600 dark:text-gh-muted">
+                Fill out the form and we&apos;ll be in touch —{" "}
+                <button
+                  onClick={() => setIsQrPopupOpen(true)}
+                  className="font-medium text-black underline underline-offset-2 dark:text-gh-accent"
+                >
+                  prefer WhatsApp instead?
+                </button>
+              </p>
+            </motion.div>
+
+            <JoinForm />
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-transparent bg-black py-12 text-white dark:border-gh-border dark:bg-gh-surface">
+      <footer className="bg-black py-16 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-10 border-b border-gray-800 pb-10 sm:grid-cols-3">
             <div>
-              <motion.div
-                className="mb-4 flex items-center space-x-2"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.3 }}
-              >
-                <motion.div
-                  whileHover={{ rotate: 360 }}
-                  transition={{ duration: 0.6, ease: "easeInOut" }}
-                >
-                  <Github className="h-8 w-8" />
-                </motion.div>
-                <span className="text-xl font-bold">
+              <div className="mb-3.5 flex items-center gap-2.5">
+                <Github className="h-7 w-7" />
+                <span className="text-base font-extrabold">
                   GitHub Community GITAM
                 </span>
-              </motion.div>
-              <p className="text-gray-400">
+              </div>
+              <p className="max-w-xs text-sm leading-relaxed text-gray-400">
                 Empowering the next generation of developers through
                 collaboration and open source.
               </p>
             </div>
 
             <div>
-              <h3 className="mb-4 text-lg font-semibold">Quick Links</h3>
-              <ul className="space-y-2 text-gray-400">
-                {NAV_ITEMS.map((link) => (
-                  <motion.li key={link}>
-                    <motion.a
-                      href={`#${link.toLowerCase()}`}
-                      className="transition-colors hover:text-white"
-                      whileHover={{ x: 5 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {link === "Board" ? "Executive Board" : link}
-                    </motion.a>
-                  </motion.li>
+              <div className="mb-4 font-mono text-[13px] font-bold uppercase tracking-wide text-gray-400">
+                Quick Links
+              </div>
+              <div className="flex flex-col gap-2.5">
+                {NAV_ITEMS.map((item) => (
+                  <a
+                    key={item}
+                    href={`#${item.toLowerCase()}`}
+                    className="text-sm text-gray-300 hover:text-white"
+                  >
+                    {item}
+                  </a>
                 ))}
-              </ul>
+              </div>
             </div>
 
             <div>
-              <h3 className="mb-4 text-lg font-semibold">Contact</h3>
-              <div className="space-y-2 text-gray-400">
-                <motion.div
-                  className="flex items-center space-x-2"
-                  whileHover={{ x: 5 }}
-                  transition={{ duration: 0.2 }}
-                >
+              <div className="mb-4 font-mono text-[13px] font-bold uppercase tracking-wide text-gray-400">
+                Contact
+              </div>
+              <div className="flex flex-col gap-2.5 text-sm text-gray-300">
+                <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  <span>github.gitamhyd@gmail.com</span>
-                </motion.div>
-                <motion.div
-                  className="flex items-center space-x-2"
-                  whileHover={{ x: 5 }}
-                  transition={{ duration: 0.2 }}
-                >
+                  <a href="mailto:github.gitamhyd@gmail.com">
+                    github.gitamhyd@gmail.com
+                  </a>
+                </div>
+                <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
                   <span>GITAM University, Hyderabad</span>
-                </motion.div>
-                <motion.div
-                  className="flex items-center space-x-2"
-                  whileHover={{ x: 5 }}
-                  transition={{ duration: 0.2 }}
-                >
+                </div>
+                <div className="flex items-center gap-2">
                   <Instagram className="h-4 w-4" />
-                  <span>@github.gitam.hyd</span>
-                </motion.div>
+                  <a
+                    href="https://instagram.com/github.gitam.hyd"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    @github.gitam.hyd
+                  </a>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 border-t border-gray-800 pt-8 text-center text-gray-400 dark:border-gh-border dark:text-gh-muted">
-            <p>&copy; 2025 GitHub Community GITAM. All rights reserved.</p>
+          <div className="space-y-1.5 pt-7 text-center font-mono text-xs text-gray-500">
+            <div>© 2026 GitHub Community GITAM. All rights reserved.</div>
+            <div>
+              <a
+                href="https://skfb.ly/oHnR9"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-gray-300"
+              >
+                &quot;GitHub Octocat&quot;
+              </a>{" "}
+              by pissang is licensed under{" "}
+              <a
+                href="http://creativecommons.org/licenses/by/4.0/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-gray-300"
+              >
+                Creative Commons Attribution
+              </a>
+            </div>
           </div>
         </div>
       </footer>

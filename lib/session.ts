@@ -1,7 +1,9 @@
 import { createHash, timingSafeEqual } from "node:crypto"
 
 export const COOKIE_NAME = "admin_session"
-export const COOKIE_PATH = "/admin"
+// "/" — not "/admin" — so the cookie also reaches /api/admin/* routes,
+// which live outside the /admin path prefix but still need the session.
+export const COOKIE_PATH = "/"
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
 function requireEnv(name: string): string {
