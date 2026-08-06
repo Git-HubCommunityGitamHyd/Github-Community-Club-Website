@@ -54,3 +54,6 @@ pnpm-debug.log*
 
 # One-off Postgres->D1 data export — contains real applicant PII, never commit
 /db/seed-data.sql
+
+# Personal notes (dashboard URLs, IDs) — not for the repo
+/note.md
