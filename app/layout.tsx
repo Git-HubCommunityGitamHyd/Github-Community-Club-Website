@@ -2,6 +2,8 @@ import "./globals.css"
 import type { ReactNode } from "react"
 import type { Metadata } from "next"
 import { ThemeProvider } from "@/components/theme-provider"
+import { MascotGlow } from "@/components/mascot-glow"
+import { MascotEasterEgg } from "@/components/mascot-easter-egg"
 
 export const metadata: Metadata = {
   title: "GitHub Community GITAM",
@@ -30,7 +32,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <MascotGlow />
+          <MascotEasterEgg />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

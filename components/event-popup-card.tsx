@@ -25,21 +25,12 @@ export function EventPopupCard({ event, index }: EventPopupCardProps) {
   const frontContent = (
     <Card className="h-full border-2 border-gray-200 bg-gradient-to-br from-white to-gray-50 transition-all duration-300 hover:border-gray-300 hover:shadow-lg dark:border-gh-border dark:from-gh-surface dark:to-gh-elevated dark:hover:border-gh-muted dark:hover:shadow-black/40">
       <CardContent className="flex h-full flex-col items-center justify-center p-8 text-center">
-        <motion.div
-          className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-black dark:border dark:border-gh-border dark:bg-gh-elevated"
-          whileHover={{ scale: 1.1, rotate: 10 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Calendar className="h-8 w-8 text-white dark:text-gh-accent" />
-        </motion.div>
-
         <CardTitle className="mb-4 text-xl leading-tight text-gray-900 dark:text-gh-text">
           {event.title}
         </CardTitle>
 
         <div className="mb-4 space-y-2">
           <div className="flex items-center justify-center text-gray-600 dark:text-gh-muted">
-            <Calendar className="mr-2 h-4 w-4" />
             <span className="text-sm font-medium">{event.date}</span>
           </div>
           {event.location && (

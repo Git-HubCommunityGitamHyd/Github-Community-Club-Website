@@ -1,16 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Github, Mail, MapPin, Instagram, Menu, X } from "lucide-react"
-import {
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card"
 import { EnhancedButton } from "@/components/enhanced-button"
-import { InteractiveCard } from "@/components/interactive-card"
+import ScrollStack, { ScrollStackItem } from "@/components/scroll-stack"
+import ParticleText from "@/components/particle-text"
 import { BoardMemberPopupCard } from "@/components/board-member-popup-card"
 import { EventPopupCard } from "@/components/event-popup-card"
 import { EnhancedTimeline } from "@/components/enhanced-timeline"
@@ -18,7 +13,6 @@ import { QRPopupCard } from "@/components/qr-popup-card"
 import { JoinForm } from "@/components/join-form"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { GhMascotToggle } from "@/components/gh-mascot-toggle"
-import { GhBranchGraph } from "@/components/gh-branch-graph"
 import { GhMarquee } from "@/components/gh-marquee"
 import { JoinSquares } from "@/components/join-squares"
 import { PageSkeleton } from "@/components/page-skeleton"
@@ -108,6 +102,8 @@ export default function GitHubCommunityPortfolio() {
   const [boardMembers, setBoardMembers] = useState<BoardMemberRecord[]>([])
   const [events, setEvents] = useState<EventRecord[]>([])
   const [contentLoading, setContentLoading] = useState(true)
+  const heroSlotRef = useRef<HTMLDivElement>(null)
+  const navSlotRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => setMounted(true), [])
   useEffect(() => {
@@ -187,7 +183,9 @@ export default function GitHubCommunityPortfolio() {
               >
                 Join →
               </button>
-              <GhMascotToggle />
+              {/* Reserves the docked spot — the real mascot floats above it
+                  as a fixed-position element (see GhMascotToggle below). */}
+              <div ref={navSlotRef} className="h-16 w-20" />
             </div>
 
             {/* Mobile: theme toggle stays reachable, links collapse into a menu */}
@@ -244,14 +242,27 @@ export default function GitHubCommunityPortfolio() {
         </AnimatePresence>
       </motion.nav>
 
+      <GhMascotToggle heroSlotRef={heroSlotRef} navSlotRef={navSlotRef} />
+
       {/* Hero */}
       <section
         id="hero"
         className="relative overflow-hidden pt-16"
         style={{ minHeight: "480px" }}
       >
-        <GhBranchGraph />
         <div className="relative z-10 mx-auto max-w-7xl px-4 pb-16 pt-24 sm:px-6 md:pt-32 lg:px-8">
+          {/* Marks where the big mascot sits at rest — GhMascotToggle
+              measures this and animates toward navSlotRef on scroll. It
+              lives INSIDE the max-w-7xl container, with insets matching the
+              container's own padding, so it lines up with the right edge of
+              the content. Anchored to the section instead, it hugged the
+              viewport edge and left a dead gap beside the headline.
+              Aspect ratio must stay 1.25 to match navSlotRef (h-16 w-20). */}
+          <div
+            ref={heroSlotRef}
+            className="pointer-events-none absolute right-4 top-16 hidden h-[176px] w-[220px] sm:right-6 md:block lg:right-8 lg:h-[288px] lg:w-[360px]"
+            aria-hidden="true"
+          />
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -525,43 +536,48 @@ export default function GitHubCommunityPortfolio() {
         <span className="font-mono text-[13px] font-bold text-black dark:text-gh-accent">
           05 — BENEFITS
         </span>
-        <h2 className="mb-12 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-tight">
+        <h2 className="mb-4 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-tight">
           Why join us?
         </h2>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <ScrollStack
+          useWindowScroll
+          itemDistance={60}
+          itemStackDistance={24}
+          // Fixed pixels, not percentages: a "%" value is a fraction of
+          // window.innerHeight, so on a tall/large monitor it keeps growing
+          // even though the card itself (h-80, a fixed 320px) doesn't — the
+          // gap above the stack was scaling with the user's screen while
+          // the content stayed the same size, which is exactly why it kept
+          // reading as "huge" on a large display no matter how small a
+          // percentage was chosen. Must stay <= the scroll-stack inner's
+          // leading pt (see scroll-stack.tsx) or the first card's trigger
+          // point goes negative and it pins at full displacement before any
+          // real scrolling happens — parsePercentage() (scroll-stack.tsx)
+          // treats a plain number-as-string like this as absolute px.
+          stackPosition="110"
+          scaleEndPosition="40"
+          baseScale={0.88}
+        >
           {BENEFITS.map((benefit, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.08 }}
-              viewport={{ once: true }}
+            <ScrollStackItem
+              key={benefit.title}
+              itemClassName="flex flex-col justify-between border border-l-4 border-gray-200 border-l-black bg-white dark:border-gh-border dark:border-l-gh-accent dark:bg-gh-surface"
             >
-              <InteractiveCard className="h-full border-l-4 border-l-black dark:border-l-gh-accent">
-                <CardHeader>
-                  <CardTitle className="text-lg">{benefit.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm">
-                    {benefit.desc}
-                  </CardDescription>
-                </CardContent>
-              </InteractiveCard>
-            </motion.div>
+              <span className="font-mono text-sm font-bold text-gray-300 dark:text-gh-muted">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <h3 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+                  {benefit.title}
+                </h3>
+                <p className="mt-3 max-w-md text-base leading-relaxed text-gray-600 dark:text-gh-muted sm:text-lg">
+                  {benefit.desc}
+                </p>
+              </div>
+            </ScrollStackItem>
           ))}
-        </div>
-
-        <div className="mt-16 text-center">
-          <EnhancedButton
-            size="lg"
-            type="primary"
-            colorScheme="community"
-            onClick={() => scrollToSection("join")}
-          >
-            Join Our Community
-          </EnhancedButton>
-        </div>
+        </ScrollStack>
       </section>
 
       {/* Join */}
@@ -577,22 +593,37 @@ export default function GitHubCommunityPortfolio() {
               <h2 className="mb-5 mt-4 text-[clamp(36px,6vw,72px)] font-extrabold tracking-tight">
                 Build what&apos;s next with us.
               </h2>
-              <p className="mx-auto mb-10 max-w-lg text-lg text-gray-400">
+              <p className="mx-auto mb-2 max-w-lg text-lg text-gray-400">
                 Open to every student at GITAM — no experience required, just
                 curiosity.
               </p>
-              <EnhancedButton
-                size="lg"
-                type="primary"
-                colorScheme="community"
+              <button
                 onClick={() =>
                   document
                     .getElementById("join-form")
                     ?.scrollIntoView({ behavior: "smooth" })
                 }
+                className="mx-auto block w-full max-w-md cursor-pointer"
+                aria-label="Join Our Community"
               >
-                Join Our Community →
-              </EnhancedButton>
+                <ParticleText
+                  text="Join Our Community"
+                  trigger="hover"
+                  color="#ffffff"
+                  highlightColor="#3fb950"
+                  fontSize="clamp(1.75rem, 4.5vw, 2.75rem)"
+                  fontWeight={800}
+                  particleSize={2}
+                  density={3}
+                  scatter={120}
+                  gatherDuration={1000}
+                  stagger={280}
+                  pointerRepel={30}
+                  repelRadius={90}
+                  idleDrift={0.4}
+                  glow
+                />
+              </button>
             </div>
           </div>
         </div>

@@ -14,14 +14,13 @@ type SpinRef = MutableRefObject<boolean>
 const BASE_ROTATION_Y = 0.4
 const BASE_ROTATION_X = 0.15
 
-// Framing: the .glb is the whole Octocat (head, whiskers, tentacle legs), so
-// fitting the entire model made the head tiny. These offsets come from
-// rasterising the model's own triangles and measuring it, not from guessing:
-// the head+ears occupy world x 2.60–10.39, y 4.11–10.17, whose centre is
-// (6.50, 7.14). The full model's bbox centre — what <Center> moves to the
-// origin — is (6.49, 4.99, 1.07), so shifting by the difference re-centres
-// the view on the head instead of the whole body.
-const HEAD_SHIFT: [number, number, number] = [-0.01, -2.15, -0.42]
+// Framing: read straight out of the .glb's POSITION accessor bounds, the
+// whole model (NODE_333 carries the silhouette, whiskers and tentacles
+// included) spans x 0..12.98, y 0..9.99 — 12.98 x 9.99, aspect 1.299, which
+// is near enough the container's 1.25 to fit whole. So <Center> alone
+// frames it: no head-only offset, and crucially nothing overruns the canvas
+// edge, so no vignette mask is needed to hide a cut (the mask was itself
+// the "blurred frame" — it dimmed the whisker tips and the left tentacle).
 
 // The model already has eyes: sclera ovals (NODE_321) with reddish-brown
 // pupils (NODE_320). Rather than adding foreign geometry we restyle the
@@ -61,7 +60,18 @@ function OctocatModel({
     const material = mesh.material as THREE.MeshStandardMaterial
     material.color.set("#000000")
     material.needsUpdate = true
-    return { mesh, base: mesh.position.clone() }
+
+    // useGLTF caches the scene globally, and reactStrictMode double-mounts
+    // in dev — so on the second mount `mesh.position` is wherever useFrame
+    // last left the pupils, not their rest pose. Capturing that as `base`
+    // made the eyes track around a drifted origin (and drift further every
+    // remount). Stash the true rest pose on the mesh so it survives.
+    if (!mesh.userData.restPosition) {
+      mesh.userData.restPosition = mesh.position.clone()
+    }
+    const base = (mesh.userData.restPosition as THREE.Vector3).clone()
+    mesh.position.copy(base) // clear any drift left by a previous mount
+    return { mesh, base }
   }, [scene])
 
   useFrame((_, delta) => {
@@ -114,11 +124,9 @@ function OctocatModel({
 
   return (
     <group ref={group} rotation={[BASE_ROTATION_X, BASE_ROTATION_Y, 0]}>
-      <group position={HEAD_SHIFT}>
-        <Center>
-          <primitive object={scene} />
-        </Center>
-      </group>
+      <Center>
+        <primitive object={scene} />
+      </Center>
     </group>
   )
 }
@@ -132,12 +140,22 @@ export function GhMascot3D({
 }) {
   return (
     <Canvas
-      // Head is ~7.8 world units wide; at fov 35 a distance of ~14 frames it
-      // with a little margin so the silhouette isn't cut off at the edges.
-      camera={{ position: [0, 0, 14.2], fov: 35 }}
+      // Model is 12.98 x 9.99 units. At fov 35 visible height is
+      // 0.63*distance, so d=17.1 shows 13.48 x 10.78 — the octocat fills
+      // 96% of the width and 93% of the height, entirely inside the frame
+      // with margin on every side. Nothing touches an edge, so there is no
+      // crop to hide and no mask required. Closer crops the whiskers.
+      camera={{ position: [0, 0, 17.1], fov: 35 }}
       dpr={[1, 2]}
       gl={{ alpha: true, antialias: true }}
       style={{ pointerEvents: "none" }}
+      // r3f defaults to useMeasure({ scroll: true, debounce: {scroll: 50} }),
+      // which re-measures the canvas on every scroll and fires a state
+      // update ~50ms AFTER scrolling stops — the "lag when scroll stops".
+      // This canvas moves on every scroll, so that fired constantly. We
+      // never use r3f pointer events (pointerEvents is none; the DOM button
+      // handles clicks), so the measurement bought nothing.
+      resize={{ scroll: false, debounce: { scroll: 0, resize: 0 } }}
     >
       <ambientLight intensity={1.1} />
       <directionalLight position={[2, 3, 4]} intensity={1.4} />
