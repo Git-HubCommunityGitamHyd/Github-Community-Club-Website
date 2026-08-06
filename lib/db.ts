@@ -1,13 +1,12 @@
-import { Pool } from "pg"
+import { getCloudflareContext } from "@opennextjs/cloudflare"
 
-declare global {
-  var pgPool: Pool | undefined
+// D1 is a stateless per-call binding, not a persistent connection — unlike
+// the old pg.Pool, there's nothing here that needs caching across Fast
+// Refresh reloads.
+async function getDb() {
+  const { env } = await getCloudflareContext({ async: true })
+  return env.DB
 }
-
-export const pool =
-  global.pgPool ?? new Pool({ connectionString: process.env.DATABASE_URL })
-
-if (process.env.NODE_ENV !== "production") global.pgPool = pool
 
 export type Application = {
   id: number
@@ -34,11 +33,14 @@ export type ApplicationInput = {
 export async function insertApplication(
   input: ApplicationInput,
 ): Promise<Application> {
-  const { rows } = await pool.query<Application>(
-    `INSERT INTO applications (full_name, email, phone, branch, year, github_username, why_join)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
-     RETURNING *`,
-    [
+  const db = await getDb()
+  const row = await db
+    .prepare(
+      `INSERT INTO applications (full_name, email, phone, branch, year, github_username, why_join)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       RETURNING *`,
+    )
+    .bind(
       input.fullName,
       input.email,
       input.phone,
@@ -46,16 +48,18 @@ export async function insertApplication(
       input.year,
       input.githubUsername,
       input.whyJoin,
-    ],
-  )
-  return rows[0]
+    )
+    .first<Application>()
+  if (!row) throw new Error("insertApplication: insert did not return a row")
+  return row
 }
 
 export async function listApplications(): Promise<Application[]> {
-  const { rows } = await pool.query<Application>(
-    "SELECT * FROM applications ORDER BY created_at DESC",
-  )
-  return rows
+  const db = await getDb()
+  const { results } = await db
+    .prepare("SELECT * FROM applications ORDER BY created_at DESC")
+    .all<Application>()
+  return results
 }
 
 export type BoardMember = {
@@ -83,28 +87,32 @@ export type BoardMemberInput = {
 }
 
 export async function listBoardMembers(): Promise<BoardMember[]> {
-  const { rows } = await pool.query<BoardMember>(
-    "SELECT * FROM board_members ORDER BY sort_order, id",
-  )
-  return rows
+  const db = await getDb()
+  const { results } = await db
+    .prepare("SELECT * FROM board_members ORDER BY sort_order, id")
+    .all<BoardMember>()
+  return results
 }
 
 export async function getBoardMember(id: number): Promise<BoardMember | null> {
-  const { rows } = await pool.query<BoardMember>(
-    "SELECT * FROM board_members WHERE id = $1",
-    [id],
-  )
-  return rows[0] ?? null
+  const db = await getDb()
+  return db
+    .prepare("SELECT * FROM board_members WHERE id = ?")
+    .bind(id)
+    .first<BoardMember>()
 }
 
 export async function insertBoardMember(
   input: BoardMemberInput,
 ): Promise<BoardMember> {
-  const { rows } = await pool.query<BoardMember>(
-    `INSERT INTO board_members (name, role, image_url, description, github, linkedin, email, sort_order)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-     RETURNING *`,
-    [
+  const db = await getDb()
+  const row = await db
+    .prepare(
+      `INSERT INTO board_members (name, role, image_url, description, github, linkedin, email, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+       RETURNING *`,
+    )
+    .bind(
       input.name,
       input.role,
       input.imageUrl,
@@ -113,22 +121,26 @@ export async function insertBoardMember(
       input.linkedin,
       input.email,
       input.sortOrder,
-    ],
-  )
-  return rows[0]
+    )
+    .first<BoardMember>()
+  if (!row) throw new Error("insertBoardMember: insert did not return a row")
+  return row
 }
 
 export async function updateBoardMember(
   id: number,
   input: BoardMemberInput,
 ): Promise<BoardMember | null> {
-  const { rows } = await pool.query<BoardMember>(
-    `UPDATE board_members
-     SET name = $1, role = $2, image_url = $3, description = $4,
-         github = $5, linkedin = $6, email = $7, sort_order = $8
-     WHERE id = $9
-     RETURNING *`,
-    [
+  const db = await getDb()
+  return db
+    .prepare(
+      `UPDATE board_members
+       SET name = ?, role = ?, image_url = ?, description = ?,
+           github = ?, linkedin = ?, email = ?, sort_order = ?
+       WHERE id = ?
+       RETURNING *`,
+    )
+    .bind(
       input.name,
       input.role,
       input.imageUrl,
@@ -138,13 +150,13 @@ export async function updateBoardMember(
       input.email,
       input.sortOrder,
       id,
-    ],
-  )
-  return rows[0] ?? null
+    )
+    .first<BoardMember>()
 }
 
 export async function deleteBoardMember(id: number): Promise<void> {
-  await pool.query("DELETE FROM board_members WHERE id = $1", [id])
+  const db = await getDb()
+  await db.prepare("DELETE FROM board_members WHERE id = ?").bind(id).run()
 }
 
 export type Event = {
@@ -173,27 +185,41 @@ export type EventInput = {
   sortOrder: number
 }
 
+// D1/SQLite has no array type — images is stored as JSON-encoded TEXT.
+// This is the only place that encoding is visible; callers still see a
+// plain string[], same as when it was a native Postgres TEXT[].
+type EventRow = Omit<Event, "images"> & { images: string }
+
+function toEvent(row: EventRow): Event {
+  return { ...row, images: JSON.parse(row.images) }
+}
+
 export async function listEvents(): Promise<Event[]> {
-  const { rows } = await pool.query<Event>(
-    "SELECT * FROM events ORDER BY sort_order, id",
-  )
-  return rows
+  const db = await getDb()
+  const { results } = await db
+    .prepare("SELECT * FROM events ORDER BY sort_order, id")
+    .all<EventRow>()
+  return results.map(toEvent)
 }
 
 export async function getEvent(id: number): Promise<Event | null> {
-  const { rows } = await pool.query<Event>(
-    "SELECT * FROM events WHERE id = $1",
-    [id],
-  )
-  return rows[0] ?? null
+  const db = await getDb()
+  const row = await db
+    .prepare("SELECT * FROM events WHERE id = ?")
+    .bind(id)
+    .first<EventRow>()
+  return row ? toEvent(row) : null
 }
 
 export async function insertEvent(input: EventInput): Promise<Event> {
-  const { rows } = await pool.query<Event>(
-    `INSERT INTO events (title, event_date, location, attendees, category, duration, description, images, sort_order)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-     RETURNING *`,
-    [
+  const db = await getDb()
+  const row = await db
+    .prepare(
+      `INSERT INTO events (title, event_date, location, attendees, category, duration, description, images, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       RETURNING *`,
+    )
+    .bind(
       input.title,
       input.eventDate,
       input.location,
@@ -201,24 +227,28 @@ export async function insertEvent(input: EventInput): Promise<Event> {
       input.category,
       input.duration,
       input.description,
-      input.images,
+      JSON.stringify(input.images),
       input.sortOrder,
-    ],
-  )
-  return rows[0]
+    )
+    .first<EventRow>()
+  if (!row) throw new Error("insertEvent: insert did not return a row")
+  return toEvent(row)
 }
 
 export async function updateEvent(
   id: number,
   input: EventInput,
 ): Promise<Event | null> {
-  const { rows } = await pool.query<Event>(
-    `UPDATE events
-     SET title = $1, event_date = $2, location = $3, attendees = $4,
-         category = $5, duration = $6, description = $7, images = $8, sort_order = $9
-     WHERE id = $10
-     RETURNING *`,
-    [
+  const db = await getDb()
+  const row = await db
+    .prepare(
+      `UPDATE events
+       SET title = ?, event_date = ?, location = ?, attendees = ?,
+           category = ?, duration = ?, description = ?, images = ?, sort_order = ?
+       WHERE id = ?
+       RETURNING *`,
+    )
+    .bind(
       input.title,
       input.eventDate,
       input.location,
@@ -226,14 +256,15 @@ export async function updateEvent(
       input.category,
       input.duration,
       input.description,
-      input.images,
+      JSON.stringify(input.images),
       input.sortOrder,
       id,
-    ],
-  )
-  return rows[0] ?? null
+    )
+    .first<EventRow>()
+  return row ? toEvent(row) : null
 }
 
 export async function deleteEvent(id: number): Promise<void> {
-  await pool.query("DELETE FROM events WHERE id = $1", [id])
+  const db = await getDb()
+  await db.prepare("DELETE FROM events WHERE id = ?").bind(id).run()
 }
