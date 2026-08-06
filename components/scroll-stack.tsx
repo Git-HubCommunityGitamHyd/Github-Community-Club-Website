@@ -358,8 +358,23 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
     // section changing height) — re-measure when that happens.
     window.addEventListener("resize", measureOffsets)
 
+    // The board/events sections above this one (see page.tsx) render fixed
+    // skeleton placeholders until their data fetch resolves, then swap in
+    // real cards of a different height/count — a reflow that isn't a
+    // window resize. Without watching for it, the stale cached offsets
+    // left this stack pinning at the wrong on-screen position (a large
+    // dead gap between the nav and the stack) once that content loaded in.
+    // Observing document.body's box size catches any such content-driven
+    // height change, not just this one case.
+    const bodyResizeObserver = new ResizeObserver(() => {
+      measureOffsets()
+      updateCardTransforms()
+    })
+    bodyResizeObserver.observe(document.body)
+
     return () => {
       window.removeEventListener("resize", measureOffsets)
+      bodyResizeObserver.disconnect()
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }

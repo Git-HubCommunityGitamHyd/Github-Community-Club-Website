@@ -61,6 +61,5 @@ No auth library — one shared password (`ADMIN_PASSWORD` env var) protects ever
 
 ## Gotchas
 
-- **`README.md` is out of date.** It documents a black/white color scheme, a component tree, and a "Known Issues" list that no longer match the code. Trust the source, not the README.
 - `npm run lint` has no ESLint config file, so `next lint` prompts for setup on first run.
 - The public `applications` table has a `UNIQUE` constraint on `email` — `app/api/applications/route.ts` catches D1's thrown error (message includes `"UNIQUE constraint failed"`, no `.code` field like Postgres had) and returns 409, don't let it bubble as a 500.
