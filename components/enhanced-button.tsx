@@ -11,7 +11,8 @@ interface EnhancedButtonProps {
   className?: string
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void
   type?: "primary" | "secondary"
-  colorScheme?: "default" | "github" | "linkedin" | "twitter" | "email" | "community"
+  colorScheme?:
+    "default" | "github" | "linkedin" | "twitter" | "email" | "community"
 }
 
 export function EnhancedButton({
@@ -36,7 +37,9 @@ export function EnhancedButton({
       case "email":
         return "bg-green-600 hover:bg-green-700 text-white border-green-600 shadow-lg hover:shadow-xl"
       case "community":
-        return "bg-gradient-to-r from-black via-gray-800 to-black dark:from-gh-elevated dark:via-gh-border dark:to-gh-elevated hover:from-gray-800 hover:to-gray-800 dark:hover:from-gh-border dark:hover:to-gh-border text-white border-black dark:border-gh-border shadow-2xl"
+        return variant === "outline"
+          ? "border-2 border-gh-accent-light text-gh-accent-light hover:bg-gh-accent-light/10 bg-transparent dark:border-gh-accent dark:text-gh-accent dark:hover:bg-gh-accent/10"
+          : "bg-gradient-to-r from-gh-accent-light via-[#2ea043] to-gh-accent-light hover:opacity-90 dark:from-gh-accent dark:via-[#2ea043] dark:to-gh-accent text-white border-gh-accent-light dark:border-gh-accent shadow-2xl"
       default:
         return isPrimary
           ? "bg-black hover:bg-gray-800 dark:bg-gh-elevated dark:hover:bg-gh-border dark:border-gh-border text-white border-black hover:shadow-lg hover:shadow-black/25 dark:hover:shadow-gh-accent/10"
@@ -48,12 +51,12 @@ export function EnhancedButton({
     <motion.div
       whileHover={{ scale: colorScheme === "community" ? 1.05 : 1.02 }}
       whileTap={{ scale: 0.98 }}
-      className="relative overflow-hidden"
+      className="relative inline-block overflow-hidden"
       transition={{ duration: 0.15, ease: "easeOut" }}
     >
       {colorScheme === "community" && (
         <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-gh-accent/20 via-blue-600/20 to-gh-accent/20 opacity-0 blur-xl"
+          className="absolute inset-0 bg-gradient-to-r from-gh-accent/20 via-green-500/20 to-gh-accent/20 opacity-0 blur-xl"
           whileHover={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
         />
@@ -62,32 +65,32 @@ export function EnhancedButton({
       <Button
         variant={variant}
         size={size}
-        className={`
-          relative z-10 transition-all duration-300 group rounded-xl font-semibold
-          ${getColorScheme()}
-          ${colorScheme === "community" ? "px-8 py-4 text-lg" : ""}
-          ${className}
-        `}
+        className={`group relative z-10 rounded-xl font-semibold transition-all duration-300 ${getColorScheme()} ${colorScheme === "community" ? "px-8 py-4 text-lg" : ""} ${className} `}
         onClick={onClick}
       >
         <motion.span
           className="flex items-center gap-3"
-          whileHover={{ x: colorScheme === "community" ? 2 : isPrimary ? 1 : 0 }}
+          whileHover={{
+            x: colorScheme === "community" ? 2 : isPrimary ? 1 : 0,
+          }}
           transition={{ duration: 0.15, ease: "easeOut" }}
         >
           {children}
         </motion.span>
 
-        {colorScheme === "community" && (
+        {colorScheme === "community" && variant !== "outline" && (
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+            className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent"
             initial={{ x: "-100%" }}
-            whileHover={{ x: "200%", transition: { duration: 0.8, ease: "easeInOut" } }}
+            whileHover={{
+              x: "200%",
+              transition: { duration: 0.8, ease: "easeInOut" },
+            }}
           />
         )}
 
         <motion.div
-          className="absolute inset-0 bg-white rounded-xl opacity-0"
+          className="absolute inset-0 rounded-xl bg-white opacity-0"
           whileTap={{ opacity: [0, 0.2, 0], scale: [0.8, 1.1, 1] }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         />

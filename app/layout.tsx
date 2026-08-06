@@ -1,21 +1,24 @@
-import "./globals.css";
-import type { ReactNode } from "react";
-import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/theme-provider";
+import "./globals.css"
+import type { ReactNode } from "react"
+import type { Metadata } from "next"
+import { ThemeProvider } from "@/components/theme-provider"
+import { MascotGlow } from "@/components/mascot-glow"
+import { MascotEasterEgg } from "@/components/mascot-easter-egg"
 
 export const metadata: Metadata = {
   title: "GitHub Community GITAM",
-  description: "Empowering developers, fostering collaboration, and building the future of open source at GITAM University",
+  description:
+    "Empowering developers, fostering collaboration, and building the future of open source at GITAM University",
   icons: {
     icon: [
-      { url: '/github-logo.png', sizes: '16x16', type: 'image/png' },
-      { url: '/github-logo.png', sizes: '32x32', type: 'image/png' },
-      { url: '/github-logo.png', sizes: '96x96', type: 'image/png' },
+      { url: "/github-logo.png", sizes: "16x16", type: "image/png" },
+      { url: "/github-logo.png", sizes: "32x32", type: "image/png" },
+      { url: "/github-logo.png", sizes: "96x96", type: "image/png" },
     ],
-    apple: '/github-logo.png',
-    shortcut: '/github-logo.png',
+    apple: "/github-logo.png",
+    shortcut: "/github-logo.png",
   },
-};
+}
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -29,8 +32,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <MascotGlow />
+          <MascotEasterEgg />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

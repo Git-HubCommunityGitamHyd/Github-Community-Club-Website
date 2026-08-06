@@ -1,0 +1,9 @@
+name = "gh-community-cloudinary-sign"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+
+# Secrets (set via `wrangler secret put <NAME>`, not committed):
+#   WORKER_SHARED_SECRET   - must match Next.js's WORKER_SHARED_SECRET env var
+#   CLOUDINARY_API_KEY
+#   CLOUDINARY_API_SECRET
+#   CLOUDINARY_CLOUD_NAME

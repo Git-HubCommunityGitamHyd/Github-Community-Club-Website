@@ -9,14 +9,19 @@ interface ThemeContextValue {
   toggle: () => void
 }
 
-const ThemeContext = createContext<ThemeContextValue>({ theme: "light", toggle: () => {} })
+const ThemeContext = createContext<ThemeContextValue>({
+  theme: "light",
+  toggle: () => {},
+})
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light")
 
   useEffect(() => {
     const saved = localStorage.getItem("theme") as Theme | null
-    const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+    const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light"
     const initial = saved ?? preferred
     setTheme(initial)
     document.documentElement.classList.toggle("dark", initial === "dark")
@@ -31,7 +36,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
-  return <ThemeContext.Provider value={{ theme, toggle }}>{children}</ThemeContext.Provider>
+  return (
+    <ThemeContext.Provider value={{ theme, toggle }}>
+      {children}
+    </ThemeContext.Provider>
+  )
 }
 
 export const useTheme = () => useContext(ThemeContext)

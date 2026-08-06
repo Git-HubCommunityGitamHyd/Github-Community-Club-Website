@@ -39,3 +39,18 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+# typescript incremental build cache
+*.tsbuildinfo
+
+# OpenNext
+.open-next
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+
+!.env.example
+
+# One-off Postgres->D1 data export — contains real applicant PII, never commit
+/db/seed-data.sql

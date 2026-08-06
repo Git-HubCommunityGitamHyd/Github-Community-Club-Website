@@ -25,25 +25,19 @@ export function InteractiveCard({
     >
       {glowEffect && (
         <motion.div
-          className="absolute -inset-1 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gh-elevated dark:to-gh-border rounded-lg opacity-0 blur-sm"
+          className="absolute -inset-1 rounded-lg bg-gradient-to-r from-gray-200 to-gray-300 opacity-0 blur-sm dark:from-gh-elevated dark:to-gh-border"
           whileHover={{ opacity: 0.4 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
         />
       )}
 
       <Card
-        className={`
-          relative transition-all duration-200
-          hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-black/40
-          border-gray-200 dark:border-gh-border hover:border-gray-300 dark:hover:border-gh-muted
-          bg-white dark:bg-gh-surface
-          ${className}
-        `}
+        className={`relative border-gray-200 bg-white transition-all duration-200 hover:border-gray-300 hover:shadow-xl hover:shadow-black/10 dark:border-gh-border dark:bg-gh-surface dark:hover:border-gh-muted dark:hover:shadow-black/40 ${className} `}
       >
         {children}
 
         <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 dark:via-white/5 to-transparent opacity-0 -skew-x-12 pointer-events-none"
+          className="pointer-events-none absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 dark:via-white/5"
           whileHover={{ opacity: [0, 1, 0], x: [-100, 300] }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         />
