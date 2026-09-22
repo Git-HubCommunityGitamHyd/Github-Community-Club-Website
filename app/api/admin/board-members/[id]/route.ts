@@ -1,25 +1,19 @@
-import { cookies } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 import { deleteBoardMember, updateBoardMember } from "@/lib/db"
 import { validateBoardMember } from "@/lib/validate-board-member"
-import { COOKIE_NAME, verifySessionValue } from "@/lib/session"
+import { getSessionCookie, verifySessionValue } from "@/lib/session"
 
 export const runtime = "nodejs"
 
-function requireSession(): boolean {
-  const session = cookies().get(COOKIE_NAME)?.value
-  return verifySessionValue(session)
-}
-
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!requireSession()) {
+  if (!verifySessionValue(await getSessionCookie())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const id = Number(params.id)
+  const id = Number((await params).id)
   if (Number.isNaN(id)) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
@@ -56,13 +50,13 @@ export async function PATCH(
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!requireSession()) {
+  if (!verifySessionValue(await getSessionCookie())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const id = Number(params.id)
+  const id = Number((await params).id)
   if (Number.isNaN(id)) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }

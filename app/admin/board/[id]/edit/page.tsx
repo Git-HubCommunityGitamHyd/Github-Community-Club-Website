@@ -1,18 +1,16 @@
-import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import { getBoardMember } from "@/lib/db"
-import { COOKIE_NAME, verifySessionValue } from "@/lib/session"
+import { getSessionCookie, verifySessionValue } from "@/lib/session"
 import { BoardMemberForm } from "@/components/admin/board-member-form"
 
 export default async function EditBoardMemberPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const session = cookies().get(COOKIE_NAME)?.value
-  if (!verifySessionValue(session)) redirect("/admin/login")
+  if (!verifySessionValue(await getSessionCookie())) redirect("/admin/login")
 
-  const id = Number(params.id)
+  const id = Number((await params).id)
   const member = Number.isNaN(id) ? null : await getBoardMember(id)
   if (!member) notFound()
 

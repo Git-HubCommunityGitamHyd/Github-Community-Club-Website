@@ -1,4 +1,5 @@
 import { createHash, timingSafeEqual } from "node:crypto"
+import { cookies } from "next/headers"
 
 export const COOKIE_NAME = "admin_session"
 // "/" — not "/admin" — so the cookie also reaches /api/admin/* routes,
@@ -20,6 +21,10 @@ function hmac(message: string): string {
 export function createSessionValue(): string {
   const expires = Date.now() + SESSION_TTL_MS
   return `${expires}.${hmac(String(expires))}`
+}
+
+export async function getSessionCookie(): Promise<string | undefined> {
+  return (await cookies()).get(COOKIE_NAME)?.value
 }
 
 export function verifySessionValue(value: string | undefined): boolean {

@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Single-page Next.js 14 (App Router) site for the GitHub Community club at GITAM Hyderabad, plus a join-the-club onboarding form and a small in-house CMS (board members, events), all backed by Cloudflare D1 (SQLite) behind a password-protected admin portal.
+Single-page Next.js 16 (App Router) site for the GitHub Community club at GITAM Hyderabad, plus a join-the-club onboarding form and a small in-house CMS (board members, events), all backed by Cloudflare D1 (SQLite) behind a password-protected admin portal.
 
 The app itself is deployed as a Cloudflare Worker via `@opennextjs/cloudflare` (OpenNext) — not Vercel. `wrangler.jsonc` is the Worker config (bindings for `DB`/`ASSETS`/`IMAGES`), `package.json`'s `deploy`/`preview`/`upload` scripts all go through `opennextjs-cloudflare`, and `next.config.js` calls `initOpenNextCloudflareForDev()` unconditionally so plain `next dev` also gets Cloudflare bindings (via wrangler's local Miniflare emulation) and reads `.dev.vars`.
 
@@ -55,11 +55,11 @@ No local server/container to run. The `DB` binding is declared in `wrangler.json
 
 ## Admin auth
 
-No auth library — one shared password (`ADMIN_PASSWORD` env var) protects everything under `/admin` and `/api/admin/*`. `lib/session.ts` signs a cookie (`${expiry}.${hmac}`, HMAC keyed by `SESSION_SECRET`, verified with `crypto.timingSafeEqual`) rather than storing sessions anywhere. **Rotating `SESSION_SECRET` and restarting is the "log everyone out" procedure** — there's no session store to clear. The auth check is duplicated at the top of every `/admin/**` page and every `/api/admin/**` route handler (not centralized in `middleware.ts`); `components/admin/admin-nav.tsx` is the one shared piece (nav + logout button across the three admin sections).
+No auth library — one shared password (`ADMIN_PASSWORD` env var) protects everything under `/admin` and `/api/admin/*`. `lib/session.ts` signs a cookie (`${expiry}.${hmac}`, HMAC keyed by `SESSION_SECRET`, verified with `crypto.timingSafeEqual`) rather than storing sessions anywhere. **Rotating `SESSION_SECRET` and restarting is the "log everyone out" procedure** — there's no session store to clear. The auth check is duplicated at the top of every `/admin/**` page and every `/api/admin/**` route handler (not centralized in `middleware.ts`/`proxy.ts`); `components/admin/admin-nav.tsx` is the one shared piece (nav + logout button across the three admin sections). `cookies()`, `params`, and `searchParams` are async in Next 16 — always `await` them (see `getSessionCookie()` in `lib/session.ts`).
 
 **`COOKIE_PATH` in `lib/session.ts` is `"/"`, not `"/admin"`.** It was originally `/admin`, which silently broke every `/api/admin/**` route the first time one was added — `/api/admin/*` doesn't fall under the `/admin` path prefix, so the browser never sent the cookie there and every request 401'd despite `/admin` itself working fine. If you're debugging a mysterious 401 on an admin API route, check this first.
 
 ## Gotchas
 
-- `npm run lint` has no ESLint config file, so `next lint` prompts for setup on first run.
+- `npm run lint` runs ESLint 9 via `eslint.config.mjs` (`eslint-config-next`). `next lint` was removed in Next.js 16.
 - The public `applications` table has a `UNIQUE` constraint on `email` — `app/api/applications/route.ts` catches D1's thrown error (message includes `"UNIQUE constraint failed"`, no `.code` field like Postgres had) and returns 409, don't let it bubble as a 500.

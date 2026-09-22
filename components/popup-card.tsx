@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { X } from "lucide-react"
 import type { ReactNode } from "react"
+import { useMounted } from "@/lib/use-mounted"
 
 interface PopupCardProps {
   frontContent: ReactNode
@@ -22,12 +23,8 @@ export function PopupCard({
 }: PopupCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [showBackContent, setShowBackContent] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const mounted = useMounted()
   const cardRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const handleCardClick = () => {
     setIsExpanded(true)
@@ -55,7 +52,7 @@ export function PopupCard({
       document.removeEventListener("keydown", handleEscape)
       document.body.style.overflow = "unset"
     }
-  }, [isExpanded])
+  }, [isExpanded, handleClose])
 
   return (
     <>

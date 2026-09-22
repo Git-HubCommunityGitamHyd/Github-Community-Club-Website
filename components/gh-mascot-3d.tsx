@@ -1,5 +1,7 @@
 "use client"
 
+/* eslint-disable react-hooks/immutability -- Three.js meshes are mutated in useFrame by design */
+
 import { Suspense, useMemo, useRef, type MutableRefObject } from "react"
 import { Canvas, useFrame } from "@react-three/fiber"
 import { useGLTF, Center } from "@react-three/drei"

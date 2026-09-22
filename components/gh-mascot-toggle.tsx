@@ -42,8 +42,8 @@ export function GhMascotToggle({
   heroSlotRef,
   navSlotRef,
 }: {
-  heroSlotRef: RefObject<HTMLDivElement>
-  navSlotRef: RefObject<HTMLDivElement>
+  heroSlotRef: RefObject<HTMLDivElement | null>
+  navSlotRef: RefObject<HTMLDivElement | null>
 }) {
   const { toggle } = useTheme()
   const pointerRef = useRef({ x: 0, y: 0 })

@@ -1,12 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
-export default function AdminLoginPage({
+export default async function AdminLoginPage({
   searchParams,
 }: {
-  searchParams: { error?: string }
+  searchParams: Promise<{ error?: string }>
 }) {
-  const { error } = searchParams
+  const { error } = await searchParams
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-white px-4 dark:bg-gh-bg">

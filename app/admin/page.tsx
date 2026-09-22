@@ -1,12 +1,10 @@
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { listApplications } from "@/lib/db"
-import { COOKIE_NAME, verifySessionValue } from "@/lib/session"
+import { getSessionCookie, verifySessionValue } from "@/lib/session"
 import { AdminNav } from "@/components/admin/admin-nav"
 
 export default async function AdminPage() {
-  const session = cookies().get(COOKIE_NAME)?.value
-  if (!verifySessionValue(session)) redirect("/admin/login")
+  if (!verifySessionValue(await getSessionCookie())) redirect("/admin/login")
 
   const applications = await listApplications()
 

@@ -40,6 +40,13 @@ interface ScrollStackProps {
   onStackComplete?: () => void
 }
 
+type CardTransform = {
+  translateY: number
+  scale: number
+  rotation: number
+  blur: number
+}
+
 // Vendored from React Bits (https://reactbits.dev) and adapted in place:
 // - rounded-[40px] -> rounded-xl and the hardcoded light-mode box-shadow
 //   were dropped from ScrollStackItem; this site's card look (border +
@@ -69,7 +76,7 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
   const animationFrameRef = useRef<number | null>(null)
   const lenisRef = useRef<Lenis | null>(null)
   const cardsRef = useRef<HTMLElement[]>([])
-  const lastTransformsRef = useRef(new Map<number, any>())
+  const lastTransformsRef = useRef(new Map<number, CardTransform>())
   const isUpdatingRef = useRef(false)
 
   const calculateProgress = useCallback(
@@ -257,7 +264,6 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
     baseScale,
     rotationAmount,
     blurAmount,
-    useWindowScroll,
     onStackComplete,
     calculateProgress,
     parsePercentage,

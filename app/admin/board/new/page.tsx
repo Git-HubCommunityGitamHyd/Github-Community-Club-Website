@@ -1,11 +1,9 @@
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { COOKIE_NAME, verifySessionValue } from "@/lib/session"
+import { getSessionCookie, verifySessionValue } from "@/lib/session"
 import { BoardMemberForm } from "@/components/admin/board-member-form"
 
 export default async function NewBoardMemberPage() {
-  const session = cookies().get(COOKIE_NAME)?.value
-  if (!verifySessionValue(session)) redirect("/admin/login")
+  if (!verifySessionValue(await getSessionCookie())) redirect("/admin/login")
 
   return (
     <main className="min-h-screen bg-white px-4 py-10 dark:bg-gh-bg dark:text-gh-text">

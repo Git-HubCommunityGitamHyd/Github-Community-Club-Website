@@ -77,30 +77,25 @@ const TYPE_SPEED_MS = 18
 // typing starts right as the bubble finishes appearing, not before.
 const TYPE_START_DELAY_MS = 650
 
-function useTypewriter(text: string, active: boolean) {
+function useTypewriter(text: string) {
   const [count, setCount] = useState(0)
 
   useEffect(() => {
-    if (!active) {
-      setCount(0)
-      return
-    }
-    setCount(0)
-    let interval: number
+    let interval: number | undefined
     const startTimeout = window.setTimeout(() => {
       interval = window.setInterval(() => {
         setCount((c) => {
           const next = c + 1
-          if (next >= text.length) window.clearInterval(interval)
+          if (next >= text.length && interval) window.clearInterval(interval)
           return next
         })
       }, TYPE_SPEED_MS)
     }, TYPE_START_DELAY_MS)
     return () => {
       window.clearTimeout(startTimeout)
-      window.clearInterval(interval)
+      if (interval) window.clearInterval(interval)
     }
-  }, [text, active])
+  }, [text])
 
   return { typed: text.slice(0, count), done: count >= text.length }
 }
@@ -152,13 +147,88 @@ function FlyingMascot({ sourceRect }: { sourceRect: DOMRect | null }) {
   )
 }
 
+function EasterEggOverlay({
+  sourceRect,
+  onClose,
+}: {
+  sourceRect: DOMRect | null
+  onClose: () => void
+}) {
+  const { typed, done: typingDone } = useTypewriter(FULL_MESSAGE)
+  const typedTitle = typed.slice(0, TITLE.length)
+  const typedSubtitle = typed.slice(TITLE.length + 1)
+
+  const holdTimer = useRef<number | null>(null)
+  const cancelHold = () => {
+    if (holdTimer.current !== null) {
+      window.clearTimeout(holdTimer.current)
+      holdTimer.current = null
+    }
+  }
+  const startHold = () => {
+    holdTimer.current = window.setTimeout(onClose, 3000)
+  }
+  useEffect(() => cancelHold, [])
+
+  return (
+    <motion.div
+      className="popup-overlay fixed inset-0 flex items-center justify-center bg-black/60 p-6 backdrop-blur-xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onPointerDown={startHold}
+      onPointerUp={cancelHold}
+      onPointerLeave={cancelHold}
+      onPointerCancel={cancelHold}
+    >
+      <motion.div
+        className="flex flex-col items-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <motion.div
+          className="relative max-w-sm rounded-2xl border border-gh-border bg-gh-surface px-6 py-4 text-center text-gh-text shadow-2xl"
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.3 }}
+        >
+          <p className="font-semibold">
+            {typedTitle}
+            {!typingDone && typedTitle.length < TITLE.length && (
+              <TypingCursor />
+            )}
+          </p>
+          <p className="mt-2 min-h-[2.5em] text-sm text-gh-muted">
+            {typedSubtitle}
+            {!typingDone && typedTitle.length >= TITLE.length && (
+              <TypingCursor />
+            )}
+          </p>
+          {/* Speech bubble tail, pointing down at the mascot */}
+          <div className="absolute left-1/2 top-full h-4 w-4 -translate-x-1/2 -translate-y-2 rotate-45 border-b border-r border-gh-border bg-gh-surface" />
+        </motion.div>
+
+        <FlyingMascot sourceRect={sourceRect} />
+
+        <motion.button
+          onClick={onClose}
+          className="mt-2 rounded-md border border-gh-border px-4 py-2 font-mono text-[13px] text-gh-text hover:bg-gh-elevated"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: typingDone ? 1 : 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          Got it
+        </motion.button>
+      </motion.div>
+    </motion.div>
+  )
+}
+
 export function MascotEasterEgg() {
   const [open, setOpen] = useState(false)
   const countRef = useRef(0)
   const [sourceRect, setSourceRect] = useState<DOMRect | null>(null)
-  const { typed, done: typingDone } = useTypewriter(FULL_MESSAGE, open)
-  const typedTitle = typed.slice(0, TITLE.length)
-  const typedSubtitle = typed.slice(TITLE.length + 1)
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -176,75 +246,13 @@ export function MascotEasterEgg() {
     return () => document.removeEventListener("click", onClick)
   }, [])
 
-  // Dismiss only via the "Got it" button, or a 3s press-and-hold anywhere
-  // on the overlay — a plain click was closing it the instant someone
-  // tried to look at it, so a stray tap could no longer end the reveal.
-  const holdTimer = useRef<number | null>(null)
-  const cancelHold = () => {
-    if (holdTimer.current !== null) {
-      window.clearTimeout(holdTimer.current)
-      holdTimer.current = null
-    }
-  }
-  const startHold = () => {
-    holdTimer.current = window.setTimeout(() => setOpen(false), 3000)
-  }
-  useEffect(() => cancelHold, [])
-
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
-          className="popup-overlay fixed inset-0 flex items-center justify-center bg-black/60 p-6 backdrop-blur-xl"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onPointerDown={startHold}
-          onPointerUp={cancelHold}
-          onPointerLeave={cancelHold}
-          onPointerCancel={cancelHold}
-        >
-          <motion.div
-            className="flex flex-col items-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="relative max-w-sm rounded-2xl border border-gh-border bg-gh-surface px-6 py-4 text-center text-gh-text shadow-2xl"
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.3 }}
-            >
-              <p className="font-semibold">
-                {typedTitle}
-                {!typingDone && typedTitle.length < TITLE.length && (
-                  <TypingCursor />
-                )}
-              </p>
-              <p className="mt-2 min-h-[2.5em] text-sm text-gh-muted">
-                {typedSubtitle}
-                {!typingDone && typedTitle.length >= TITLE.length && (
-                  <TypingCursor />
-                )}
-              </p>
-              {/* Speech bubble tail, pointing down at the mascot */}
-              <div className="absolute left-1/2 top-full h-4 w-4 -translate-x-1/2 -translate-y-2 rotate-45 border-b border-r border-gh-border bg-gh-surface" />
-            </motion.div>
-
-            <FlyingMascot sourceRect={sourceRect} />
-
-            <motion.button
-              onClick={() => setOpen(false)}
-              className="mt-2 rounded-md border border-gh-border px-4 py-2 font-mono text-[13px] text-gh-text hover:bg-gh-elevated"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: typingDone ? 1 : 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              Got it
-            </motion.button>
-          </motion.div>
-        </motion.div>
+        <EasterEggOverlay
+          sourceRect={sourceRect}
+          onClose={() => setOpen(false)}
+        />
       )}
     </AnimatePresence>
   )

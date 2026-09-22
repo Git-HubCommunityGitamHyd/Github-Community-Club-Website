@@ -16,6 +16,7 @@ import { GhMascotToggle } from "@/components/gh-mascot-toggle"
 import { GhMarquee } from "@/components/gh-marquee"
 import { JoinSquares } from "@/components/join-squares"
 import { PageSkeleton } from "@/components/page-skeleton"
+import { useMounted } from "@/lib/use-mounted"
 
 const NAV_ITEMS = ["About", "Journey", "Board", "Events", "Benefits"]
 
@@ -95,7 +96,7 @@ type EventRecord = {
 }
 
 export default function GitHubCommunityPortfolio() {
-  const [mounted, setMounted] = useState(false)
+  const mounted = useMounted()
   const [activeSection, setActiveSection] = useState("hero")
   const [isQrPopupOpen, setIsQrPopupOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -105,7 +106,6 @@ export default function GitHubCommunityPortfolio() {
   const heroSlotRef = useRef<HTMLDivElement>(null)
   const navSlotRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => setMounted(true), [])
   useEffect(() => {
     if (!mounted) return
     Promise.all([

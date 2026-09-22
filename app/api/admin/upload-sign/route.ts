@@ -1,12 +1,10 @@
-import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
-import { COOKIE_NAME, verifySessionValue } from "@/lib/session"
+import { getSessionCookie, verifySessionValue } from "@/lib/session"
 
 export const runtime = "nodejs"
 
 export async function POST() {
-  const session = cookies().get(COOKIE_NAME)?.value
-  if (!verifySessionValue(session)) {
+  if (!verifySessionValue(await getSessionCookie())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 

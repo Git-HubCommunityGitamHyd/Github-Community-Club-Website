@@ -1,15 +1,13 @@
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { listBoardMembers } from "@/lib/db"
-import { COOKIE_NAME, verifySessionValue } from "@/lib/session"
+import { getSessionCookie, verifySessionValue } from "@/lib/session"
 import { Button } from "@/components/ui/button"
 import { DeleteButton } from "@/components/admin/delete-button"
 import { AdminNav } from "@/components/admin/admin-nav"
 
 export default async function AdminBoardPage() {
-  const session = cookies().get(COOKIE_NAME)?.value
-  if (!verifySessionValue(session)) redirect("/admin/login")
+  if (!verifySessionValue(await getSessionCookie())) redirect("/admin/login")
 
   const members = await listBoardMembers()
 

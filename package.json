@@ -6,7 +6,7 @@
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:migrate:local": "wrangler d1 execute github-community-db --local --file=db/schema.sql",
@@ -17,29 +17,29 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv --include-runtime=false cloudflare-env.d.ts"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "^1.20.2",
+    "@opennextjs/cloudflare": "^1.20.6",
     "@radix-ui/react-slot": "^1.2.3",
-    "@react-three/drei": "^9.122.0",
-    "@react-three/fiber": "^8.18.0",
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "framer-motion": "^10.16.4",
+    "framer-motion": "^13.4.0",
     "lenis": "^1.3.26",
-    "lucide-react": "^0.294.0",
-    "next": "^14.2.30",
-    "react": "^18",
-    "react-dom": "^18",
+    "lucide-react": "^0.511.0",
+    "next": "^16.3.5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "tailwind-merge": "^3.3.1",
     "three": "^0.169.0"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "~19.2.18",
+    "@types/react-dom": "~19.2.3",
     "@types/three": "^0.185.1",
     "autoprefixer": "^10.0.1",
-    "eslint": "^8",
-    "eslint-config-next": "14.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "^16.3.5",
     "postcss": "^8",
     "prettier": "^3.9.5",
     "prettier-plugin-tailwindcss": "^0.8.1",
@@ -47,6 +47,6 @@
     "tailwindcss": "^3.3.0",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5",
-    "wrangler": "^4.113.0"
+    "wrangler": "^4.136.1"
   }
 }

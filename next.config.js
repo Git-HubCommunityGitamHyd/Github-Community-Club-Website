@@ -9,6 +9,7 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     unoptimized: false,
+    qualities: [75, 95],
     remotePatterns: [
       {
         protocol: "http",
@@ -34,4 +35,4 @@ const nextConfig = {
 
 module.exports = nextConfig
 
-import('@opennextjs/cloudflare').then(m => m.initOpenNextCloudflareForDev());
+import("@opennextjs/cloudflare").then((m) => m.initOpenNextCloudflareForDev())
