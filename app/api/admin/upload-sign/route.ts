@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server"
-import { getSessionCookie, verifySessionValue } from "@/lib/session"
+import { requireAdminApi } from "@/lib/auth/require-admin"
 
 export const runtime = "nodejs"
 
 export async function POST() {
-  if (!verifySessionValue(await getSessionCookie())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const unauthorized = await requireAdminApi()
+  if (unauthorized) return unauthorized
 
   const uploadSignUrl = process.env.UPLOAD_SIGN_URL
   const sharedSecret = process.env.WORKER_SHARED_SECRET

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import { deleteEvent, updateEvent } from "@/lib/db"
-import { validateEvent } from "@/lib/validate-event"
-import { getSessionCookie, verifySessionValue } from "@/lib/session"
+import { deleteEvent, updateEvent } from "@/lib/db/events"
+import { validateEvent } from "@/lib/validation/event"
+import { requireAdminApi } from "@/lib/auth/require-admin"
 
 export const runtime = "nodejs"
 
@@ -9,9 +9,8 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!verifySessionValue(await getSessionCookie())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const unauthorized = await requireAdminApi()
+  if (unauthorized) return unauthorized
 
   const id = Number((await params).id)
   if (Number.isNaN(id)) {
@@ -53,9 +52,8 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!verifySessionValue(await getSessionCookie())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const unauthorized = await requireAdminApi()
+  if (unauthorized) return unauthorized
 
   const id = Number((await params).id)
   if (Number.isNaN(id)) {

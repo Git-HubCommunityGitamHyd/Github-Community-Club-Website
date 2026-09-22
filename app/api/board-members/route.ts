@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { listBoardMembers } from "@/lib/db"
+import { listBoardMembers } from "@/lib/db/board-members"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"

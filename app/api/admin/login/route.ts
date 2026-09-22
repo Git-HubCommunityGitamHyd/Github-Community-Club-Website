@@ -5,7 +5,7 @@ import {
   COOKIE_PATH,
   createSessionValue,
   verifyPassword,
-} from "@/lib/session"
+} from "@/lib/auth/session"
 
 export const runtime = "nodejs"
 

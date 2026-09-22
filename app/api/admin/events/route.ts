@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-import { insertEvent } from "@/lib/db"
-import { validateEvent } from "@/lib/validate-event"
-import { getSessionCookie, verifySessionValue } from "@/lib/session"
+import { insertEvent } from "@/lib/db/events"
+import { validateEvent } from "@/lib/validation/event"
+import { requireAdminApi } from "@/lib/auth/require-admin"
 
 export const runtime = "nodejs"
 
 export async function POST(request: NextRequest) {
-  if (!verifySessionValue(await getSessionCookie())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const unauthorized = await requireAdminApi()
+  if (unauthorized) return unauthorized
 
   const body = await request.json().catch(() => null)
   if (!body || typeof body !== "object") {

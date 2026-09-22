@@ -1,9 +1,9 @@
 import "./globals.css"
 import type { ReactNode } from "react"
 import type { Metadata } from "next"
-import { ThemeProvider } from "@/components/theme-provider"
-import { MascotGlow } from "@/components/mascot-glow"
-import { MascotEasterEgg } from "@/components/mascot-easter-egg"
+import { ThemeProvider } from "@/components/theme/theme-provider"
+import { MascotGlow } from "@/components/mascot/mascot-glow"
+import { MascotEasterEgg } from "@/components/mascot/mascot-easter-egg"
 
 export const metadata: Metadata = {
   title: "GitHub Community GITAM",

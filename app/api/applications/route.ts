@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { insertApplication } from "@/lib/db"
-import { validateApplication } from "@/lib/validate-application"
+import { insertApplication } from "@/lib/db/applications"
+import { validateApplication } from "@/lib/validation/application"
 
 export const runtime = "nodejs"
 

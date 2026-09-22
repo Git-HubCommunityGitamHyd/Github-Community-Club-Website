@@ -1,6 +1,6 @@
 import { cookies } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
-import { COOKIE_NAME, COOKIE_PATH } from "@/lib/session"
+import { COOKIE_NAME, COOKIE_PATH } from "@/lib/auth/session"
 
 export const runtime = "nodejs"
 
