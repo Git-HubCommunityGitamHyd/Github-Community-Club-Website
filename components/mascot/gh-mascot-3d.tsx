@@ -136,9 +136,21 @@ function OctocatModel({
 export function GhMascot3D({
   pointerRef,
   spinRef,
+  rimIntensity = 0,
 }: {
   pointerRef: PointerRef
   spinRef: SpinRef
+  /**
+   * Strength of the back-lights that pick out the silhouette. Defaults to 0,
+   * which is exactly the lighting `/` has always shipped — only v2 opts in.
+   *
+   * The model is near-black and the dark theme canvas is #0d1117, so with only
+   * a key and a fill the edges dissolve into the page (the mascot reads as a
+   * hole rather than a character). These sit behind and to the sides: surfaces
+   * whose normals curve away from the camera but face the back-light catch a
+   * grazing highlight, which is what redraws the outline.
+   */
+  rimIntensity?: number
 }) {
   return (
     <Canvas
@@ -157,11 +169,41 @@ export function GhMascot3D({
       // This canvas moves on every scroll, so that fired constantly. We
       // never use r3f pointer events (pointerEvents is none; the DOM button
       // handles clicks), so the measurement bought nothing.
-      resize={{ scroll: false, debounce: { scroll: 0, resize: 0 } }}
+      //
+      // offsetSize is the other half of that. react-use-measure defaults to
+      // getBoundingClientRect, which bakes in ancestor transforms — and this
+      // canvas lives inside a wrapper that is CSS-scaled down as the mascot
+      // docks. So the canvas was being measured at its *docked* size and r3f
+      // pinned the drawing buffer there. Load the page already scrolled (scroll
+      // restoration does this on every refresh) and the first measurement is the
+      // 55x44 docked box; scrolling back to the top restores the wrapper's scale
+      // but never changes its layout size, so no ResizeObserver fires and the
+      // octocat stays a thumbnail inside a full-size hero slot. offsetWidth /
+      // offsetHeight are layout-only and ignore transforms, which is the size
+      // the canvas should always have been drawing at.
+      resize={{
+        scroll: false,
+        offsetSize: true,
+        debounce: { scroll: 0, resize: 0 },
+      }}
     >
       <ambientLight intensity={1.1} />
       <directionalLight position={[2, 3, 4]} intensity={1.4} />
       <directionalLight position={[-2, -1, -3]} intensity={0.4} />
+      {rimIntensity > 0 && (
+        <>
+          <directionalLight
+            position={[-7, 3, -5]}
+            intensity={rimIntensity}
+            color="#7ee787"
+          />
+          <directionalLight
+            position={[7, 1, -5]}
+            intensity={rimIntensity * 0.75}
+            color="#e6edf3"
+          />
+        </>
+      )}
       <Suspense fallback={null}>
         <OctocatModel pointerRef={pointerRef} spinRef={spinRef} />
       </Suspense>

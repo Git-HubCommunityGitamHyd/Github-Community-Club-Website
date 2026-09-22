@@ -172,6 +172,12 @@ section[id] {
   scroll-margin-top: 4rem;
 }
 
+/* v2's nav floats rather than sitting flush, so its anchors need more clearance.
+   Keep this in step with V2_NAV_OFFSET in features/v2/sections/navbar.tsx. */
+.v2-root section[id] {
+  scroll-margin-top: 7rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -186,15 +192,18 @@ section[id] {
 }
 
 /* Enhanced focus styles for better accessibility */
+/* Every focusable thing, not just button/a — the board and event cards
+   are focusable divs and were falling through to the browser's default
+   orange ring. Colour comes from the --ring token so the two palettes
+   stay in one place. */
 button:focus-visible,
-a:focus-visible {
-  outline: 2px solid #000;
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
-}
-
-.dark button:focus-visible,
-.dark a:focus-visible {
-  outline-color: #3fb950;
 }
 
 /* Skeleton shimmer — transform-only so the browser composites on the GPU */

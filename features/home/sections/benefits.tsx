@@ -9,7 +9,7 @@ export function BenefitsSection() {
       id="benefits"
       className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8"
     >
-      <span className="font-mono text-[13px] font-bold text-black dark:text-gh-accent">
+      <span className="font-mono text-[13px] font-bold text-gh-accent-light dark:text-gh-accent">
         05 — BENEFITS
       </span>
       <h2 className="mb-4 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-tight">
@@ -38,7 +38,7 @@ export function BenefitsSection() {
         {BENEFITS.map((benefit, index) => (
           <ScrollStackItem
             key={benefit.title}
-            itemClassName="flex flex-col justify-between border border-l-4 border-gray-200 border-l-black bg-white dark:border-gh-border dark:border-l-gh-accent dark:bg-gh-surface"
+            itemClassName="flex flex-col justify-between border border-l-4 border-gray-200 border-l-gh-accent-light bg-white dark:border-gh-border dark:border-l-gh-accent dark:bg-gh-surface"
           >
             <span className="font-mono text-sm font-bold text-gray-300 dark:text-gh-muted">
               {String(index + 1).padStart(2, "0")}

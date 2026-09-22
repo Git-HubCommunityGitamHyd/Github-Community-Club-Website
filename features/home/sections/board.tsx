@@ -9,7 +9,7 @@ export function BoardSection({ members }: { members: BoardMember[] }) {
       id="board"
       className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8"
     >
-      <span className="font-mono text-[13px] font-bold text-black dark:text-gh-accent">
+      <span className="font-mono text-[13px] font-bold text-gh-accent-light dark:text-gh-accent">
         03 — BOARD
       </span>
       <h2 className="mb-3 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-tight">
@@ -20,12 +20,9 @@ export function BoardSection({ members }: { members: BoardMember[] }) {
         full story.
       </p>
 
-      <div className="flex flex-wrap justify-center gap-8">
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {members.map((member, idx) => (
-          <div
-            key={member.id}
-            className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)]"
-          >
+          <div key={member.id}>
             <BoardMemberPopupCard
               index={idx}
               member={{

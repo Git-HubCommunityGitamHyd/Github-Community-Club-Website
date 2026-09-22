@@ -1,3 +1,5 @@
+const defaultTheme = require("tailwindcss/defaultTheme")
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -5,10 +7,30 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./features/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
+      fontFamily: {
+        // Geist is loaded by app/v2/layout.tsx and the variables are defined on
+        // that subtree only, so `/` keeps rendering in the stack it uses today.
+        //
+        // The fallback INSIDE var() is load-bearing, not belt-and-braces: an
+        // undefined custom property makes the whole font-family declaration
+        // invalid at computed-value time. CSS does not skip to the next family
+        // in the list — it drops the declaration entirely, and an inherited
+        // property then resolves to the browser default (a serif). The fallback
+        // keeps the declaration valid wherever the variable is absent.
+        sans: [
+          "var(--font-geist-sans, ui-sans-serif)",
+          ...defaultTheme.fontFamily.sans,
+        ],
+        mono: [
+          "var(--font-geist-mono, ui-monospace)",
+          ...defaultTheme.fontFamily.mono,
+        ],
+      },
       animation: {
         "infinite-scroll": "infinite-scroll 25s linear infinite",
       },
@@ -25,6 +47,11 @@ module.exports = {
       },
       colors: {
         gh: {
+          // GitHub's deepest canvas value. Used where a surface has to sit
+          // below the page itself (the footer) — a tinted near-black that
+          // belongs to this palette, rather than a pure #000 that reads as
+          // a hole punched in the page.
+          deep: "#010409",
           bg: "#0d1117",
           surface: "#161b22",
           elevated: "#21262d",

@@ -117,7 +117,7 @@ export function EventPopupCard({ event, index }: EventPopupCardProps) {
         >
           <Badge
             variant="outline"
-            className="border-black px-4 py-2 text-sm text-black dark:border-gh-accent dark:text-gh-accent md:px-6 md:py-3 md:text-base"
+            className="border-gh-accent-light px-4 py-2 text-sm text-gh-accent-light dark:border-gh-accent dark:text-gh-accent md:px-6 md:py-3 md:text-base"
           >
             {event.category}
           </Badge>

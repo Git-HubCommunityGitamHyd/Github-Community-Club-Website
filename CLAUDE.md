@@ -97,5 +97,6 @@ Page auth lives in `app/admin/(dashboard)/layout.tsx` via `requireAdminPage()` �
 
 ## Gotchas
 
+- `tailwind.config.js` `content` must include `./features/**` (and `./app/**`, `./components/**`). Tailwind only emits classes it finds in those globs — after the homepage moved out of `app/page.tsx`, missing `features/` stripped the hero/stat/grid utilities and collapsed the layout.
 - `npm run lint` runs ESLint 9 via `eslint.config.mjs` (`eslint-config-next`). `next lint` was removed in Next.js 16.
 - The public `applications` table has a `UNIQUE` constraint on `email` — `app/api/applications/route.ts` catches D1's thrown error (message includes `"UNIQUE constraint failed"`, no `.code` field like Postgres had) and returns 409, don't let it bubble as a 500.

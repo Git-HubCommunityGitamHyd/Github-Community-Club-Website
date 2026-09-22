@@ -88,14 +88,9 @@ export function PageSkeleton() {
             <SkeletonBlock className="h-10 w-56" />
             <SkeletonBlock className="h-5 w-72" />
           </div>
-          <div className="flex flex-wrap justify-center gap-8">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)]"
-              >
-                <SkeletonCard />
-              </div>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonCard key={i} />
             ))}
           </div>
         </div>

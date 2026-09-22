@@ -39,7 +39,7 @@ export function HeroSection({
           GitHub
           <br />
           Community
-          <span className="text-black dark:text-gh-accent">.</span>
+          <span className="text-gh-accent-light dark:text-gh-accent">.</span>
         </motion.h1>
 
         <motion.div

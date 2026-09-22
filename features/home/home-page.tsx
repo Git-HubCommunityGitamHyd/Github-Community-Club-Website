@@ -31,21 +31,55 @@ export function HomePage({
   const heroSlotRef = useRef<HTMLDivElement>(null)
   const navSlotRef = useRef<HTMLDivElement>(null)
 
+  // Scroll spy. The active section is whichever one spans the line 100px
+  // down the viewport — the same test this always used. What changed is
+  // when that test runs: it used to be an unthrottled `scroll` listener
+  // measuring every section on every event, competing with the mascot's
+  // WebGL canvas and the benefits ScrollStack for the same frames. Now an
+  // IntersectionObserver watches a 1px band pinned at that line and only
+  // wakes us when a section boundary actually crosses it.
   useEffect(() => {
-    const handleScroll = () => {
-      const sections = ["hero", ...NAV_ITEMS.map((i) => i.toLowerCase())]
-      const currentSection = sections.find((section) => {
-        const element = document.getElementById(section)
-        if (element) {
-          const rect = element.getBoundingClientRect()
-          return rect.top <= 100 && rect.bottom >= 100
-        }
-        return false
+    const elements = ["hero", ...NAV_ITEMS.map((i) => i.toLowerCase())]
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null)
+    if (elements.length === 0) return
+
+    // Deliberately re-measures instead of trusting the entries handed to
+    // the callback. A jump that clears several sections at once (nav
+    // click, Home/End, a fast wheel flick) delivers their enter and leave
+    // records in one batch, and the section that ends up under the line
+    // may have no `isIntersecting` record in it at all — reading the
+    // batch would then leave the nav stuck on a section already scrolled
+    // past. Measuring here costs a handful of rects per crossing rather
+    // than per scroll event.
+    const resolve = () => {
+      const current = elements.find((el) => {
+        const rect = el.getBoundingClientRect()
+        return rect.top <= 100 && rect.bottom >= 100
       })
-      if (currentSection) setActiveSection(currentSection)
+      if (current) setActiveSection(current.id)
     }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+
+    let observer: IntersectionObserver | null = null
+
+    // rootMargin takes no calc(), so the bottom inset that collapses the
+    // root box down to that 1px band has to be recomputed from the live
+    // viewport height whenever it changes.
+    const observe = () => {
+      observer?.disconnect()
+      const bottom = Math.max(window.innerHeight - 101, 0)
+      observer = new IntersectionObserver(resolve, {
+        rootMargin: `-100px 0px -${bottom}px 0px`,
+      })
+      for (const el of elements) observer.observe(el)
+    }
+
+    observe()
+    window.addEventListener("resize", observe)
+    return () => {
+      window.removeEventListener("resize", observe)
+      observer?.disconnect()
+    }
   }, [])
 
   const scrollToSection = (sectionId: string) => {

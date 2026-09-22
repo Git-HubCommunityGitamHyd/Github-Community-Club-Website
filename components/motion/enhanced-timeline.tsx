@@ -57,7 +57,7 @@ export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
               transition={{ duration: 0.3 }}
               className="group"
             >
-              <Card className="relative overflow-hidden border-2 border-gray-200 bg-white transition-all duration-300 hover:border-black hover:shadow-xl hover:shadow-black/10 dark:border-gh-border dark:bg-gh-surface dark:hover:border-gh-accent dark:hover:shadow-black/40">
+              <Card className="relative overflow-hidden border-2 border-gray-200 bg-white transition-all duration-300 hover:border-gh-accent-light hover:shadow-xl hover:shadow-black/10 dark:border-gh-border dark:bg-gh-surface dark:hover:border-gh-accent dark:hover:shadow-black/40">
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-gh-elevated dark:to-gh-surface"
                   initial={false}
@@ -70,7 +70,7 @@ export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
                     <CardTitle className="text-xl text-gray-900 transition-colors duration-300 group-hover:text-black dark:text-gh-text dark:group-hover:text-white">
                       {item.title}
                     </CardTitle>
-                    <CardDescription className="text-lg font-semibold text-black dark:text-gh-accent">
+                    <CardDescription className="text-lg font-semibold text-gh-accent-light dark:text-gh-accent">
                       {item.date}
                     </CardDescription>
                   </motion.div>

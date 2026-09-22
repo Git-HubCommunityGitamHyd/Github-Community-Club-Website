@@ -7,6 +7,7 @@ import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ImageUploadField } from "@/features/admin/image-upload-field"
 import type { Event } from "@/lib/db/events"
+import { EVENT_CATEGORIES } from "@/features/v2/events/categories"
 
 const inputClass =
   "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-base sm:text-sm text-black placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gh-border dark:bg-gh-elevated dark:text-gh-text dark:placeholder:text-gh-muted dark:focus:border-gh-accent dark:focus:ring-gh-accent"
@@ -184,13 +185,28 @@ export function EventForm({ initial }: { initial?: Event }) {
           <label className={labelClass} htmlFor="category">
             Category
           </label>
-          <input
+          {/* A dropdown rather than free text, because the public card picks
+              its glyph from this value (features/v2/events/categories.ts) and a
+              typo would silently fall back to the generic calendar. A category
+              a row already has is kept as an option so editing an older event
+              never rewrites it. */}
+          <select
             id="category"
             className={inputClass}
-            placeholder="e.g. Workshop"
             value={form.category}
             onChange={(e) => set("category", e.target.value)}
-          />
+          >
+            <option value="">Select a category</option>
+            {EVENT_CATEGORIES.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+            {form.category &&
+              !EVENT_CATEGORIES.includes(
+                form.category as (typeof EVENT_CATEGORIES)[number],
+              ) && <option value={form.category}>{form.category}</option>}
+          </select>
           {errors.category && (
             <p className="mt-1 text-sm text-red-500">{errors.category}</p>
           )}

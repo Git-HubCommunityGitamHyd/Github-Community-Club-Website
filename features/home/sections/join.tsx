@@ -70,7 +70,7 @@ export function JoinSection({ onOpenQr }: { onOpenQr: () => void }) {
               Fill out the form and we&apos;ll be in touch —{" "}
               <button
                 onClick={onOpenQr}
-                className="font-medium text-black underline underline-offset-2 dark:text-gh-accent"
+                className="font-medium text-gh-accent-light underline underline-offset-2 dark:text-gh-accent"
               >
                 prefer WhatsApp instead?
               </button>

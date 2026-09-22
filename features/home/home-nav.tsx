@@ -52,6 +52,7 @@ export function HomeNav({
                 {item}
               </button>
             ))}
+            <ThemeToggle />
             <button
               onClick={() => onScrollTo("join")}
               className="rounded-md bg-gh-accent-light px-4 py-2 font-mono text-[13px] font-semibold text-white hover:opacity-90 dark:bg-gh-accent dark:text-gh-bg"

@@ -120,7 +120,7 @@ export function BoardMemberPopupCard({
           >
             <Badge
               variant="outline"
-              className="border-black px-5 py-2 text-base font-medium text-black dark:border-gh-accent dark:text-gh-accent md:px-8 md:py-3 md:text-xl"
+              className="border-gh-accent-light px-5 py-2 text-base font-medium text-gh-accent-light dark:border-gh-accent dark:text-gh-accent md:px-8 md:py-3 md:text-xl"
             >
               {member.role}
             </Badge>
