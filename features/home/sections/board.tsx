@@ -3,13 +3,7 @@
 import { BoardMemberPopupCard } from "@/features/board/board-member-popup-card"
 import type { BoardMember } from "@/lib/db/board-members"
 
-export function BoardSection({
-  members,
-  loading,
-}: {
-  members: BoardMember[]
-  loading: boolean
-}) {
+export function BoardSection({ members }: { members: BoardMember[] }) {
   return (
     <section
       id="board"
@@ -27,38 +21,25 @@ export function BoardSection({
       </p>
 
       <div className="flex flex-wrap justify-center gap-8">
-        {loading
-          ? Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)]"
-              >
-                <div className="flex flex-col items-center gap-4 rounded-2xl border border-gray-200 p-8 dark:border-gh-border">
-                  <div className="skeleton h-20 w-20 rounded-full" />
-                  <div className="skeleton h-5 w-32 rounded-lg" />
-                  <div className="skeleton h-4 w-24 rounded-lg" />
-                </div>
-              </div>
-            ))
-          : members.map((member, idx) => (
-              <div
-                key={member.id}
-                className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)]"
-              >
-                <BoardMemberPopupCard
-                  index={idx}
-                  member={{
-                    name: member.name,
-                    role: member.role,
-                    image: member.image_url ?? "/placeholder.svg",
-                    description: member.description,
-                    github: member.github ?? undefined,
-                    linkedin: member.linkedin ?? undefined,
-                    email: member.email ?? undefined,
-                  }}
-                />
-              </div>
-            ))}
+        {members.map((member, idx) => (
+          <div
+            key={member.id}
+            className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.334rem)]"
+          >
+            <BoardMemberPopupCard
+              index={idx}
+              member={{
+                name: member.name,
+                role: member.role,
+                image: member.image_url ?? "/placeholder.svg",
+                description: member.description,
+                github: member.github ?? undefined,
+                linkedin: member.linkedin ?? undefined,
+                email: member.email ?? undefined,
+              }}
+            />
+          </div>
+        ))}
       </div>
     </section>
   )

@@ -33,11 +33,11 @@ db/schema.sql
 
 ## Content: board members & events are DB-backed, not hardcoded
 
-[`features/home/home-page.tsx`](features/home/home-page.tsx) fetches `board_members` and `events` client-side from the public `GET /api/board-members` and `GET /api/events` routes once `mounted` is true, and section components render skeleton placeholders while `contentLoading`. Homepage copy (`NAV_ITEMS`, stats, pillars, benefits, journey timeline) lives in [`features/home/content.ts`](features/home/content.ts). Each `id="hero"|about|…` block is a file under [`features/home/sections/`](features/home/sections/). Adding a homepage section means a new file there plus a line in `home-page.tsx` — do not grow `app/page.tsx`.
+[`app/page.tsx`](app/page.tsx) is a Server Component: it loads `board_members` and `events` in parallel via `lib/db` (`Promise.all`) and passes them into the client [`HomePage`](features/home/home-page.tsx). It is `export const dynamic = "force-dynamic"` so the D1 query is not frozen at `next build`. [`app/loading.tsx`](app/loading.tsx) shows [`PageSkeleton`](features/home/page-skeleton.tsx) while that query runs. Public `GET /api/board-members` and `GET /api/events` stay for other clients. Homepage copy (`NAV_ITEMS`, stats, pillars, benefits, journey timeline) lives in [`features/home/content.ts`](features/home/content.ts). Each `id="hero"|about|…` block is a file under [`features/home/sections/`](features/home/sections/). Adding a homepage section means a new file there plus a line in `home-page.tsx` — do not grow `app/page.tsx` beyond composing `<HomePage />` and fetching.
 
 Manage CMS through `/admin/board` and `/admin/events` (same shared-password auth as `/admin`). List/add/edit/delete pages live under `app/admin/(dashboard)/` and call `lib/db/board-members.ts` / `lib/db/events.ts`. Validation lives in `lib/validation/board-member.ts` / `lib/validation/event.ts` / `lib/validation/application.ts` (plain function, `Record<string, string>` errors).
 
-**Both `app/api/board-members/route.ts` and `app/api/events/route.ts` are `export const dynamic = "force-dynamic"`.** Without that, Next.js statically prerenders GET route handlers with no dynamic APIs at _build_ time — which would freeze whatever the DB returned during `next build` instead of querying fresh per request. Hit this for real; don't drop the export.
+**`app/page.tsx`, `app/api/board-members/route.ts`, and `app/api/events/route.ts` are `export const dynamic = "force-dynamic"`.** Without that, Next.js statically prerenders them at _build_ time — which would freeze whatever the DB returned during `next build` instead of querying fresh per request. Hit this for real; don't drop the export.
 
 ### Adding another CMS type
 
@@ -76,7 +76,7 @@ A color change usually needs both.
 
 - Path alias `@/*` maps to the repo **root**, not `./src` — there is no `src/`.
 - Components use **named** exports (`export function EnhancedTimeline`). Default exports only in `app/page.tsx`, `app/layout.tsx`, and route `page.tsx` files (plus a couple of vendored motion files that already default-export).
-- The public homepage is still `"use client"` (`features/home/home-page.tsx` early-returns `<PageSkeleton />` until mounted). Admin dashboard pages under `app/admin/(dashboard)/` are server components — they read D1 after the layout checks the session.
+- `app/page.tsx` is a Server Component (D1 fetch). Interactive chrome lives in `"use client"` `features/home/home-page.tsx`. Admin dashboard pages under `app/admin/(dashboard)/` are server components — they read D1 after the layout checks the session.
 - Prettier (`.prettierrc`) enforces no semicolons and double quotes. Run `npm run format`.
 
 ## Database (Cloudflare D1)

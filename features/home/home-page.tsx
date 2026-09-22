@@ -3,12 +3,10 @@
 import { useState, useEffect, useRef } from "react"
 import { GhMascotToggle } from "@/components/mascot/gh-mascot-toggle"
 import { GhMarquee } from "@/components/mascot/gh-marquee"
-import { useMounted } from "@/lib/use-mounted"
 import type { BoardMember } from "@/lib/db/board-members"
 import type { Event } from "@/lib/db/events"
 import { NAV_ITEMS } from "@/features/home/content"
 import { HomeNav } from "@/features/home/home-nav"
-import { PageSkeleton } from "@/features/home/page-skeleton"
 import { QRPopupCard } from "@/features/home/qr-popup-card"
 import { HeroSection } from "@/features/home/sections/hero"
 import { StatsSection } from "@/features/home/sections/stats"
@@ -20,29 +18,18 @@ import { BenefitsSection } from "@/features/home/sections/benefits"
 import { JoinSection } from "@/features/home/sections/join"
 import { FooterSection } from "@/features/home/sections/footer"
 
-export function HomePage() {
-  const mounted = useMounted()
+export function HomePage({
+  boardMembers,
+  events,
+}: {
+  boardMembers: BoardMember[]
+  events: Event[]
+}) {
   const [activeSection, setActiveSection] = useState("hero")
   const [isQrPopupOpen, setIsQrPopupOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [boardMembers, setBoardMembers] = useState<BoardMember[]>([])
-  const [events, setEvents] = useState<Event[]>([])
-  const [contentLoading, setContentLoading] = useState(true)
   const heroSlotRef = useRef<HTMLDivElement>(null)
   const navSlotRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!mounted) return
-    Promise.all([
-      fetch("/api/board-members").then((res) => res.json()),
-      fetch("/api/events").then((res) => res.json()),
-    ])
-      .then(([membersData, eventsData]) => {
-        setBoardMembers(membersData)
-        setEvents(eventsData)
-      })
-      .finally(() => setContentLoading(false))
-  }, [mounted])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -60,8 +47,6 @@ export function HomePage() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
-
-  if (!mounted) return <PageSkeleton />
 
   const scrollToSection = (sectionId: string) => {
     setIsMenuOpen(false)
@@ -84,8 +69,8 @@ export function HomePage() {
       <StatsSection />
       <AboutSection />
       <JourneySection />
-      <BoardSection members={boardMembers} loading={contentLoading} />
-      <EventsSection events={events} loading={contentLoading} />
+      <BoardSection members={boardMembers} />
+      <EventsSection events={events} />
       <BenefitsSection />
       <JoinSection onOpenQr={() => setIsQrPopupOpen(true)} />
       <FooterSection />

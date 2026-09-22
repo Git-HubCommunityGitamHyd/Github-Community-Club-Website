@@ -3,13 +3,7 @@
 import { EventPopupCard } from "@/features/events/event-popup-card"
 import type { Event } from "@/lib/db/events"
 
-export function EventsSection({
-  events,
-  loading,
-}: {
-  events: Event[]
-  loading: boolean
-}) {
+export function EventsSection({ events }: { events: Event[] }) {
   return (
     <section
       id="events"
@@ -27,33 +21,22 @@ export function EventsSection({
         </p>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {loading
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex h-80 flex-col items-center gap-4 rounded-2xl border border-gray-200 p-8 dark:border-gh-border"
-                >
-                  <div className="skeleton h-16 w-16 rounded-full" />
-                  <div className="skeleton h-5 w-40 rounded-lg" />
-                  <div className="skeleton h-4 w-32 rounded-lg" />
-                </div>
-              ))
-            : events.map((event, index) => (
-                <EventPopupCard
-                  key={event.id}
-                  index={index}
-                  event={{
-                    title: event.title,
-                    date: event.event_date,
-                    location: event.location ?? undefined,
-                    attendees: event.attendees ?? undefined,
-                    category: event.category,
-                    duration: event.duration ?? undefined,
-                    description: event.description,
-                    images: event.images,
-                  }}
-                />
-              ))}
+          {events.map((event, index) => (
+            <EventPopupCard
+              key={event.id}
+              index={index}
+              event={{
+                title: event.title,
+                date: event.event_date,
+                location: event.location ?? undefined,
+                attendees: event.attendees ?? undefined,
+                category: event.category,
+                duration: event.duration ?? undefined,
+                description: event.description,
+                images: event.images,
+              }}
+            />
+          ))}
         </div>
       </div>
     </section>
