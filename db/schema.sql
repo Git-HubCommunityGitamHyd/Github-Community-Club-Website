@@ -19,6 +19,11 @@ CREATE TABLE IF NOT EXISTS board_members (
   github       TEXT,
   linkedin     TEXT,
   email        TEXT,
+  -- Key into BOARD_ACCENTS (features/v2/board/accents.ts) — the ring around
+  -- the photo in their dialog. A key, not a hex value, so the CMS cannot put
+  -- an off-palette colour on the page. Existing databases get this through
+  -- db/migrations/2026-09-board-member-accent.sql.
+  accent       TEXT NOT NULL DEFAULT 'green',
   sort_order   INTEGER NOT NULL DEFAULT 0,
   created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
@@ -36,6 +41,22 @@ CREATE TABLE IF NOT EXISTS events (
   duration     TEXT,
   description  TEXT NOT NULL,
   images       TEXT NOT NULL DEFAULT '[]',
+  sort_order   INTEGER NOT NULL DEFAULT 0,
+  created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+-- The homepage timeline. It used to be a hardcoded JOURNEY_ITEMS array in
+-- features/home/content.ts, which meant a club milestone needed a developer,
+-- a commit and a deploy. `icon` is a key into JOURNEY_ICONS
+-- (features/v2/journey/icons.ts) rather than a class name or an SVG, so the
+-- CMS never stores markup and an unknown key falls back instead of breaking
+-- the page.
+CREATE TABLE IF NOT EXISTS journey_entries (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  entry_date   TEXT NOT NULL,
+  title        TEXT NOT NULL,
+  description  TEXT NOT NULL,
+  icon         TEXT NOT NULL DEFAULT 'commit',
   sort_order   INTEGER NOT NULL DEFAULT 0,
   created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );

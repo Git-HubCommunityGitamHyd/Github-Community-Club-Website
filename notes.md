@@ -403,3 +403,246 @@ copy inside the streaming placeholder, so every DOM probe needs the
 `:not([id^="S:"] *)` filter; and a single screenshot often catches a CSS
 transition or a `whileInView` entry mid-flight, so a "wrong" colour or a blank
 card is worth re-shooting before believing it.
+
+## Hero and about revamp
+
+### `motion` vs `framer-motion`
+
+The slider snippet imports from `motion/react`. That package and `framer-motion`
+are the same library under two names, so installing both would put two
+animation runtimes in the bundle with **separate contexts** — the
+`MotionConfig reducedMotion="user"` that wraps the v2 tree would not reach
+anything rendered through the other one, silently undoing the reduced-motion
+pass. The API is identical, so the port changes one import line and nothing
+else. Switching to `motion` later is `npm i motion` plus that one line per file.
+
+### Logos
+
+The marquee snippet pulls its logos from a third-party CDN as flat SVGs and then
+fixes dark mode with `dark:brightness-0 invert`. Those are someone else's
+uptime, another `remotePatterns` entry, and a hack that only works because the
+marks happen to be solid black. `react-icons/si` (Simple Icons) is already a
+dependency after the react-icons install, is vector, one stroke weight, and
+inherits `currentColor` — both themes come free and nothing is fetched at
+runtime. The marquee is `aria-hidden` decoration with the tool list repeated
+once in an `sr-only` sentence.
+
+The snippet also renders `{children}{children}` _and_ is fed a pre-doubled
+array, so every logo appears four times. Doubling once is what the -50%
+translate actually requires; callers now pass their list once.
+
+### The about bento
+
+The reference runs on violet plus emerald with a violet CTA. Two accents would
+be the loudest thing on a page that is otherwise neutral surfaces and one
+GitHub green, so the structure is kept exactly — 2x2 feature tile, two small
+tiles, one wide tile — and the colour is spent once, on the metric tile. The
+wide CTA is deliberately quiet, because the join section already carries the
+loud call to action and two competing primary CTAs mean neither reads as
+primary.
+
+The three non-CTA tiles are the three entries in `PILLARS`, so this _replaces_
+the old flat three-column pillar strip instead of sitting above a duplicate of
+it.
+
+### The hero's contribution field
+
+The right half of the hero was a mascot floating in empty space. The field
+behind it is `aria-hidden`, has no caption and no number, so it reads as
+GitHub's texture rather than as a statistic the club would have to stand
+behind. The fill level per cell is a hash of the cell index, not
+`Math.random()` — this renders on the server too, and a random fill would
+produce a different grid on each side and throw a hydration mismatch.
+
+### Why the timeline was bland, and what replaced it
+
+It animated once and then stopped. Every card faded up as it entered and after
+that the section was eight static blocks beside a drawn line: nothing responded
+to the reader, and nothing said where they were in three years of history.
+
+The fix is about state rather than more motion. One entry is active at a time —
+whichever node is nearest the middle of the viewport — and it fills with the
+accent while the rest sit back at 55% opacity. A sticky year rail lists the
+years, marks the active one, and each year is a real button that scrolls to its
+entry, so the history is navigable in a click. Hover and keyboard focus promote
+an entry too, which is why the rail and the entries share one `focusedIndex`
+with hover taking precedence over scroll position.
+
+Active tracking is a single `scroll` handler comparing every node's distance to
+the viewport centre, not eight IntersectionObservers. "Nearest to centre" is a
+comparison across all entries, which an observer's per-element threshold cannot
+express.
+
+The active ring fades in place on each node instead of sharing a `layoutId`
+across them. With a shared id the ring animated the full distance between
+entries on every change — 300px or more — and when the newly active entry was
+still off-screen it travelled through empty space.
+
+### `overflow-x-hidden` silently kills `position: sticky`
+
+`.v2-root` carried `overflow-x-hidden` to stop the marquee and mascot causing a
+horizontal scrollbar. Setting `overflow` to `hidden` on one axis forces the
+other axis to `auto`, which makes that element a scroll container. Every
+`position: sticky` descendant then resolves against _that_ scrollport — which
+never scrolls, because the page scroller is the document — so nothing sticks.
+The journey year rail sat 600px above the viewport with `position: sticky` and
+`top: 128px` computed and applied.
+
+`overflow-x: clip` clips identically without establishing a scroll container.
+If a sticky element inside the v2 tree ever stops sticking, check this first.
+
+### Counting a year is not counting a quantity
+
+`CountingNumber` formatted with `toLocaleString()`, so the founding year
+rendered as "2,022". The component now takes a `format` callback; the stats
+strip passes `String` for the year and leaves the default grouping on the
+member and event counts.
+
+## Phase 12 notes
+
+### The section label was the only green text on the page
+
+`01 — ABOUT`, bold accent-green mono at 13px, six times down the page. Green is
+the page's _action_ colour — buttons, links, the active timeline node — so a
+green label promised something clickable and delivered a caption. At bold 13px
+with no tracking it also sat at the same visual weight as body copy, so it
+competed with the headline underneath instead of introducing it.
+
+`features/v2/section-label.tsx` keeps the accent on the index alone, because a
+single digit is the right amount of colour and the ordinal is the part that is
+genuinely coloured information. The word drops to the same muted grey as every
+other small label on the page and gains real tracking. A short rule between
+them is what makes it look placed rather than typed.
+
+### The contribution field was animated once and then dead
+
+It staggered in on load and froze. That is the worst of both: anyone landing
+mid-page never saw the animation, and everyone else got a dead texture
+afterwards. Every cell now runs its own CSS keyframe with the delay and
+duration derived from the same index hash that picks its fill level, so the
+field twinkles unevenly the way a contribution graph fills rather than pulsing
+in unison. It is CSS, not motion values — there are 450 cells and it is
+decoration.
+
+### Ornaments expand, they do not rotate
+
+Applied to the about bento's Invertocat, the event cards' category glyph and
+anything added later. A mark that turns reads as a loading spinner, and most of
+these glyphs (the Invertocat, a wrench, a microphone, a trophy) have an obvious
+upright orientation that tilting simply breaks. Growing and brightening says
+"closer", which is what a hover is for.
+
+The event card's glyph was also 208px at stroke-1 hung off the corner. Cropping
+a glyph by a third leaves an unrecognisable fragment — the wrench read as a
+paperclip — and a hairline stroke at that size looks like a rendering artefact.
+It is smaller, fully inside the card, and thicker so it survives the opacity.
+
+### The stats strip and the bento were doing the same job
+
+Four figures on their own full-width band, immediately above a grid of tiles.
+The strip was the weaker of the two: an unbroken row of four gives every figure
+identical weight, which is exactly what a bento exists to avoid. The figures
+are tiles now, so the membership count can be loud and the founding year can be
+small, and `features/v2/sections/stats.tsx` is gone.
+
+### The mascot docked into 44px and disappeared
+
+It shrank into a 55x44 slot in the nav pill — about 30px of actual cat. In dark
+mode a black octocat on `#0d1117` at 30px is a smudge. The 3D model, the eye
+tracking and the spin-on-click were all still running for something nobody
+could see.
+
+It docks to a corner of the viewport at 116px now and leans toward the cursor
+on a leash. The leash is the part worth keeping: unbounded following turns it
+into a cursor trail that covers whatever you are reading and has to be dodged;
+tethered, it can be ignored. The dock also flips to the opposite side when the
+pointer settles on its half, with a dead band in the middle so it does not
+oscillate while the cursor wanders around the centre.
+
+`components/mascot/mascot-glow.tsx` matches `.z-50 > button` _or_ `.z-[60] >
+button` because v1 and v2 wrappers sit at different z-indexes.
+
+### The timeline is CMS-managed now
+
+Table `journey_entries`, `lib/db/journey.ts`, `lib/validation/journey.ts`,
+public `GET /api/journey`, CRUD under `/api/admin/journey`, screens under
+`/admin/journey`. The recipe in CLAUDE.md, followed exactly.
+
+The icon is a column on the row holding a key into `JOURNEY_ICONS`
+(`features/v2/journey/icons.ts`), not a class name and not an SVG. The
+component used to index a fixed array of eight glyphs by entry position, which
+works for a hardcoded list of eight and breaks the moment the club adds a ninth
+milestone or reorders two. Validation checks the key against the same map the
+timeline renders from, so the CMS cannot store a value that would silently fall
+back.
+
+The admin form uses a month picker rather than a free-text date, because the
+year rail derives its years by taking the last whitespace-separated token of
+`entry_date`. "Feb 2022" and "early 2022" would each produce a different or
+nonsense rail entry and nobody would find out until the homepage was looked at.
+
+### The board member ring is a key, not a colour
+
+`board_members.accent` holds a key into `BOARD_ACCENTS`
+(`features/v2/board/accents.ts`). A free hex field in the CMS would let anybody
+put a colour that belongs to no palette on the site, and the first one somebody
+picked would be there forever with nothing to catch it. Seven named rings, each
+a conic gradient whose stops are close in hue so it reads as one material
+catching the light rather than a rainbow.
+
+The ring rotates as an element, not by animating the gradient's angle —
+animating a conic-gradient angle needs `@property` to register it as an
+`<angle>`, and rotating a transform is compositor work that has always worked.
+The wrapper's `overflow-hidden` is load-bearing: the conic layer is inset by
+-45% so rotating it never sweeps an empty corner through the ring, which means
+it is far larger than its box. Without the clip it spills a green wedge across
+the whole panel.
+
+### db/schema.sql cannot add a column
+
+It is all `CREATE TABLE IF NOT EXISTS`, so it does nothing to a table that
+already exists. SQLite has no `ADD COLUMN IF NOT EXISTS`, so `accent` needed a
+one-off `ALTER`, which lives in `db/migrations/` and runs through the new
+`db:patch:local` / `db:patch:remote` scripts. It errors if run twice. That is
+the trade CLAUDE.md records — a schema this small does not justify `wrangler d1
+migrations` yet — but this was the second schema change in one phase, so the
+next one probably does.
+
+### The join background was four accent colours
+
+`["#b3410c", "#2ea043", "#a68b00", "#2f7f9e", "#3fb950"]` — a burnt orange, an
+olive, a teal and two greens, every cell fully saturated and fully opaque,
+behind the single most important call to action on the site. The flip mechanic
+was never the problem. The tiles are the five levels of a GitHub contribution
+graph now, weighted toward empty (a real contribution graph is mostly quiet
+days) and gutters between them, so it reads as a graph rather than a mosaic.
+The flat `bg-gh-deep/60` wash became a left-to-right scrim, because the copy is
+a left-aligned `max-w-2xl` column and that is the only part that needs to be
+near-solid.
+
+### The benefits copy was the reason the section read as bland
+
+"Learn cutting-edge technologies", "connect with like-minded developers", "work
+on cutting-edge projects and stay ahead of technology trends". Six cards of
+that say nothing a reader can picture and nothing another club could not also
+claim. No amount of motion rescues copy that makes no claim, which is why
+`features/v2/benefits/content.ts` exists rather than just a new card component:
+each entry now states one specific thing that happens and carries a short
+`proof` — a cadence or a number — which also gives the card a second line of
+hierarchy to design around.
+
+The card itself gained a cursor spotlight, which is the right interaction for
+this specific layout: a scroll-stack pins a card under the cursor for several
+hundred pixels of scrolling. The spotlight writes two CSS custom properties
+rather than React state — pointer moves fire at frame rate, and the scroll-stack
+is already writing transforms to these same elements every frame.
+
+### The event dialog opened on a heading
+
+Badge, title, inline facts, paragraph, rule, then a sideways marquee of photos.
+The photos are the most interesting thing about a past event and they were the
+last thing you reached, below the fold of the panel and moving so you could not
+study one. The first photo is the cover now, with the title over a scrim; the
+facts are a bordered strip of _labelled_ cells (when, where, how long, how many)
+instead of four icons on a line; the rest of the photos are a still grid.
+`DialogShell` gained `bleed` and `panelClassName` for this.

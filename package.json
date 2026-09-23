@@ -11,6 +11,8 @@
     "format:check": "prettier --check .",
     "db:migrate:local": "wrangler d1 execute github-community-db --local --file=db/schema.sql",
     "db:migrate:remote": "wrangler d1 execute github-community-db --remote --file=db/schema.sql",
+    "db:patch:local": "wrangler d1 execute github-community-db --local --file",
+    "db:patch:remote": "wrangler d1 execute github-community-db --remote --file",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
@@ -30,6 +32,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-icons": "^5.7.0",
+    "react-use-measure": "^2.1.7",
     "tailwind-merge": "^3.3.1",
     "three": "^0.169.0"
   },

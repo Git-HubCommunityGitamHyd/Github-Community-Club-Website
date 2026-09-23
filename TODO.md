@@ -140,6 +140,119 @@ been checked in the browser in **both** light and dark, and `tsc` / `eslint` /
 - [x] Team showcase must lay out correctly for **any** member count (4, 5, 6 …),
       not just the snippet's 6
 
+## Phase 10 — hero + about revamp — DONE
+
+- [x] Hero texture: masked dot grid plus the existing green plate, and a
+      deterministic contribution field behind the mascot so the right half is
+      no longer a mascot in empty space
+- [x] Hero copy rewritten — the old line was three abstractions in a row
+- [x] Filled button + text link instead of the filled/ghost pair
+- [x] Eyebrow became a bordered pill with the accent dot
+- [x] `components/ui/infinite-slider.tsx` — 21st.dev slider ported
+- [x] `features/v2/about/tool-marquee.tsx` — the tools the club works with,
+      drawn with Simple Icons from `react-icons/si` rather than remote CDN SVGs
+- [x] `features/v2/sections/about.tsx` — bento re-toned off violet/emerald onto
+      the GitHub palette, structure kept, colour spent once on the metric tile
+- [x] The three non-CTA tiles are the three pillars, so the old flat pillar
+      strip is replaced rather than duplicated
+- [x] Verified both themes; marquee motion confirmed moving
+
+## Phase 11 — hero text, stats, ornament, marquee, timeline — DONE
+
+- [x] Pill above "GitHub" removed
+- [x] `components/ui/canvas-text.tsx` — scan-line fill on "Community", built as
+      a gradient clipped to the glyphs rather than a real canvas; green ramp
+      tuned so the word stays lit rather than fading out
+- [x] `components/ui/counting-number.tsx` — 21st.dev counter, ported to
+      `framer-motion`, `autoStart` defaulted to false, plus a `format` hook so
+      the founding year renders "2022" and not "2,022"
+- [x] `features/v2/sections/stats.tsx` — counts up on entry, lucide glyph in a
+      ring'd tile beside each figure; wired into `v2-page.tsx` in place of the
+      v1 strip
+- [x] Contribution field enlarged to 26x13 at 16px cells and animated in
+      column by column on load
+- [x] About feature tile's star ornament replaced with the Invertocat
+- [x] Tool marquee scaled up — larger icons, larger labels, wider gaps
+- [x] Timeline revamped: an active entry tracked to the viewport centre, a
+      sticky clickable year rail, hover and keyboard focus promotion
+- [x] `v2-root` switched from `overflow-x-hidden` to `overflow-x-clip` so
+      `position: sticky` works inside it
+- [x] Verified both themes; year rail click and active tracking confirmed
+- [x] `tsc --noEmit`, `eslint`, `prettier --check`, `next build` all clean
+
+## Phase 12 — second taste pass — DONE
+
+Twelve items from the review. Kept in order; each is ticked only after it is
+verified in the browser in both themes.
+
+### Hero
+
+- [x] 1. Remove the dark green plate behind "Community" — the word should sit
+      on the page background, not in a box
+- [x] 2. Contribution field: bigger, and actually animated. Today it staggers in
+      once on load and is then frozen — it needs continuous life
+
+### About
+
+- [x] 3. The Invertocat ornament must not rotate on hover. Expand / scale it
+      instead
+- [x] 4. Delete the standalone stats strip section. Its four figures move into
+      the bento as proper grid tiles, each with the counter animation, and the
+      bento gains more tiles so the grid reads as a grid
+
+### Global chrome
+
+- [x] 5. The navbar Octocat avatar is tiny and illegible in dark mode. Replace
+      with a mascot that follows the cursor and docks at set positions
+- [x] 6. The `01 — ABOUT` section eyebrow looks foreign to the rest of the
+      design. Restyle it everywhere it appears
+
+### Journey
+
+- [x] 7. Make the timeline CMS-managed and extendable — table, lib/db,
+      validation, public GET, admin CRUD, admin screens
+
+### Events
+
+- [x] 8. The large decorative category glyph watermarked into each event card
+      needs to be better
+- [x] 9. Redesign the event detail dialog
+
+### Benefits
+
+- [x] 10. "Why join us" scroll-stack cards are still bland — make them
+      interactive and eye-catching
+
+### Join
+
+- [x] 11. Revamp the join section. The flipping-tile background idea is good;
+      the execution (off-palette red / blue / olive) is not
+
+### Board
+
+- [x] 12. Redesign the board member dialog, with a customisable profile-photo
+      border surfaced through the CMS
+
+### Checks
+
+- [x] Verified in the browser in both themes
+- [x] Journey CRUD exercised end to end against the real API — create 201,
+      unknown icon 400, patch 200, unauthenticated delete 401, delete 200
+- [x] `tsc --noEmit`, `eslint .`, `prettier --check`, `next build` all clean
+
+### Follow-ups this phase created
+
+- [ ] The remote D1 needs `db/migrations/2026-09-board-member-accent.sql` run
+      against it before deploying — `npm run db:patch:remote -- <file>`. The
+      local database already has it
+- [ ] The remote D1 needs `npm run db:migrate:remote` for `journey_entries`,
+      and the eight existing milestones re-entered through `/admin/journey`
+      (they only exist in the local database as seed rows)
+- [ ] `JOURNEY_ITEMS` in features/home/content.ts is now only used by the v1
+      homepage. It goes when `/v2` is promoted
+- [ ] Two schema changes in one phase. The next one probably justifies
+      `wrangler d1 migrations` instead of hand-run patch files
+
 ## Next
 
 - [ ] Promote `/v2` to `/` — the font rides along with it

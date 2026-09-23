@@ -8,12 +8,37 @@ import {
   useState,
 } from "react"
 
-const PALETTE = ["#b3410c", "#2ea043", "#a68b00", "#2f7f9e", "#3fb950"]
+/**
+ * The palette used to be ["#b3410c", "#2ea043", "#a68b00", "#2f7f9e",
+ * "#3fb950"] — a burnt orange, an olive, a teal and two greens, every cell
+ * fully saturated and fully opaque. Four accent colours, on a page whose whole
+ * palette is neutral surfaces plus one GitHub green, behind the single most
+ * important call to action on the site. It read as a random colour-block wall
+ * and the headline had to fight it.
+ *
+ * These are the five levels of a GitHub contribution graph instead: one hue,
+ * weighted so most cells are nearly empty, which is what makes a contribution
+ * graph look like a graph rather than a mosaic. Same mechanic, same flip, and
+ * now the background is the club's own subject matter instead of decoration.
+ */
+const LEVELS = [
+  "rgba(63,185,80,0.04)",
+  "rgba(63,185,80,0.13)",
+  "rgba(63,185,80,0.26)",
+  "rgba(63,185,80,0.44)",
+  "rgba(63,185,80,0.66)",
+]
+
+// Weighted toward empty: a real contribution graph is mostly quiet days.
+const WEIGHTS = [0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 4]
+
 const FLIP_COLOR = "#3fb950"
 const CELL = 64
+/** Gutter between tiles, so they read as contribution squares, not a mosaic. */
+const INSET = 5
 
 function randomColor() {
-  return PALETTE[Math.floor(Math.random() * PALETTE.length)]
+  return LEVELS[WEIGHTS[Math.floor(Math.random() * WEIGHTS.length)]]
 }
 
 // Grid of squares behind the Join CTA. Sized to exactly cover its container
@@ -98,12 +123,16 @@ export function JoinSquares() {
       aria-hidden="true"
     >
       {grid.colors.map((color, i) => (
-        <div key={i} className="h-16 w-16" style={{ perspective: 220 }}>
+        <div
+          key={i}
+          className="h-16 w-16"
+          style={{ perspective: 220, padding: INSET }}
+        >
           <div
             ref={(el) => {
               cellRefs.current[i] = el
             }}
-            className="relative h-full w-full"
+            className="relative h-full w-full rounded-[7px]"
             style={{
               transformStyle: "preserve-3d",
               transform: "rotateX(0deg)",
@@ -114,11 +143,11 @@ export function JoinSquares() {
             }}
           >
             <div
-              className="absolute inset-0"
+              className="absolute inset-0 rounded-[7px]"
               style={{ backfaceVisibility: "hidden", background: color }}
             />
             <div
-              className="absolute inset-0"
+              className="absolute inset-0 rounded-[7px]"
               style={{
                 backfaceVisibility: "hidden",
                 transform: "rotateX(180deg)",

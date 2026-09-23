@@ -9,6 +9,8 @@ export type BoardMember = {
   github: string | null
   linkedin: string | null
   email: string | null
+  /** Key into BOARD_ACCENTS — the ring around their photo. */
+  accent: string
   sort_order: number
   created_at: string
 }
@@ -21,6 +23,7 @@ export type BoardMemberInput = {
   github: string | null
   linkedin: string | null
   email: string | null
+  accent: string
   sortOrder: number
 }
 
@@ -46,8 +49,8 @@ export async function insertBoardMember(
   const db = await getDb()
   const row = await db
     .prepare(
-      `INSERT INTO board_members (name, role, image_url, description, github, linkedin, email, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO board_members (name, role, image_url, description, github, linkedin, email, accent, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
        RETURNING *`,
     )
     .bind(
@@ -58,6 +61,7 @@ export async function insertBoardMember(
       input.github,
       input.linkedin,
       input.email,
+      input.accent,
       input.sortOrder,
     )
     .first<BoardMember>()
@@ -74,7 +78,7 @@ export async function updateBoardMember(
     .prepare(
       `UPDATE board_members
        SET name = ?, role = ?, image_url = ?, description = ?,
-           github = ?, linkedin = ?, email = ?, sort_order = ?
+           github = ?, linkedin = ?, email = ?, accent = ?, sort_order = ?
        WHERE id = ?
        RETURNING *`,
     )
@@ -86,6 +90,7 @@ export async function updateBoardMember(
       input.github,
       input.linkedin,
       input.email,
+      input.accent,
       input.sortOrder,
       id,
     )

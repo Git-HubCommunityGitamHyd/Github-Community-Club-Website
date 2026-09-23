@@ -83,12 +83,43 @@ export const GradientCard = React.forwardRef<HTMLDivElement, GradientCardProps>(
         className="h-full"
       >
         <div className={cn(cardVariants({ tone }), className)} {...props}>
-          {/* Ornament. aria-hidden because the category it stands for is already
-              written out in the badge beside it. */}
+          {/* Texture under the ornament. The cards were flat panels with a
+              single hairline mark on them; a dot field masked into the corner
+              gives the surface something to sit on without adding a colour. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-[0.6] dark:opacity-[0.45]"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)",
+              backgroundSize: "22px 22px",
+              color: "rgba(140,149,159,0.28)",
+              maskImage:
+                "radial-gradient(ellipse 60% 85% at 100% 100%, black 0%, transparent 70%)",
+              WebkitMaskImage:
+                "radial-gradient(ellipse 60% 85% at 100% 100%, black 0%, transparent 70%)",
+            }}
+          />
+
+          {/* Ornament. aria-hidden because the category it stands for is
+              already written out in the badge beside it.
+
+              It used to be 208px at stroke-1, hung off the corner at
+              -bottom-10 -right-8. Two problems: cropping a glyph by a third
+              leaves an unrecognisable fragment — a wrench read as a paperclip,
+              a terminal as a stray chevron — and a hairline stroke at that size
+              is so thin it looks like a rendering artefact rather than a
+              deliberate mark. It is smaller now, fully inside the card so the
+              whole shape reads, and thicker so it survives the low opacity.
+
+              It grows on hover instead of rotating, matching the Invertocat in
+              the about bento. A mark that turns reads as a spinner, and most of
+              these glyphs (a wrench, a microphone, a trophy) have an upright
+              orientation that tilting simply breaks. */}
           <Glyph
             aria-hidden="true"
-            strokeWidth={1}
-            className="pointer-events-none absolute -bottom-10 -right-8 h-52 w-52 text-gray-900/[0.06] transition-transform duration-500 group-hover/card:-translate-y-2 group-hover/card:rotate-3 dark:text-gh-text/[0.05]"
+            strokeWidth={1.4}
+            className="pointer-events-none absolute bottom-5 right-5 h-32 w-32 origin-bottom-right text-gray-900/[0.07] transition-[transform,color] duration-700 ease-out group-hover/card:scale-[1.14] group-hover/card:text-gray-900/[0.11] dark:text-gh-text/[0.06] dark:group-hover/card:text-gh-text/[0.1]"
           />
 
           <div

@@ -7,6 +7,7 @@ import { GradientCard } from "@/components/ui/gradient-card"
 import { EventDialog } from "@/features/v2/events/event-dialog"
 import { categoryGlyph } from "@/features/v2/events/categories"
 import { formatEventDate } from "@/features/v2/events/format"
+import { SectionLabel } from "@/features/v2/section-label"
 
 function EventMeta({ event }: { event: Event }) {
   const facts = [
@@ -53,9 +54,7 @@ export function V2EventsSection({ events }: { events: Event[] }) {
       className="border-y border-gray-200 bg-gray-50 dark:border-gh-border dark:bg-gh-surface"
     >
       <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8">
-        <span className="font-mono text-[13px] font-bold text-gh-accent-light dark:text-gh-accent">
-          04 — EVENTS
-        </span>
+        <SectionLabel index="04">Events</SectionLabel>
         <h2 className="mb-4 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-[-0.03em]">
           What we&apos;ve run
         </h2>

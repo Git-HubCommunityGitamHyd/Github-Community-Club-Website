@@ -78,12 +78,9 @@ const SURFACE_VISIBLE = [
 export function V2Navbar({
   activeSection,
   onScrollTo,
-  navSlotRef,
 }: {
   activeSection: string
   onScrollTo: (sectionId: string) => void
-  /** Reserves the docked mascot's spot; the mascot itself floats above it. */
-  navSlotRef?: React.RefObject<HTMLDivElement | null>
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -100,15 +97,6 @@ export function V2Navbar({
         <div className="relative z-20 flex shrink-0 items-center gap-3">
           <ThemeToggle />
           <JoinButton onClick={() => go("join")} />
-          {/* 55x44 keeps MASCOT_ASPECT (1.25). Empty on purpose: the mascot is
-              a fixed-position element that reads this box's live client rect,
-              so it follows the pill as it collapses instead of docking to
-              where the pill would be if it never animated. */}
-          <div
-            ref={navSlotRef}
-            className="h-[44px] w-[55px] shrink-0"
-            aria-hidden="true"
-          />
         </div>
       </NavBody>
 

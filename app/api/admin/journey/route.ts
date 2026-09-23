@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { insertBoardMember } from "@/lib/db/board-members"
-import { validateBoardMember } from "@/lib/validation/board-member"
+import { insertJourneyEntry } from "@/lib/db/journey"
+import { validateJourneyEntry } from "@/lib/validation/journey"
 import { requireAdminApi } from "@/lib/auth/require-admin"
 
 export const runtime = "nodejs"
@@ -17,22 +17,18 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const result = validateBoardMember(body)
+  const result = validateJourneyEntry(body)
   if (!result.ok) {
     return NextResponse.json({ errors: result.errors }, { status: 400 })
   }
 
-  const member = await insertBoardMember({
-    name: result.data.name,
-    role: result.data.role,
-    imageUrl: result.data.imageUrl || null,
+  const entry = await insertJourneyEntry({
+    entryDate: result.data.entryDate,
+    title: result.data.title,
     description: result.data.description,
-    github: result.data.github || null,
-    linkedin: result.data.linkedin || null,
-    email: result.data.email || null,
-    accent: result.data.accent,
+    icon: result.data.icon,
     sortOrder: Number(result.data.sortOrder || 0),
   })
 
-  return NextResponse.json(member, { status: 201 })
+  return NextResponse.json(entry, { status: 201 })
 }

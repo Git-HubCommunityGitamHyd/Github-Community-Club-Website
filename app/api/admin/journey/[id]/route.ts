@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { deleteBoardMember, updateBoardMember } from "@/lib/db/board-members"
-import { validateBoardMember } from "@/lib/validation/board-member"
+import { deleteJourneyEntry, updateJourneyEntry } from "@/lib/db/journey"
+import { validateJourneyEntry } from "@/lib/validation/journey"
 import { requireAdminApi } from "@/lib/auth/require-admin"
 
 export const runtime = "nodejs"
@@ -25,27 +25,23 @@ export async function PATCH(
     )
   }
 
-  const result = validateBoardMember(body)
+  const result = validateJourneyEntry(body)
   if (!result.ok) {
     return NextResponse.json({ errors: result.errors }, { status: 400 })
   }
 
-  const member = await updateBoardMember(id, {
-    name: result.data.name,
-    role: result.data.role,
-    imageUrl: result.data.imageUrl || null,
+  const entry = await updateJourneyEntry(id, {
+    entryDate: result.data.entryDate,
+    title: result.data.title,
     description: result.data.description,
-    github: result.data.github || null,
-    linkedin: result.data.linkedin || null,
-    email: result.data.email || null,
-    accent: result.data.accent,
+    icon: result.data.icon,
     sortOrder: Number(result.data.sortOrder || 0),
   })
 
-  if (!member) {
+  if (!entry) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
-  return NextResponse.json(member)
+  return NextResponse.json(entry)
 }
 
 export async function DELETE(
@@ -60,6 +56,6 @@ export async function DELETE(
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  await deleteBoardMember(id)
+  await deleteJourneyEntry(id)
   return NextResponse.json({ ok: true })
 }

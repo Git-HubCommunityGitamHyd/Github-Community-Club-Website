@@ -7,6 +7,7 @@ import { FaWhatsapp } from "react-icons/fa6"
 import { JoinSquares } from "@/features/join/join-squares"
 import { MagneticButton } from "@/components/ui/magnetic-button"
 import { V2JoinForm } from "@/features/v2/join/join-form"
+import { SectionLabel } from "@/features/v2/section-label"
 
 /**
  * The turning-tile background (`JoinSquares`) is deliberately untouched.
@@ -42,7 +43,28 @@ export function V2JoinSection({ onOpenQr }: { onOpenQr: () => void }) {
     <section id="join" className="relative">
       <div className="relative overflow-hidden bg-gh-deep text-white">
         <JoinSquares />
-        <div className="pointer-events-none absolute inset-0 z-[1] bg-gh-deep/60" />
+        {/* A directional scrim rather than a flat 60% wash. The copy is
+            left-aligned in a max-w-2xl column, so that is the only part that
+            needs to be near-solid; flattening the whole band evenly dimmed the
+            graph everywhere and still left the headline sitting on texture. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-[1]"
+          style={{
+            background:
+              "linear-gradient(to right, rgba(1,4,9,0.97) 0%, rgba(1,4,9,0.9) 32%, rgba(1,4,9,0.62) 62%, rgba(1,4,9,0.4) 100%)",
+          }}
+        />
+        {/* Softens the hard edges where the band meets the sections above and
+            below, so it reads as one element rather than a pasted-in stripe. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-[1]"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(1,4,9,0.85) 0%, transparent 22%, transparent 78%, rgba(1,4,9,0.85) 100%)",
+          }}
+        />
 
         <div className="relative z-10 mx-auto max-w-6xl px-4 py-28 sm:px-6 lg:px-8">
           <motion.div
@@ -52,9 +74,7 @@ export function V2JoinSection({ onOpenQr }: { onOpenQr: () => void }) {
             transition={{ duration: 0.5, ease: "easeOut" }}
             className="max-w-2xl"
           >
-            <span className="font-mono text-[13px] font-bold text-gh-accent">
-              06 — JOIN
-            </span>
+            <SectionLabel index="06">Join</SectionLabel>
             <h2 className="mb-5 mt-4 text-[clamp(36px,6vw,72px)] font-extrabold leading-[1.02] tracking-[-0.03em]">
               Build what&apos;s next with us.
             </h2>

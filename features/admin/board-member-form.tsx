@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ImageUploadField } from "@/features/admin/image-upload-field"
 import type { BoardMember } from "@/lib/db/board-members"
+import {
+  BOARD_ACCENTS,
+  BOARD_ACCENT_KEYS,
+  boardAccent,
+} from "@/features/v2/board/accents"
 
 const inputClass =
   "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-base sm:text-sm text-black placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gh-border dark:bg-gh-elevated dark:text-gh-text dark:placeholder:text-gh-muted dark:focus:border-gh-accent dark:focus:ring-gh-accent"
@@ -20,6 +25,7 @@ type FormState = {
   github: string
   linkedin: string
   email: string
+  accent: string
   sortOrder: string
 }
 
@@ -32,6 +38,7 @@ function toFormState(member?: BoardMember): FormState {
     github: member?.github ?? "",
     linkedin: member?.linkedin ?? "",
     email: member?.email ?? "",
+    accent: member?.accent ?? "green",
     sortOrder: member ? String(member.sort_order) : "0",
   }
 }
@@ -190,6 +197,45 @@ export function BoardMemberForm({ initial }: { initial?: BoardMember }) {
             onChange={(e) => set("sortOrder", e.target.value)}
           />
         </div>
+      </div>
+
+      <div>
+        <label className={labelClass} htmlFor="accent">
+          Photo ring
+        </label>
+        <div className="flex items-center gap-3">
+          {/* A live swatch of the actual gradient, because the names alone
+              ("Aurora", "Ember") do not tell you what you are choosing. */}
+          <span
+            aria-hidden="true"
+            className="size-10 shrink-0 rounded-full"
+            style={{
+              background: `conic-gradient(from 0deg, ${boardAccent(form.accent).stops.join(", ")})`,
+            }}
+          />
+          {/* A dropdown of known keys, not a colour picker: the ring is stored
+              as a key so the page owns what each one renders as. A free hex
+              field would put a colour that belongs to no palette on the site,
+              permanently, the first time anybody used it. */}
+          <select
+            id="accent"
+            className={inputClass}
+            value={form.accent}
+            onChange={(e) => set("accent", e.target.value)}
+          >
+            {BOARD_ACCENT_KEYS.map((key) => (
+              <option key={key} value={key}>
+                {BOARD_ACCENTS[key].label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <p className="mt-1 text-sm text-gray-400 dark:text-gh-muted">
+          Shown around their photo when someone opens their profile.
+        </p>
+        {errors.accent && (
+          <p className="mt-1 text-sm text-red-500">{errors.accent}</p>
+        )}
       </div>
 
       {serverError && <p className="text-sm text-red-500">{serverError}</p>}

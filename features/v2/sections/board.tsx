@@ -4,6 +4,7 @@ import { useState } from "react"
 import type { BoardMember } from "@/lib/db/board-members"
 import { TeamShowcase, type TeamMember } from "@/components/ui/team-showcase"
 import { MemberDialog } from "@/features/v2/board/member-dialog"
+import { SectionLabel } from "@/features/v2/section-label"
 
 function toTeamMember(member: BoardMember): TeamMember {
   return {
@@ -28,9 +29,7 @@ export function V2BoardSection({ members }: { members: BoardMember[] }) {
       id="board"
       className="mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8"
     >
-      <span className="font-mono text-[13px] font-bold text-gh-accent-light dark:text-gh-accent">
-        03 — BOARD
-      </span>
+      <SectionLabel index="03">Board</SectionLabel>
       <h2 className="mb-4 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-[-0.03em]">
         The people behind it
       </h2>

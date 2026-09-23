@@ -265,3 +265,74 @@ textarea:focus-visible,
 .popup-content {
   z-index: 10000000 !important;
 }
+
+/* CanvasText (components/ui/canvas-text.tsx).
+   The line ramp is a repeating-linear-gradient clipped to the glyphs; moving
+   background-position by exactly one period loops seamlessly. The period is
+   handed in as a custom property because it depends on the caller's lineGap
+   and colour count. */
+@keyframes canvas-text-scan {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 var(--canvas-text-period, 70px);
+  }
+}
+
+.canvas-text {
+  animation-name: canvas-text-scan;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-text {
+    animation: none;
+  }
+}
+
+/* The hero's contribution field. Each cell runs this on its own delay and
+   duration (set inline from a hash of the cell index), so the grid twinkles
+   unevenly instead of pulsing in unison. Kept in CSS rather than on a motion
+   value because there are 450 of them and it is decoration. */
+@keyframes contribution-cell {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.contribution-cell {
+  animation-name: contribution-cell;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: opacity, transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .contribution-cell {
+    animation: none;
+  }
+}
+
+/* The rotating ring around a board member's photo. The element turns rather
+   than the gradient's angle, because animating a conic-gradient angle needs
+   `@property` to register it as an <angle> and a transform has always been
+   compositor work. */
+@keyframes board-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.board-ring {
+  animation: board-ring-spin 9s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .board-ring {
+    animation: none;
+  }
+}

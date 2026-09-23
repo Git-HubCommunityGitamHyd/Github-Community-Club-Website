@@ -1,119 +1,84 @@
 "use client"
 
-import { useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { motion, useScroll, useSpring, useTransform } from "framer-motion"
-import {
-  GitBranch,
-  GitCommitVertical,
-  GitFork,
-  GitMerge,
-  GitPullRequest,
-  Star,
-  Tag,
-  Users,
-} from "lucide-react"
-
-export type JourneyItem = {
-  date: string
-  title: string
-  description: string
-}
+import type { LucideIcon } from "lucide-react"
+import { journeyIcon } from "@/features/v2/journey/icons"
+import type { JourneyEntry } from "@/lib/db/journey"
+import { cn } from "@/lib/utils"
 
 /**
- * Node icons carry git semantics rather than being interchangeable dots — the
- * club's history reads as a repository history. Keyed by position so
- * features/home/content.ts stays untouched; the fallback keeps the timeline
- * working if someone appends an entry without coming here first.
+ * What changed, and why the previous version read as bland.
  *
- * Stored as elements rather than component references on purpose: binding one
- * to a capitalised local and rendering `<Icon />` counts as creating a
- * component during render, which resets its state on every pass.
+ * It animated once and then stopped: every card faded up on entry and from
+ * then on the section was eight static blocks and a drawn line. Nothing
+ * responded to the reader, nothing indicated where they were in eight years of
+ * history, and the only way through it was to scroll past all of it.
+ *
+ * Three things fix that, and all three are about *state*, not more motion.
+ *
+ * 1. One entry is active at a time — whichever is nearest the middle of the
+ *    viewport. The active node fills with the accent and grows, its card lifts
+ *    and sharpens, and the rest sit back. The section now tells you where you
+ *    are as you move.
+ * 2. A year rail, sticky beside the timeline, listing every year in the
+ *    history. It highlights the active year and each entry is a real button
+ *    that scrolls to it, so eight years are navigable in one click instead of
+ *    a long scroll.
+ * 3. Hover and keyboard focus promote an entry too, so the thing is
+ *    interactive with a pointer, with a keyboard, and while scrolling.
+ *
+ * Active tracking is one scroll handler measuring node positions rather than
+ * eight IntersectionObservers with a sliver root margin: it needs *nearest to
+ * centre*, which is a comparison across all entries, not a per-element
+ * threshold — and with Lenis driving the scroll, observers fire at their own
+ * cadence and the highlight lags the page.
+ *
+ * The entries come from D1, not from a constant. Each row carries its own icon
+ * key; the component used to index a fixed array of eight glyphs by position,
+ * which is fine for a hardcoded list of eight and wrong the moment the club
+ * adds a ninth milestone or reorders two.
  */
-const ICON_CLASS = "h-6 w-6"
 
-const NODE_ICONS = [
-  <GitBranch key="branch" className={ICON_CLASS} />, // founded — branch cut
-  <GitCommitVertical key="commit" className={ICON_CLASS} />, // first flagship
-  <Star key="star" className={ICON_CLASS} />, // Ace Award, SIG -> Club
-  <Users key="users" className={ICON_CLASS} />, // new executive board
-  <GitPullRequest key="pr" className={ICON_CLASS} />, // second flagship
-  <GitFork key="fork" className={ICON_CLASS} />, // a board per campus
-  <GitMerge key="merge" className={ICON_CLASS} />, // 700+ members
-  <Tag key="tag" className={ICON_CLASS} />, // third flagship — a release
-]
-
-const FALLBACK_ICON = (
-  <GitCommitVertical key="fallback" className={ICON_CLASS} />
-)
-
-function Entry({ item, index }: { item: JourneyItem; index: number }) {
-  const onLeft = index % 2 === 0
-
-  return (
-    <li className="relative grid grid-cols-[3.5rem_1fr] gap-x-5 md:grid-cols-[1fr_5rem_1fr] md:gap-x-0">
-      {/* Desktop left column: holds the card on even rows, empty on odd. */}
-      <div
-        className={`hidden md:block ${onLeft ? "md:pr-12 md:text-right" : ""}`}
-      >
-        {onLeft && <Card item={item} align="right" />}
-      </div>
-
-      {/* The spine column. The node sits on the line in both layouts. */}
-      <div className="relative flex justify-center">
-        <motion.span
-          initial={{ scale: 0.4, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          viewport={{ once: true, margin: "-20% 0px -20% 0px" }}
-          transition={{ type: "spring", stiffness: 320, damping: 24 }}
-          className="relative z-10 mt-1 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-gray-200 bg-white text-gh-accent-light shadow-[0_8px_24px_-12px_rgba(1,4,9,0.25)] dark:border-gh-border dark:bg-gh-elevated dark:text-gh-accent dark:shadow-[0_8px_24px_-12px_rgba(1,4,9,0.9)]"
-        >
-          {NODE_ICONS[index] ?? FALLBACK_ICON}
-        </motion.span>
-      </div>
-
-      {/* Mobile always renders here; desktop only on odd rows. */}
-      <div className={`md:pl-12 ${onLeft ? "md:invisible" : ""}`}>
-        <Card item={item} align="left" />
-      </div>
-    </li>
-  )
+function yearOf(entry: JourneyEntry) {
+  return entry.entry_date.trim().split(/\s+/).pop() ?? entry.entry_date
 }
 
-function Card({ item, align }: { item: JourneyItem; align: "left" | "right" }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-15% 0px -15% 0px" }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      className="pb-16 md:pb-24"
-    >
-      <div
-        className={`font-mono text-[13px] font-bold uppercase tracking-[0.14em] text-gh-accent-light dark:text-gh-accent ${
-          align === "right" ? "md:text-right" : ""
-        }`}
-      >
-        {item.date}
-      </div>
-      <h3 className="mt-3 text-balance text-[clamp(24px,2.6vw,38px)] font-extrabold leading-[1.08] tracking-[-0.02em]">
-        {item.title}
-      </h3>
-      <p
-        className={`mt-4 max-w-[46ch] text-pretty text-base leading-relaxed text-gray-600 dark:text-gh-muted ${
-          align === "right" ? "md:ml-auto" : ""
-        }`}
-      >
-        {item.description}
-      </p>
-    </motion.div>
-  )
-}
-
-export function JourneyTimeline({ items }: { items: JourneyItem[] }) {
+export function JourneyTimeline({ entries }: { entries: JourneyEntry[] }) {
   const ref = useRef<HTMLDivElement>(null)
+  const nodeRefs = useRef<(HTMLLIElement | null)[]>([])
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
-  // Progress across the timeline's own height: 0 when its top reaches the
-  // bottom of the viewport, 1 when its bottom reaches the top.
+  // Nearest to the middle of the viewport wins. Polled on scroll rather than
+  // observed, because this is a comparison across every entry and because
+  // Lenis moves the page inside its own frame loop.
+  useEffect(() => {
+    const resolve = () => {
+      const middle = window.innerHeight / 2
+      let best = 0
+      let bestDistance = Infinity
+      nodeRefs.current.forEach((node, index) => {
+        if (!node) return
+        const rect = node.getBoundingClientRect()
+        const distance = Math.abs(rect.top + rect.height / 2 - middle)
+        if (distance < bestDistance) {
+          bestDistance = distance
+          best = index
+        }
+      })
+      setActiveIndex(best)
+    }
+
+    resolve()
+    window.addEventListener("scroll", resolve, { passive: true })
+    window.addEventListener("resize", resolve)
+    return () => {
+      window.removeEventListener("scroll", resolve)
+      window.removeEventListener("resize", resolve)
+    }
+  }, [])
+
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start 0.85", "end 0.35"],
@@ -128,25 +93,239 @@ export function JourneyTimeline({ items }: { items: JourneyItem[] }) {
   })
   const scaleY = useTransform(progress, (v) => v)
 
+  // The one the reader is pointing at beats the one they have scrolled to.
+  const focusedIndex = hoveredIndex ?? activeIndex
+
+  const years = entries.map(yearOf)
+  const uniqueYears = [...new Set(years)]
+
+  const scrollToIndex = (index: number) => {
+    nodeRefs.current[index]?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    })
+  }
+
   return (
-    <div ref={ref} className="relative">
-      {/* Spine. Offset to the node column's centre: 1.75rem on mobile (half of
-          the 3.5rem gutter), dead centre from md up. */}
-      <div
-        aria-hidden="true"
-        className="absolute bottom-0 left-[1.75rem] top-0 w-px -translate-x-1/2 bg-gray-200 dark:bg-gh-border md:left-1/2"
-      />
-      <motion.div
-        aria-hidden="true"
-        style={{ scaleY }}
-        className="absolute bottom-0 left-[1.75rem] top-0 w-px origin-top -translate-x-1/2 bg-gradient-to-b from-gh-accent-light via-gh-accent-light to-transparent dark:from-gh-accent dark:via-gh-accent md:left-1/2"
+    <div className="lg:flex lg:gap-12">
+      <YearRail
+        years={uniqueYears}
+        activeYear={years[focusedIndex]}
+        onSelect={(year) => scrollToIndex(years.indexOf(year))}
       />
 
-      <ol className="relative">
-        {items.map((item, index) => (
-          <Entry key={item.title} item={item} index={index} />
-        ))}
-      </ol>
+      <div ref={ref} className="relative flex-1">
+        <div
+          aria-hidden="true"
+          className="absolute bottom-0 left-[1.75rem] top-0 w-px -translate-x-1/2 bg-gray-200 dark:bg-gh-border md:left-1/2"
+        />
+        <motion.div
+          aria-hidden="true"
+          style={{ scaleY }}
+          className="absolute bottom-0 left-[1.75rem] top-0 w-px origin-top -translate-x-1/2 bg-gradient-to-b from-gh-accent-light via-gh-accent-light to-transparent dark:from-gh-accent dark:via-gh-accent md:left-1/2"
+        />
+
+        <ol className="relative">
+          {entries.map((entry, index) => (
+            <Entry
+              key={entry.id}
+              ref={(node) => {
+                nodeRefs.current[index] = node
+              }}
+              entry={entry}
+              index={index}
+              isFocused={focusedIndex === index}
+              onEnter={() => setHoveredIndex(index)}
+              onLeave={() => setHoveredIndex(null)}
+            />
+          ))}
+        </ol>
+      </div>
     </div>
+  )
+}
+
+function YearRail({
+  years,
+  activeYear,
+  onSelect,
+}: {
+  years: string[]
+  activeYear: string
+  onSelect: (year: string) => void
+}) {
+  return (
+    <nav
+      aria-label="Jump to a year"
+      className="sticky top-32 hidden h-fit w-28 shrink-0 lg:block"
+    >
+      <p className="mb-5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gh-muted">
+        Timeline
+      </p>
+      <ul className="space-y-1">
+        {years.map((year) => {
+          const isActive = year === activeYear
+          return (
+            <li key={year}>
+              <button
+                type="button"
+                onClick={() => onSelect(year)}
+                aria-current={isActive ? "true" : undefined}
+                className={cn(
+                  "group flex w-full items-center gap-3 rounded-lg py-1.5 text-left font-mono text-sm font-bold tabular-nums transition-colors duration-300",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light dark:focus-visible:ring-gh-accent",
+                  isActive
+                    ? "text-gh-accent-light dark:text-gh-accent"
+                    : "text-gray-400 hover:text-gray-700 dark:text-gh-muted dark:hover:text-gh-text",
+                )}
+              >
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "h-px transition-all duration-300",
+                    isActive
+                      ? "w-6 bg-gh-accent-light dark:bg-gh-accent"
+                      : "w-3 bg-gray-300 group-hover:w-5 dark:bg-gh-border",
+                  )}
+                />
+                {year}
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
+  )
+}
+
+// `ref` as a plain prop — React 19 passes it through without forwardRef.
+function Entry({
+  ref,
+  entry,
+  index,
+  isFocused,
+  onEnter,
+  onLeave,
+}: {
+  ref: (node: HTMLLIElement | null) => void
+  entry: JourneyEntry
+  index: number
+  isFocused: boolean
+  onEnter: () => void
+  onLeave: () => void
+}) {
+  const onLeft = index % 2 === 0
+  // Lowercase local, rendered through a module-scope component: assigning a
+  // capitalised name from a call during render trips react-hooks/static-components.
+  const glyph = journeyIcon(entry.icon)
+
+  return (
+    <li
+      ref={ref}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+      onFocus={onEnter}
+      onBlur={onLeave}
+      className="relative grid grid-cols-[3.5rem_1fr] gap-x-5 md:grid-cols-[1fr_5rem_1fr] md:gap-x-0"
+    >
+      <div
+        className={`hidden md:block ${onLeft ? "md:pr-12 md:text-right" : ""}`}
+      >
+        {onLeft && <Card entry={entry} align="right" isFocused={isFocused} />}
+      </div>
+
+      <div className="relative flex justify-center">
+        <motion.span
+          initial={{ scale: 0.4, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true, margin: "-20% 0px -20% 0px" }}
+          transition={{ type: "spring", stiffness: 320, damping: 24 }}
+          className={cn(
+            "relative z-10 mt-1 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border transition-[background-color,border-color,color,box-shadow,transform] duration-300",
+            isFocused
+              ? "scale-110 border-transparent bg-gh-accent-light text-white shadow-[0_12px_30px_-10px_rgba(31,136,61,0.6)] dark:bg-gh-accent dark:text-gh-deep dark:shadow-[0_12px_30px_-10px_rgba(63,185,80,0.55)]"
+              : "border-gray-200 bg-white text-gray-400 shadow-[0_8px_24px_-12px_rgba(1,4,9,0.25)] dark:border-gh-border dark:bg-gh-elevated dark:text-gh-muted dark:shadow-[0_8px_24px_-12px_rgba(1,4,9,0.9)]",
+          )}
+        >
+          {/* A ring that only exists on the active node, so the eye can find
+              the current point in the history at a glance. It fades in place
+              rather than sharing a `layoutId` across the nodes: entries sit
+              300px or more apart, so a shared ring flew the length of the
+              section on every change — and travelled through empty space
+              whenever the newly active entry was still off-screen. */}
+          <span
+            aria-hidden="true"
+            className={cn(
+              "absolute -inset-2 rounded-[1.25rem] border transition-all duration-300",
+              isFocused
+                ? "scale-100 border-gh-accent-light/40 opacity-100 dark:border-gh-accent/40"
+                : "scale-90 border-transparent opacity-0",
+            )}
+          />
+          <NodeGlyph icon={glyph} />
+        </motion.span>
+      </div>
+
+      <div className={`md:pl-12 ${onLeft ? "md:invisible" : ""}`}>
+        <Card entry={entry} align="left" isFocused={isFocused} />
+      </div>
+    </li>
+  )
+}
+
+function NodeGlyph({ icon: Icon }: { icon: LucideIcon }) {
+  return <Icon aria-hidden="true" className="h-6 w-6" />
+}
+
+function Card({
+  entry,
+  align,
+  isFocused,
+}: {
+  entry: JourneyEntry
+  align: "left" | "right"
+  isFocused: boolean
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-15% 0px -15% 0px" }}
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      className="pb-16 md:pb-24"
+    >
+      <div
+        className={cn(
+          "transition-opacity duration-500",
+          isFocused ? "opacity-100" : "opacity-55",
+        )}
+      >
+        <div
+          className={cn(
+            "font-mono text-[13px] font-bold uppercase tracking-[0.14em] text-gh-accent-light dark:text-gh-accent",
+            align === "right" && "md:text-right",
+          )}
+        >
+          {entry.entry_date}
+        </div>
+        <h3
+          className={cn(
+            "mt-3 text-balance text-[clamp(24px,2.6vw,38px)] font-extrabold leading-[1.08] tracking-[-0.02em] transition-transform duration-500",
+            isFocused &&
+              (align === "right" ? "md:-translate-x-1" : "md:translate-x-1"),
+          )}
+        >
+          {entry.title}
+        </h3>
+        <p
+          className={cn(
+            "mt-4 max-w-[46ch] text-pretty text-base leading-relaxed text-gray-600 dark:text-gh-muted",
+            align === "right" && "md:ml-auto",
+          )}
+        >
+          {entry.description}
+        </p>
+      </div>
+    </motion.div>
   )
 }

@@ -7,7 +7,12 @@ import { useEffect, useRef, useState } from "react"
 // shares the same "Toggle theme" label, and a plain label selector was
 // matching that hidden (0x0 rect) button first, so the glow's visibility
 // check failed every frame and it never showed.
-const MASCOT_SELECTOR = '.z-50 > button[aria-label="Toggle theme"]'
+// v2's mascot wrapper is z-[60] (it docks over the page rather than into the
+// nav pill), v1's is z-50. Match either, still scoped to a fixed wrapper so it
+// does not pick up components/theme-toggle.tsx, which shares the label and
+// measures 0x0 on desktop.
+const MASCOT_SELECTOR =
+  '.z-50 > button[aria-label="Toggle theme"], .z-\\[60\\] > button[aria-label="Toggle theme"]'
 
 // Glow that tracks the mascot's on-screen position/size through its
 // scroll-driven shrink/dock animation. Reads the mascot's real rendered

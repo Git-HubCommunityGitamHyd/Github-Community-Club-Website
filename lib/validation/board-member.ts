@@ -1,3 +1,5 @@
+import { BOARD_ACCENTS } from "@/features/v2/board/accents"
+
 export type BoardMemberFormInput = {
   name: string
   role: string
@@ -6,6 +8,7 @@ export type BoardMemberFormInput = {
   github: string
   linkedin: string
   email: string
+  accent: string
   sortOrder: string
 }
 
@@ -42,6 +45,13 @@ export function validateBoardMember(
   const email = String(input.email ?? "").trim()
   if (email && !EMAIL_RE.test(email)) errors.email = "Enter a valid email"
 
+  // Checked against the same map the dialog renders from, so the CMS cannot
+  // store a key that would silently fall back to the default ring. Blank means
+  // "unspecified" and takes the default rather than being an error, so rows
+  // written before this column existed still validate.
+  const accent = String(input.accent ?? "").trim() || "green"
+  if (!(accent in BOARD_ACCENTS)) errors.accent = "Unknown ring style"
+
   const sortOrder = String(input.sortOrder ?? "0").trim()
   if (sortOrder && Number.isNaN(Number(sortOrder))) {
     errors.sortOrder = "Sort order must be a number"
@@ -59,6 +69,7 @@ export function validateBoardMember(
       github,
       linkedin,
       email,
+      accent,
       sortOrder,
     },
   }

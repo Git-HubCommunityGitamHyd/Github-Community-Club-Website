@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { X } from "lucide-react"
 import { useLenis } from "@/features/v2/smooth-scroll"
 import { useMounted } from "@/lib/use-mounted"
+import { cn } from "@/lib/utils"
 
 /**
  * The overlay behind every v2 detail dialog (board member, event).
@@ -21,11 +22,20 @@ export function DialogShell({
   onClose,
   labelledBy,
   children,
+  panelClassName,
+  bleed = false,
 }: {
   open: boolean
   onClose: () => void
   labelledBy: string
   children: ReactNode
+  /** Overrides the panel's width. Padding is controlled by `bleed`. */
+  panelClassName?: string
+  /**
+   * Drops the panel's own padding so a child can run a cover image to the
+   * edges, and puts the close button on a scrim so it stays legible over one.
+   */
+  bleed?: boolean
 }) {
   const mounted = useMounted()
   const lenis = useLenis()
@@ -82,13 +92,22 @@ export function DialogShell({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
-            className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-gray-200 bg-white p-8 shadow-2xl focus:outline-none dark:border-gh-border dark:bg-gh-surface sm:p-10"
+            className={cn(
+              "relative max-h-[85vh] w-full overflow-y-auto rounded-3xl border border-gray-200 bg-white shadow-2xl focus:outline-none dark:border-gh-border dark:bg-gh-surface",
+              !bleed && "p-8 sm:p-10",
+              panelClassName ?? "max-w-2xl",
+            )}
           >
             <button
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="absolute right-5 top-5 rounded-full p-2 text-gray-500 transition hover:bg-gray-900/10 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light dark:text-gh-muted dark:hover:bg-gh-text/10 dark:hover:text-gh-text dark:focus-visible:ring-gh-accent"
+              className={cn(
+                "absolute right-5 top-5 z-20 rounded-full p-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light dark:focus-visible:ring-gh-accent",
+                bleed
+                  ? "bg-gh-deep/55 text-white backdrop-blur-sm hover:bg-gh-deep/80"
+                  : "text-gray-500 hover:bg-gray-900/10 hover:text-gray-900 dark:text-gh-muted dark:hover:bg-gh-text/10 dark:hover:text-gh-text",
+              )}
             >
               <X className="h-5 w-5" />
             </button>

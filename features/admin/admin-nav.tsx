@@ -5,6 +5,7 @@ const LINKS = [
   { href: "/admin", label: "Applications" },
   { href: "/admin/board", label: "Board" },
   { href: "/admin/events", label: "Events" },
+  { href: "/admin/journey", label: "Journey" },
 ]
 
 export function AdminNav({ active }: { active: string }) {
