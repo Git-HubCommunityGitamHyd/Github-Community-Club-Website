@@ -9,6 +9,7 @@ import { NAV_ITEMS } from "@/features/home/content"
 import { SmoothScroll } from "@/features/v2/smooth-scroll"
 import { useActiveSection } from "@/features/v2/use-active-section"
 import { GhMarquee } from "@/components/mascot/gh-marquee"
+import { HatchBand } from "@/components/ui/texture"
 import { QRPopupCard } from "@/features/home/qr-popup-card"
 
 // Sections still on their v1 implementation. Each phase swaps one of these
@@ -81,11 +82,23 @@ function V2Shell({
       <main>
         <V2HeroSection heroSlotRef={heroSlotRef} onScrollTo={scrollToSection} />
         <GhMarquee />
+
+        {/* The two hatch bands bracket the textured run. Everything between
+            them carries the graph-paper grid and the container rules; the
+            hero, the marquee and the join band do not, because each of those
+            already has a surface of its own. The rule is "the hatch marks
+            where the paper starts and stops" — it is deliberately not at
+            every seam, which would turn a seam detail into a page motif. */}
+        <HatchBand />
+
         <V2AboutSection onScrollTo={scrollToSection} />
         <V2JourneySection entries={journeyEntries} />
         <V2BoardSection members={boardMembers} />
         <V2EventsSection events={events} />
         <V2BenefitsSection />
+
+        <HatchBand />
+
         <V2JoinSection onOpenQr={() => setIsQrPopupOpen(true)} />
       </main>
 

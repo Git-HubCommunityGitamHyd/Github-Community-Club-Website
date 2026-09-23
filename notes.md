@@ -646,3 +646,120 @@ study one. The first photo is the cover now, with the title over a scrim; the
 facts are a bordered strip of _labelled_ cells (when, where, how long, how many)
 instead of four icons on a line; the rest of the photos are a still grid.
 `DialogShell` gained `bleed` and `panelClassName` for this.
+
+## Phase 13 — texture, a docking mascot, photographs on the event cards
+
+The reference for this phase was the user's own site, vidh.co, which they
+pointed at explicitly. What it does that this page did not: a fine graph-paper
+grid behind the content, 45-degree hatch bands at the seams, faint vertical
+rules marking the container, and illustration motifs that travel _down_ the
+page instead of sitting in a corner.
+
+### Texture is not decoration
+
+`components/ui/texture.tsx`. The grid is a pair of crossed 1px linear-gradients
+at a 52px pitch, the rules are a `border-x` on a box the same width as the
+section's container, the hatch is a `repeating-linear-gradient(45deg, …)` on a
+32px band. Nothing is an image, so there is nothing to download and nothing to
+go soft on a high-density screen.
+
+The one structural decision worth recording: all three set their line colour
+through `currentColor` and a Tailwind text utility, so light and dark get
+separate values. A single alpha cannot serve both — a grid that reads correctly
+on white is invisible on `#0d1117`, and one tuned for `#0d1117` is a cage on
+white. This is the same two-palette problem the theme has everywhere else, and
+it does not go away just because the element is faint.
+
+The hatch is deliberately _not_ at every seam. Two bands bracket the textured
+run (after the marquee, before the join band) and that is the whole rule: the
+hatch marks where the paper starts and stops. Putting one at each of the five
+section boundaries turns a seam detail into a page motif, which is exactly the
+kind of repetition the section tones are already handling.
+
+### The "Innovation" tile was a label with nothing under it
+
+An eyebrow, the word "Innovation" and a line of mono description. Every other
+tile in the bento carries something a reader takes away — a number, a claim, a
+button — and this one asserted a value and stopped. The user's word for it was
+that it "serves no purpose", which was fair.
+
+It is a terminal now (`features/v2/about/terminal-tile.tsx`) running the exact
+sequence a first-time contributor goes through: `git switch -c`, commit, `gh pr
+create`, pull request opened. Same claim, shown rather than stated, and it is
+specific to this club in a way the word "Innovation" was not. It also settles
+the dark tile's presence — a dark panel inside a light bento needs a reason or
+it reads as a stray section, and a terminal is the one surface everybody
+already expects to be dark.
+
+Two details that matter more than they look:
+
+- The finished transcript is rendered invisibly underneath and the typed copy
+  laid over it, so the tile reserves its final height from the first frame.
+  Without that the tile grows a line at a time while typing, and because it
+  shares a bento row with the "Start contributing" tile, that tile and
+  everything below the grid shift on every line.
+- Output lines land whole; only the input lines type. Watching a machine "type"
+  its own response is the tell that makes a fake terminal look fake.
+
+The typing runs once and stops with a blinking cursor. A looping terminal in
+the middle of a page never resolves, so you cannot read past it.
+
+### The event cards were telling you how many photos they were not showing you
+
+The old card was the generic gradient card with an event poured into it, and
+its footer read "3 photos". Every one of these events has photographs sitting
+in the database. The cards were flat because the content was flat, not because
+the container needed more effects — so the photograph is the card now
+(`features/v2/events/event-card.tsx`), and the remaining count moved onto the
+image as a chip: the picture you can see plus the number you cannot.
+
+`components/ui/gradient-card.tsx` is deleted. It was a vendored snippet used
+only here, and once the card is this event-specific, parameterising a generic
+card further is the wrong shape.
+
+Events with no photographs keep the identical frame, filled with the dot field
+and the category glyph the old card used. If a missing image collapsed the
+frame, one empty event would make the whole grid look broken instead of making
+that one card look quiet.
+
+### The mascot's position was a readout of the mouse
+
+The previous dock parked it in a viewport corner and flipped it to the other
+corner when the cursor crossed the middle of the screen. Two things were wrong,
+and the user named both.
+
+The side was chosen by the _cursor_, so where the mascot sat told you nothing
+about where you were on the page. It docks per section now
+(`features/v2/mascot/docks.ts`): each section owns a side and a descending band
+of viewport-height fractions, so the mascot arrives high, drifts down as you
+read through the section, then crosses to the opposite side for the next one.
+Sides alternate, which traces a zig-zag down the page rather than a rail. The
+crossing is blended across the last 16% of each section — without that the
+target jumps the full width of the screen the instant the boundary passes, and
+the follow easing turns it into the mascot bolting sideways.
+
+The second complaint was that it "just keeps looking towards one side". That
+was a direct consequence of the first: pinned to an edge, the pointer is almost
+always far off on the same side, so the tracking saturates at full deflection
+and stays there. The gaze now blends by proximity — inside `GAZE_FALLOFF` the
+pointer wins, outside it the mascot looks inward at the content beside it with
+a slow idle drift. It only tracks you when you are actually near it, which is
+also when tracking reads as attention rather than as a stuck servo.
+
+The micro-interaction is one decaying squash when it settles into a new dock,
+so a crossover ends with a visible full stop instead of just ceasing to move.
+
+`measure()` runs from a `ResizeObserver` on the body, not just on resize:
+sections change height as images load and as `whileInView` content settles,
+which moves every dock below them.
+
+### The hero CTA
+
+`components/ui/button-colorful.tsx`. What the 21st.dev snippet contributes is
+the mechanic — a solid button with a blurred gradient wash behind it that
+bleeds past its edge and intensifies on hover. The colours are dropped: the
+snippet washes indigo into purple into pink, three hues none of which are this
+site's, on the single most important button on the page. The wash is the
+accent's own green ramp instead. The snippet's `overflow-hidden` is also
+dropped, because clipping the wash to the button's box cancels the blur it is
+paired with.

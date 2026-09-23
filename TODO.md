@@ -253,6 +253,65 @@ verified in the browser in both themes.
 - [ ] Two schema changes in one phase. The next one probably justifies
       `wrangler d1 migrations` instead of hand-run patch files
 
+## Phase 13 — texture, docking mascot, card + button work (DONE)
+
+Reference: the user's own site, vidh.co. What it does that this page did not:
+a fine graph-paper grid behind the content, 45-degree hatch bands as section
+dividers, faint vertical container rules, and illustration motifs that travel
+down the page rather than sitting in one corner. All of it monochrome and
+nearly invisible — texture, not decoration.
+
+- [x] 1. Event cards — another pass. `components/ui/gradient-card.tsx` is gone;
+      `features/v2/events/event-card.tsx` replaces it. The cards show the
+      event's own photograph now, with the remaining count as a chip on the
+      image instead of a "3 photos" footnote under it. Events with no
+      photographs keep the same frame, filled with the dot field and the
+      category glyph
+- [x] 2. Section texture: `components/ui/texture.tsx` — `GraphPaper`,
+      `ContainerRules`, `HatchBand`, and `SectionTexture` (the first two
+      together, which is how sections use them). Applied to About, Journey,
+      Board, Events and Benefits; two hatch bands in `v2-page.tsx` bracket the
+      textured run. Line colours come through `currentColor` so light and dark
+      get separate values
+- [x] 3. Mascot docks per section. `features/v2/mascot/docks.ts` holds the
+      table (side plus a descending band of viewport-height fractions);
+      `v2-mascot.tsx` resolves the dock from scroll position, blends across the
+      last 16% of each section, and plays one decaying squash on arrival. The
+      cursor no longer chooses the side. Gaze falls back to looking inward with
+      a slow drift once the pointer is further than `GAZE_FALLOFF`, which is
+      what was making it appear to stare in one direction
+- [x] 4. The dark "Innovation" tile is a terminal —
+      `features/v2/about/terminal-tile.tsx` types out branch → commit → PR
+      opened, once, on entry. The finished transcript is rendered invisibly
+      underneath to reserve the tile's height so the bento row does not reflow
+      while it types
+- [x] 5. `components/ui/button-colorful.tsx`, re-toned to the accent ramp, on
+      the hero's primary CTA
+- [x] 6. TODO.md and notes.md updated
+
+### Checks
+
+- Both themes, at 1440x900, on About, Journey, Board and Events
+- Mascot position sampled per section: hero slot → about right (cx 1285→1327,
+  cy 291→416, drifting down) → journey left (cx ~120) → board right (cx 1323).
+  Gaze points inward at each dock rather than saturating
+- Terminal tile types and stops with a blinking cursor; tile height stable
+- `npx tsc --noEmit` and `npx eslint components features` clean
+
+### Follow-ups
+
+- Reduced motion is code-correct throughout (docks, terminal, cursor, texture)
+  but still cannot be verified — the browser pane cannot emulate
+  `prefers-reduced-motion`
+- The dock bands are tuned for desktop viewport heights. They are fractions, so
+  they scale, but the mascot is `hidden md:block` and the mobile pass will need
+  its own decision about whether it appears at all
+
+### Waiting on the user
+
+- Two more sections, which they describe as closer to two new pages. They will
+  say what these are.
+
 ## Next
 
 - [ ] Promote `/v2` to `/` — the font rides along with it

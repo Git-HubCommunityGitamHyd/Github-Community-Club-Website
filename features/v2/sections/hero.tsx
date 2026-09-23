@@ -3,6 +3,7 @@
 import type { RefObject } from "react"
 import { motion } from "framer-motion"
 import { ArrowRight } from "lucide-react"
+import { ButtonColorful } from "@/components/ui/button-colorful"
 import { CanvasText } from "@/components/ui/canvas-text"
 
 const ENTRY = {
@@ -88,17 +89,11 @@ export function V2HeroSection({
             transition={{ duration: 0.6 }}
             className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4"
           >
-            <button
+            <ButtonColorful
               type="button"
+              label="Join the community"
               onClick={() => onScrollTo("join")}
-              className="group inline-flex items-center gap-2 rounded-full bg-gh-accent-light px-7 py-3.5 text-[15px] font-semibold text-white transition duration-200 hover:opacity-90 active:scale-[0.98] dark:bg-gh-accent dark:text-gh-deep"
-            >
-              Join the community
-              <ArrowRight
-                aria-hidden="true"
-                className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
-              />
-            </button>
+            />
             <button
               type="button"
               onClick={() => onScrollTo("journey")}

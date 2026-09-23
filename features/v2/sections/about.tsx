@@ -7,8 +7,10 @@ import type { LucideIcon } from "lucide-react"
 import { FaGithub } from "react-icons/fa6"
 import { CountingNumber } from "@/components/ui/counting-number"
 import { PILLARS } from "@/features/home/content"
+import { TerminalTile } from "@/features/v2/about/terminal-tile"
 import { ToolMarquee } from "@/features/v2/about/tool-marquee"
 import { SectionLabel } from "@/features/v2/section-label"
+import { SectionTexture } from "@/components/ui/texture"
 
 /**
  * The about bento.
@@ -59,166 +61,171 @@ export function V2AboutSection({
   })
 
   return (
-    <section
-      id="about"
-      className="mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8"
-    >
-      <SectionLabel index="01">About</SectionLabel>
-      <h2 className="mb-5 mt-5 max-w-3xl text-balance text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em]">
-        A community of builders, designers and open-source contributors.
-      </h2>
-      <p className="mb-14 max-w-[56ch] text-pretty text-lg leading-relaxed text-gray-600 dark:text-gh-muted">
-        We are students at GITAM University who learn in public — running
-        workshops, maintaining repositories together, and getting each
-        other&apos;s first pull requests merged.
-      </p>
+    <section id="about" className="relative">
+      <SectionTexture />
+      <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8">
+        <SectionLabel index="01">About</SectionLabel>
+        <h2 className="mb-5 mt-5 max-w-3xl text-balance text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em]">
+          A community of builders, designers and open-source contributors.
+        </h2>
+        <p className="mb-14 max-w-[56ch] text-pretty text-lg leading-relaxed text-gray-600 dark:text-gh-muted">
+          We are students at GITAM University who learn in public — running
+          workshops, maintaining repositories together, and getting each
+          other&apos;s first pull requests merged.
+        </p>
 
-      <motion.div
-        ref={gridRef}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ staggerChildren: 0.07 }}
-        className="grid grid-cols-2 gap-5 md:grid-cols-6"
-      >
-        {/* Feature tile — half the grid, two rows tall. */}
-        <motion.article
-          variants={ENTRY}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className={`${CARD} ${QUIET_TILE} group col-span-2 flex flex-col justify-between md:col-span-3 md:row-span-2`}
+        <motion.div
+          ref={gridRef}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ staggerChildren: 0.07 }}
+          className="grid grid-cols-2 gap-5 md:grid-cols-6"
         >
-          <Ornament />
+          {/* Feature tile — half the grid, two rows tall. */}
+          <motion.article
+            variants={ENTRY}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className={`${CARD} ${QUIET_TILE} group col-span-2 flex flex-col justify-between md:col-span-3 md:row-span-2`}
+          >
+            <Ornament />
 
-          <div className="relative z-10">
-            <span className="inline-flex rounded-full bg-gray-900 px-4 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white dark:bg-gh-accent dark:text-gh-deep">
-              {openSource.title}
-            </span>
-            <h3 className="mt-7 text-balance text-[clamp(30px,3.4vw,46px)] font-extrabold uppercase leading-[0.98] tracking-[-0.03em]">
-              We build
-              <br />
-              in the open.
-            </h3>
-          </div>
-
-          <p className="relative z-10 mt-12 max-w-[34ch] text-pretty text-lg leading-relaxed text-gray-500 dark:text-gh-muted">
-            {openSource.desc} — in public repositories, reviewed by the people
-            sitting next to you.
-          </p>
-        </motion.article>
-
-        {/* The one loud tile on the page, and the largest number. */}
-        <motion.article
-          variants={ENTRY}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className={`${CARD} col-span-2 flex flex-col justify-between bg-gh-accent-light text-white dark:bg-gh-accent dark:text-gh-deep md:col-span-3`}
-        >
-          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] opacity-80">
-            {community.title}
-          </span>
-          <div className="mt-8 space-y-3">
-            <span
-              className="block text-6xl font-extrabold tabular-nums tracking-[-0.04em]"
-              aria-label="700+ members"
-            >
-              <span aria-hidden="true">
-                <CountingNumber
-                  target={700}
-                  autoStart={counting}
-                  transition={COUNT}
-                />
-                +
+            <div className="relative z-10">
+              <span className="inline-flex rounded-full bg-gray-900 px-4 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white dark:bg-gh-accent dark:text-gh-deep">
+                {openSource.title}
               </span>
-            </span>
-            <div className="h-1.5 w-full rounded-full bg-white/25 dark:bg-gh-deep/20">
-              {/* The bar fills with the count rather than being painted in at
-                  four fifths, so the figure and its bar tell one story. */}
-              <motion.div
-                initial={{ scaleX: 0 }}
-                animate={counting ? { scaleX: 0.8 } : { scaleX: 0 }}
-                transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
-                className="h-full origin-left rounded-full bg-white dark:bg-gh-deep"
-              />
+              <h3 className="mt-7 text-balance text-[clamp(30px,3.4vw,46px)] font-extrabold uppercase leading-[0.98] tracking-[-0.03em]">
+                We build
+                <br />
+                in the open.
+              </h3>
             </div>
-            <p className="text-sm font-medium opacity-80">
-              members across three campuses
+
+            <p className="relative z-10 mt-12 max-w-[34ch] text-pretty text-lg leading-relaxed text-gray-500 dark:text-gh-muted">
+              {openSource.desc} — in public repositories, reviewed by the people
+              sitting next to you.
             </p>
-          </div>
-        </motion.article>
+          </motion.article>
 
-        {/* Three small figures, under the loud one. */}
-        <StatTile
-          icon={CalendarDays}
-          value={2022}
-          from={2018}
-          format={String}
-          label="Founded"
-          counting={counting}
-        />
-        <StatTile
-          icon={CalendarCheck}
-          value={30}
-          suffix="+"
-          label="Events hosted"
-          counting={counting}
-        />
-        <StatTile
-          icon={MapPin}
-          value={3}
-          label="Campuses"
-          counting={counting}
-        />
-
-        {/* Dark tile. Deliberate inside a bento, where it reads as one element
-            among several — not the stray dark band the audit warns about. */}
-        <motion.article
-          variants={ENTRY}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className={`${CARD} col-span-2 flex flex-col justify-center gap-4 bg-gh-deep text-white md:col-span-3`}
-        >
-          <span
-            aria-hidden="true"
-            className="flex size-10 items-center justify-center rounded-lg bg-gh-accent font-mono text-sm font-bold text-gh-deep"
+          {/* The one loud tile on the page, and the largest number. */}
+          <motion.article
+            variants={ENTRY}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className={`${CARD} col-span-2 flex flex-col justify-between bg-gh-accent-light text-white dark:bg-gh-accent dark:text-gh-deep md:col-span-3`}
           >
-            {innovation.code}
-          </span>
-          <h3 className="text-xl font-bold leading-tight">
-            {innovation.title}
-          </h3>
-          <p className="font-mono text-xs text-gray-400">{innovation.desc}</p>
-        </motion.article>
+            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] opacity-80">
+              {community.title}
+            </span>
+            <div className="mt-8 space-y-3">
+              <span
+                className="block text-6xl font-extrabold tabular-nums tracking-[-0.04em]"
+                aria-label="700+ members"
+              >
+                <span aria-hidden="true">
+                  <CountingNumber
+                    target={700}
+                    autoStart={counting}
+                    transition={COUNT}
+                  />
+                  +
+                </span>
+              </span>
+              <div className="h-1.5 w-full rounded-full bg-white/25 dark:bg-gh-deep/20">
+                {/* The bar fills with the count rather than being painted in at
+                  four fifths, so the figure and its bar tell one story. */}
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  animate={counting ? { scaleX: 0.8 } : { scaleX: 0 }}
+                  transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
+                  className="h-full origin-left rounded-full bg-white dark:bg-gh-deep"
+                />
+              </div>
+              <p className="text-sm font-medium opacity-80">
+                members across three campuses
+              </p>
+            </div>
+          </motion.article>
 
-        {/* Wide tile. */}
-        <motion.article
-          variants={ENTRY}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className={`${CARD} ${QUIET_TILE} group col-span-2 flex items-center justify-between gap-6 transition-colors hover:border-gray-300 dark:hover:border-gh-muted md:col-span-3`}
-        >
-          <div>
-            <h3 className="text-2xl font-extrabold uppercase tracking-[-0.02em]">
-              Start contributing
-            </h3>
-            <p className="mt-2 text-pretty text-gray-600 dark:text-gh-muted">
-              No experience required. The next workshop takes you from install
-              to merged.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => onScrollTo("join")}
-            aria-label="Start contributing — go to the join form"
-            className="flex size-16 shrink-0 items-center justify-center rounded-full border border-gray-300 text-gray-900 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light focus-visible:ring-offset-2 group-hover:border-transparent group-hover:bg-gh-accent-light group-hover:text-white dark:border-gh-border dark:text-gh-text dark:focus-visible:ring-gh-accent dark:focus-visible:ring-offset-gh-surface dark:group-hover:bg-gh-accent dark:group-hover:text-gh-deep"
+          {/* Three small figures, under the loud one. */}
+          <StatTile
+            icon={CalendarDays}
+            value={2022}
+            from={2018}
+            format={String}
+            label="Founded"
+            counting={counting}
+          />
+          <StatTile
+            icon={CalendarCheck}
+            value={30}
+            suffix="+"
+            label="Events hosted"
+            counting={counting}
+          />
+          <StatTile
+            icon={MapPin}
+            value={3}
+            label="Campuses"
+            counting={counting}
+          />
+
+          {/* Dark tile — a terminal, so the one dark panel in a light bento has
+            a reason to be dark rather than reading as a stray section. */}
+          <motion.article
+            variants={ENTRY}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className={`${CARD} col-span-2 bg-gh-deep text-white md:col-span-3`}
           >
-            <span className="absolute inset-0 rounded-2xl" aria-hidden="true" />
-            <ArrowRight
+            {/* A faint scanline wash, only here. It is the one place on the
+              page where a CRT reference reads as the subject rather than as
+              decoration. */}
+            <div
               aria-hidden="true"
-              className="h-6 w-6 transition-transform duration-300 group-hover:translate-x-0.5"
+              className="pointer-events-none absolute inset-0 opacity-[0.55]"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 3px)",
+              }}
             />
-          </button>
-        </motion.article>
-      </motion.div>
+            <TerminalTile label={innovation.title} />
+          </motion.article>
 
-      <div className="mt-16">
-        <ToolMarquee />
+          {/* Wide tile. */}
+          <motion.article
+            variants={ENTRY}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className={`${CARD} ${QUIET_TILE} group col-span-2 flex items-center justify-between gap-6 transition-colors hover:border-gray-300 dark:hover:border-gh-muted md:col-span-3`}
+          >
+            <div>
+              <h3 className="text-2xl font-extrabold uppercase tracking-[-0.02em]">
+                Start contributing
+              </h3>
+              <p className="mt-2 text-pretty text-gray-600 dark:text-gh-muted">
+                No experience required. The next workshop takes you from install
+                to merged.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onScrollTo("join")}
+              aria-label="Start contributing — go to the join form"
+              className="flex size-16 shrink-0 items-center justify-center rounded-full border border-gray-300 text-gray-900 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light focus-visible:ring-offset-2 group-hover:border-transparent group-hover:bg-gh-accent-light group-hover:text-white dark:border-gh-border dark:text-gh-text dark:focus-visible:ring-gh-accent dark:focus-visible:ring-offset-gh-surface dark:group-hover:bg-gh-accent dark:group-hover:text-gh-deep"
+            >
+              <span
+                className="absolute inset-0 rounded-2xl"
+                aria-hidden="true"
+              />
+              <ArrowRight
+                aria-hidden="true"
+                className="h-6 w-6 transition-transform duration-300 group-hover:translate-x-0.5"
+              />
+            </button>
+          </motion.article>
+        </motion.div>
+
+        <div className="mt-16">
+          <ToolMarquee />
+        </div>
       </div>
     </section>
   )

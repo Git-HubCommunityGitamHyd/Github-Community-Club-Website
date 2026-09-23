@@ -1,42 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Calendar, ImageIcon, MapPin, Users } from "lucide-react"
 import type { Event } from "@/lib/db/events"
-import { GradientCard } from "@/components/ui/gradient-card"
+import { EventCard } from "@/features/v2/events/event-card"
 import { EventDialog } from "@/features/v2/events/event-dialog"
-import { categoryGlyph } from "@/features/v2/events/categories"
-import { formatEventDate } from "@/features/v2/events/format"
 import { SectionLabel } from "@/features/v2/section-label"
-
-function EventMeta({ event }: { event: Event }) {
-  const facts = [
-    { icon: Calendar, value: formatEventDate(event.event_date) },
-    { icon: MapPin, value: event.location },
-    { icon: Users, value: event.attendees ? `${event.attendees}` : null },
-  ].filter((fact) => Boolean(fact.value))
-
-  return (
-    <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-500 dark:text-gh-muted">
-      {facts.map((fact) => (
-        <span key={fact.value} className="inline-flex items-center gap-1.5">
-          <fact.icon aria-hidden="true" className="h-4 w-4" />
-          <span className="tabular-nums">{fact.value}</span>
-        </span>
-      ))}
-    </div>
-  )
-}
-
-function PhotoCount({ count }: { count: number }) {
-  if (count === 0) return null
-  return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gh-muted">
-      <ImageIcon aria-hidden="true" className="h-3.5 w-3.5" />
-      {count} {count === 1 ? "photo" : "photos"}
-    </span>
-  )
-}
+import { SectionTexture } from "@/components/ui/texture"
 
 export function V2EventsSection({ events }: { events: Event[] }) {
   const [selected, setSelected] = useState<Event | null>(null)
@@ -51,9 +20,10 @@ export function V2EventsSection({ events }: { events: Event[] }) {
   return (
     <section
       id="events"
-      className="border-y border-gray-200 bg-gray-50 dark:border-gh-border dark:bg-gh-surface"
+      className="relative border-y border-gray-200 bg-gray-50 dark:border-gh-border dark:bg-gh-surface"
     >
-      <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8">
+      <SectionTexture />
+      <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8">
         <SectionLabel index="04">Events</SectionLabel>
         <h2 className="mb-4 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-[-0.03em]">
           What we&apos;ve run
@@ -70,31 +40,18 @@ export function V2EventsSection({ events }: { events: Event[] }) {
         ) : (
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="lg:col-span-2">
-              <GradientCard
-                tone="featured"
-                horizontal
-                badgeText={featured.category}
-                glyph={categoryGlyph(featured.category)}
-                title={featured.title}
-                description={featured.description}
-                ctaText="Read the write-up"
+              <EventCard
+                event={featured}
+                featured
                 onActivate={() => setSelected(featured)}
-                meta={<EventMeta event={featured} />}
-                footer={<PhotoCount count={featured.images.length} />}
               />
             </div>
 
             {rest.map((event) => (
-              <GradientCard
+              <EventCard
                 key={event.id}
-                badgeText={event.category}
-                glyph={categoryGlyph(event.category)}
-                title={event.title}
-                description={event.description}
-                ctaText="Read the write-up"
+                event={event}
                 onActivate={() => setSelected(event)}
-                meta={<EventMeta event={event} />}
-                footer={<PhotoCount count={event.images.length} />}
               />
             ))}
           </div>
