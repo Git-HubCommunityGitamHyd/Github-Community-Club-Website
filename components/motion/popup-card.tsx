@@ -83,7 +83,7 @@ export function PopupCard({
           <AnimatePresence>
             {isExpanded && (
               <motion.div
-                className="popup-overlay fixed inset-0 flex items-center justify-center bg-black/80 p-4 backdrop-blur-lg dark:bg-black/90"
+                className="popup-overlay fixed inset-0 flex items-center justify-center bg-black/90 p-4 backdrop-blur-lg"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -94,13 +94,13 @@ export function PopupCard({
                 style={{ zIndex: 9999999 }}
               >
                 <motion.div
-                  className="hide-scrollbar popup-content relative h-auto max-h-[85vh] w-full max-w-6xl overflow-y-auto rounded-2xl bg-white shadow-2xl dark:bg-gh-surface dark:shadow-black/60 md:rounded-3xl"
+                  className="hide-scrollbar popup-content relative h-auto max-h-[85vh] w-full max-w-6xl overflow-y-auto rounded-2xl bg-gh-surface shadow-2xl shadow-black/60 md:rounded-3xl"
                   layoutId={`card-${cardId}`}
                   transition={{ duration: 0.4, ease: "easeOut" }}
                   style={{ zIndex: 10000000 }}
                 >
                   <motion.button
-                    className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 shadow-lg transition-colors duration-200 hover:bg-gray-200 dark:bg-gh-elevated dark:hover:bg-gh-border"
+                    className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-gh-elevated shadow-lg transition-colors duration-200 hover:bg-gh-border"
                     onClick={handleClose}
                     aria-label="Close"
                     whileHover={{ scale: 1.1, rotate: 90 }}
@@ -114,7 +114,7 @@ export function PopupCard({
                     exit={{ opacity: 0, scale: 0 }}
                     style={{ zIndex: 10000001 }}
                   >
-                    <X className="h-6 w-6 text-gray-600 dark:text-gh-muted" />
+                    <X className="h-6 w-6 text-gh-muted" />
                   </motion.button>
 
                   <AnimatePresence>

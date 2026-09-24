@@ -18,7 +18,7 @@ export function HeroSection({
       style={{ minHeight: "480px" }}
     >
       <div className="relative z-10 mx-auto max-w-7xl px-4 pb-16 pt-24 sm:px-6 md:pt-32 lg:px-8">
-        {/* Marks where the big mascot sits at rest — GhMascotToggle
+        {/* Marks where the big mascot sits at rest — GhMascotDock
             measures this and animates toward navSlotRef on scroll. It
             lives INSIDE the max-w-7xl container, with insets matching the
             container's own padding, so it lines up with the right edge of
@@ -39,7 +39,7 @@ export function HeroSection({
           GitHub
           <br />
           Community
-          <span className="text-gh-accent-light dark:text-gh-accent">.</span>
+          <span className="text-gh-accent">.</span>
         </motion.h1>
 
         <motion.div
@@ -48,7 +48,7 @@ export function HeroSection({
           transition={{ duration: 0.7, delay: 0.15 }}
           className="flex flex-wrap items-end justify-between gap-x-12 gap-y-6 pt-4"
         >
-          <p className="max-w-xl text-lg leading-relaxed text-gray-600 dark:text-gh-muted sm:text-xl">
+          <p className="max-w-xl text-lg leading-relaxed text-gh-muted sm:text-xl">
             Empowering developers, fostering collaboration, and building the
             future of open source at GITAM University.
           </p>

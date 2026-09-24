@@ -9,7 +9,7 @@ export function BenefitsSection() {
       id="benefits"
       className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8"
     >
-      <span className="font-mono text-[13px] font-bold text-gh-accent-light dark:text-gh-accent">
+      <span className="font-mono text-[13px] font-bold text-gh-accent">
         05 — BENEFITS
       </span>
       <h2 className="mb-4 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-tight">
@@ -38,16 +38,16 @@ export function BenefitsSection() {
         {BENEFITS.map((benefit, index) => (
           <ScrollStackItem
             key={benefit.title}
-            itemClassName="flex flex-col justify-between border border-l-4 border-gray-200 border-l-gh-accent-light bg-white dark:border-gh-border dark:border-l-gh-accent dark:bg-gh-surface"
+            itemClassName="flex flex-col justify-between border border-l-4 border-l-gh-accent bg-gh-surface"
           >
-            <span className="font-mono text-sm font-bold text-gray-300 dark:text-gh-muted">
+            <span className="font-mono text-sm font-bold text-gh-muted">
               {String(index + 1).padStart(2, "0")}
             </span>
             <div>
               <h3 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
                 {benefit.title}
               </h3>
-              <p className="mt-3 max-w-md text-base leading-relaxed text-gray-600 dark:text-gh-muted sm:text-lg">
+              <p className="mt-3 max-w-md text-base leading-relaxed text-gh-muted sm:text-lg">
                 {benefit.desc}
               </p>
             </div>

@@ -13,7 +13,7 @@ export function V2JourneySection({ entries }: { entries: JourneyEntry[] }) {
   return (
     <section
       id="journey"
-      className="relative border-y border-gray-200 bg-gray-50 dark:border-gh-border dark:bg-gh-surface"
+      className="relative border-y border-gh-border bg-gh-surface"
     >
       <SectionTexture />
       <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8">

@@ -117,12 +117,12 @@ export function JourneyTimeline({ entries }: { entries: JourneyEntry[] }) {
       <div ref={ref} className="relative flex-1">
         <div
           aria-hidden="true"
-          className="absolute bottom-0 left-[1.75rem] top-0 w-px -translate-x-1/2 bg-gray-200 dark:bg-gh-border md:left-1/2"
+          className="absolute bottom-0 left-[1.75rem] top-0 w-px -translate-x-1/2 bg-gh-border md:left-1/2"
         />
         <motion.div
           aria-hidden="true"
           style={{ scaleY }}
-          className="absolute bottom-0 left-[1.75rem] top-0 w-px origin-top -translate-x-1/2 bg-gradient-to-b from-gh-accent-light via-gh-accent-light to-transparent dark:from-gh-accent dark:via-gh-accent md:left-1/2"
+          className="absolute bottom-0 left-[1.75rem] top-0 w-px origin-top -translate-x-1/2 bg-gradient-to-b from-gh-accent via-gh-accent to-transparent md:left-1/2"
         />
 
         <ol className="relative">
@@ -159,7 +159,7 @@ function YearRail({
       aria-label="Jump to a year"
       className="sticky top-32 hidden h-fit w-28 shrink-0 lg:block"
     >
-      <p className="mb-5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gh-muted">
+      <p className="mb-5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-gh-muted">
         Timeline
       </p>
       <ul className="space-y-1">
@@ -173,10 +173,10 @@ function YearRail({
                 aria-current={isActive ? "true" : undefined}
                 className={cn(
                   "group flex w-full items-center gap-3 rounded-lg py-1.5 text-left font-mono text-sm font-bold tabular-nums transition-colors duration-300",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light dark:focus-visible:ring-gh-accent",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent",
                   isActive
-                    ? "text-gh-accent-light dark:text-gh-accent"
-                    : "text-gray-400 hover:text-gray-700 dark:text-gh-muted dark:hover:text-gh-text",
+                    ? "text-gh-accent"
+                    : "text-gh-muted hover:text-gh-text",
                 )}
               >
                 <span
@@ -184,8 +184,8 @@ function YearRail({
                   className={cn(
                     "h-px transition-all duration-300",
                     isActive
-                      ? "w-6 bg-gh-accent-light dark:bg-gh-accent"
-                      : "w-3 bg-gray-300 group-hover:w-5 dark:bg-gh-border",
+                      ? "w-6 bg-gh-accent"
+                      : "w-3 bg-gh-border group-hover:w-5",
                   )}
                 />
                 {year}
@@ -243,8 +243,8 @@ function Entry({
           className={cn(
             "relative z-10 mt-1 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border transition-[background-color,border-color,color,box-shadow,transform] duration-300",
             isFocused
-              ? "scale-110 border-transparent bg-gh-accent-light text-white shadow-[0_12px_30px_-10px_rgba(31,136,61,0.6)] dark:bg-gh-accent dark:text-gh-deep dark:shadow-[0_12px_30px_-10px_rgba(63,185,80,0.55)]"
-              : "border-gray-200 bg-white text-gray-400 shadow-[0_8px_24px_-12px_rgba(1,4,9,0.25)] dark:border-gh-border dark:bg-gh-elevated dark:text-gh-muted dark:shadow-[0_8px_24px_-12px_rgba(1,4,9,0.9)]",
+              ? "scale-110 border-transparent bg-gh-accent text-gh-deep shadow-[0_12px_30px_-10px_rgba(63,185,80,0.55)]"
+              : "border-gh-border bg-gh-elevated text-gh-muted shadow-[0_8px_24px_-12px_rgba(1,4,9,0.9)]",
           )}
         >
           {/* A ring that only exists on the active node, so the eye can find
@@ -258,7 +258,7 @@ function Entry({
             className={cn(
               "absolute -inset-2 rounded-[1.25rem] border transition-all duration-300",
               isFocused
-                ? "scale-100 border-gh-accent-light/40 opacity-100 dark:border-gh-accent/40"
+                ? "scale-100 border-gh-accent/40 opacity-100"
                 : "scale-90 border-transparent opacity-0",
             )}
           />
@@ -302,7 +302,7 @@ function Card({
       >
         <div
           className={cn(
-            "font-mono text-[13px] font-bold uppercase tracking-[0.14em] text-gh-accent-light dark:text-gh-accent",
+            "font-mono text-[13px] font-bold uppercase tracking-[0.14em] text-gh-accent",
             align === "right" && "md:text-right",
           )}
         >
@@ -319,7 +319,7 @@ function Card({
         </h3>
         <p
           className={cn(
-            "mt-4 max-w-[46ch] text-pretty text-base leading-relaxed text-gray-600 dark:text-gh-muted",
+            "mt-4 max-w-[46ch] text-pretty text-base leading-relaxed text-gh-muted",
             align === "right" && "md:ml-auto",
           )}
         >

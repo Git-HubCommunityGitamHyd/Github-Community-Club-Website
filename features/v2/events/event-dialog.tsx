@@ -49,15 +49,13 @@ function CategoryBadge({
       className={
         onCover
           ? "inline-flex w-fit items-center gap-2 rounded-full border border-white/25 bg-gh-deep/55 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-white backdrop-blur-sm"
-          : "inline-flex w-fit items-center gap-2 rounded-full border border-gray-200 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-600 dark:border-gh-border dark:text-gh-muted"
+          : "inline-flex w-fit items-center gap-2 rounded-full border border-gh-border px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-gh-muted"
       }
     >
       <Icon
         aria-hidden="true"
         className={
-          onCover
-            ? "h-3.5 w-3.5 text-gh-accent"
-            : "h-3.5 w-3.5 text-gh-accent-light dark:text-gh-accent"
+          onCover ? "h-3.5 w-3.5 text-gh-accent" : "h-3.5 w-3.5 text-gh-accent"
         }
       />
       {label}
@@ -70,7 +68,7 @@ function CoverGlyph({ icon: Icon }: { icon: LucideIcon }) {
     <Icon
       aria-hidden="true"
       strokeWidth={1.25}
-      className="h-28 w-28 text-gh-accent-light/25 dark:text-gh-accent/25"
+      className="h-28 w-28 text-gh-accent/25"
     />
   )
 }
@@ -138,7 +136,7 @@ export function EventDialog({
                 />
               </div>
             ) : (
-              <div className="relative flex h-40 w-full items-center justify-center overflow-hidden bg-gray-50 dark:bg-gh-elevated sm:h-48">
+              <div className="relative flex h-40 w-full items-center justify-center overflow-hidden bg-gh-elevated sm:h-48">
                 <div
                   aria-hidden="true"
                   className="absolute inset-0 opacity-70"
@@ -170,7 +168,7 @@ export function EventDialog({
                 className={
                   cover
                     ? "mt-4 text-balance text-[clamp(26px,3.4vw,38px)] font-extrabold leading-[1.05] tracking-[-0.03em] text-white"
-                    : "mt-4 text-balance text-[clamp(26px,3.4vw,38px)] font-extrabold leading-[1.05] tracking-[-0.03em] text-gray-900 dark:text-gh-text"
+                    : "mt-4 text-balance text-[clamp(26px,3.4vw,38px)] font-extrabold leading-[1.05] tracking-[-0.03em] text-gh-text"
                 }
               >
                 {event.title}
@@ -179,17 +177,17 @@ export function EventDialog({
           </header>
 
           {facts.length > 0 && (
-            <dl className="grid grid-cols-2 border-b border-gray-200 dark:border-gh-border sm:grid-cols-4">
+            <dl className="grid grid-cols-2 border-b border-gh-border sm:grid-cols-4">
               {facts.map((fact) => (
                 <div
                   key={fact.label}
-                  className="border-t border-gray-200 px-5 py-4 first:border-l-0 dark:border-gh-border sm:border-l sm:first:border-l-0"
+                  className="border-t border-gh-border px-5 py-4 first:border-l-0 sm:border-l sm:first:border-l-0"
                 >
-                  <dt className="flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400 dark:text-gh-muted">
+                  <dt className="flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-gh-muted">
                     <fact.icon aria-hidden="true" className="h-3.5 w-3.5" />
                     {fact.label}
                   </dt>
-                  <dd className="mt-2 text-sm font-semibold text-gray-900 dark:text-gh-text">
+                  <dd className="mt-2 text-sm font-semibold text-gh-text">
                     {fact.value}
                   </dd>
                 </div>
@@ -198,13 +196,13 @@ export function EventDialog({
           )}
 
           <div className="px-7 py-7 sm:px-9 sm:py-9">
-            <p className="max-w-[62ch] text-pretty text-base leading-relaxed text-gray-600 dark:text-gh-muted">
+            <p className="max-w-[62ch] text-pretty text-base leading-relaxed text-gh-muted">
               {event.description}
             </p>
 
             {gallery.length > 0 && (
               <section className="mt-8">
-                <h4 className="flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-gh-muted">
+                <h4 className="flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-gh-muted">
                   <ImageIcon aria-hidden="true" className="h-3.5 w-3.5" />
                   From the day
                 </h4>
@@ -212,7 +210,7 @@ export function EventDialog({
                   {gallery.map((src, index) => (
                     <div
                       key={src}
-                      className="relative aspect-[4/3] overflow-hidden rounded-xl bg-gray-100 dark:bg-gh-elevated"
+                      className="relative aspect-[4/3] overflow-hidden rounded-xl bg-gh-elevated"
                     >
                       <Image
                         src={src}

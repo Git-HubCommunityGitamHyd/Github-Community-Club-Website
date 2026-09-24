@@ -93,7 +93,7 @@ export function DialogShell({
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
             className={cn(
-              "relative max-h-[85vh] w-full overflow-y-auto rounded-3xl border border-gray-200 bg-white shadow-2xl focus:outline-none dark:border-gh-border dark:bg-gh-surface",
+              "relative max-h-[85vh] w-full overflow-y-auto rounded-3xl border border-gh-border bg-gh-surface shadow-2xl focus:outline-none",
               !bleed && "p-8 sm:p-10",
               panelClassName ?? "max-w-2xl",
             )}
@@ -103,10 +103,10 @@ export function DialogShell({
               onClick={onClose}
               aria-label="Close"
               className={cn(
-                "absolute right-5 top-5 z-20 rounded-full p-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light dark:focus-visible:ring-gh-accent",
+                "absolute right-5 top-5 z-20 rounded-full p-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent",
                 bleed
                   ? "bg-gh-deep/55 text-white backdrop-blur-sm hover:bg-gh-deep/80"
-                  : "text-gray-500 hover:bg-gray-900/10 hover:text-gray-900 dark:text-gh-muted dark:hover:bg-gh-text/10 dark:hover:text-gh-text",
+                  : "text-gh-muted hover:bg-gh-text/10 hover:text-gh-text",
               )}
             >
               <X className="h-5 w-5" />

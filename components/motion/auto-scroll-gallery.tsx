@@ -51,10 +51,8 @@ export function AutoScrollGallery({ images, title }: AutoScrollGalleryProps) {
 
   if (!images || images.length === 0) {
     return (
-      <div className="flex h-40 items-center justify-center rounded-lg bg-gray-100 dark:bg-gh-elevated">
-        <p className="text-lg text-gray-500 dark:text-gh-muted">
-          No Images Available
-        </p>
+      <div className="flex h-40 items-center justify-center rounded-lg bg-gh-elevated">
+        <p className="text-lg text-gh-muted">No Images Available</p>
       </div>
     )
   }

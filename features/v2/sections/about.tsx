@@ -2,7 +2,14 @@
 
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
-import { ArrowRight, CalendarCheck, CalendarDays, MapPin } from "lucide-react"
+import {
+  ArrowRight,
+  CalendarCheck,
+  CalendarDays,
+  GitPullRequestArrow,
+  MapPin,
+  Users,
+} from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { FaGithub } from "react-icons/fa6"
 import { CountingNumber } from "@/components/ui/counting-number"
@@ -41,8 +48,7 @@ const ENTRY = {
 }
 
 const CARD = "relative overflow-hidden rounded-2xl p-8 sm:p-10"
-const QUIET_TILE =
-  "border border-gray-200 bg-white dark:border-gh-border dark:bg-gh-surface"
+const QUIET_TILE = "border border-gh-border bg-gh-surface"
 
 export function V2AboutSection({
   onScrollTo,
@@ -68,7 +74,7 @@ export function V2AboutSection({
         <h2 className="mb-5 mt-5 max-w-3xl text-balance text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em]">
           A community of builders, designers and open-source contributors.
         </h2>
-        <p className="mb-14 max-w-[56ch] text-pretty text-lg leading-relaxed text-gray-600 dark:text-gh-muted">
+        <p className="mb-14 max-w-[56ch] text-pretty text-lg leading-relaxed text-gh-muted">
           We are students at GITAM University who learn in public — running
           workshops, maintaining repositories together, and getting each
           other&apos;s first pull requests merged.
@@ -91,7 +97,7 @@ export function V2AboutSection({
             <Ornament />
 
             <div className="relative z-10">
-              <span className="inline-flex rounded-full bg-gray-900 px-4 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white dark:bg-gh-accent dark:text-gh-deep">
+              <span className="inline-flex rounded-full bg-gh-accent px-4 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-gh-deep">
                 {openSource.title}
               </span>
               <h3 className="mt-7 text-balance text-[clamp(30px,3.4vw,46px)] font-extrabold uppercase leading-[0.98] tracking-[-0.03em]">
@@ -101,7 +107,7 @@ export function V2AboutSection({
               </h3>
             </div>
 
-            <p className="relative z-10 mt-12 max-w-[34ch] text-pretty text-lg leading-relaxed text-gray-500 dark:text-gh-muted">
+            <p className="relative z-10 mt-12 max-w-[34ch] text-pretty text-lg leading-relaxed text-gh-muted">
               {openSource.desc} — in public repositories, reviewed by the people
               sitting next to you.
             </p>
@@ -111,12 +117,21 @@ export function V2AboutSection({
           <motion.article
             variants={ENTRY}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className={`${CARD} col-span-2 flex flex-col justify-between bg-gh-accent-light text-white dark:bg-gh-accent dark:text-gh-deep md:col-span-3`}
+            className={`${CARD} group col-span-2 flex flex-col justify-between bg-gh-accent text-gh-deep md:col-span-3`}
           >
-            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] opacity-80">
+            {/* Drawn in the tile's own text colour rather than a grey, so it
+                stays a shade of the green instead of putting a third value on
+                an accent surface. */}
+            <Users
+              aria-hidden="true"
+              strokeWidth={1.1}
+              className="pointer-events-none absolute -right-6 -top-8 h-44 w-44 origin-top-right text-current opacity-[0.13] transition-transform duration-700 ease-out group-hover:scale-[1.08]"
+            />
+
+            <span className="relative font-mono text-[10px] font-bold uppercase tracking-[0.18em] opacity-80">
               {community.title}
             </span>
-            <div className="mt-8 space-y-3">
+            <div className="relative mt-8 space-y-3">
               <span
                 className="block text-6xl font-extrabold tabular-nums tracking-[-0.04em]"
                 aria-label="700+ members"
@@ -130,14 +145,14 @@ export function V2AboutSection({
                   +
                 </span>
               </span>
-              <div className="h-1.5 w-full rounded-full bg-white/25 dark:bg-gh-deep/20">
+              <div className="h-1.5 w-full rounded-full bg-gh-deep/20">
                 {/* The bar fills with the count rather than being painted in at
                   four fifths, so the figure and its bar tell one story. */}
                 <motion.div
                   initial={{ scaleX: 0 }}
                   animate={counting ? { scaleX: 0.8 } : { scaleX: 0 }}
                   transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
-                  className="h-full origin-left rounded-full bg-white dark:bg-gh-deep"
+                  className="h-full origin-left rounded-full bg-gh-deep"
                 />
               </div>
               <p className="text-sm font-medium opacity-80">
@@ -194,13 +209,30 @@ export function V2AboutSection({
           <motion.article
             variants={ENTRY}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className={`${CARD} ${QUIET_TILE} group col-span-2 flex items-center justify-between gap-6 transition-colors hover:border-gray-300 dark:hover:border-gh-muted md:col-span-3`}
+            className={`${CARD} ${QUIET_TILE} group col-span-2 flex items-center justify-between gap-6 transition-colors hover:border-gh-muted md:col-span-3`}
           >
-            <div>
+            {/* Opacity on the element, not alpha in the stroke colour. A lucide
+                  glyph is several overlapping sub-paths - git-branch runs its
+                  line straight through the circle it joins - and a
+                  semi-transparent *stroke* paints each one separately, so the
+                  alpha compounds where they cross and you see a darker line
+                  drawn over the shape it connects to. Element opacity
+                  composites the whole glyph first and makes that one result
+                  transparent, so the joins are clean. */}
+            {/* A pull request, because that is literally what the button asks
+                for, and because the terminal tile diagonally opposite ends on
+                "Opened pull request #218". */}
+            <GitPullRequestArrow
+              aria-hidden="true"
+              strokeWidth={1.1}
+              className="pointer-events-none absolute -bottom-8 -right-4 h-44 w-44 origin-bottom-right text-gh-text opacity-[0.05] transition-[transform,color,opacity] duration-700 ease-out group-hover:scale-[1.1] group-hover:text-gh-accent group-hover:opacity-25"
+            />
+
+            <div className="relative">
               <h3 className="text-2xl font-extrabold uppercase tracking-[-0.02em]">
                 Start contributing
               </h3>
-              <p className="mt-2 text-pretty text-gray-600 dark:text-gh-muted">
+              <p className="mt-2 text-pretty text-gh-muted">
                 No experience required. The next workshop takes you from install
                 to merged.
               </p>
@@ -209,7 +241,7 @@ export function V2AboutSection({
               type="button"
               onClick={() => onScrollTo("join")}
               aria-label="Start contributing — go to the join form"
-              className="flex size-16 shrink-0 items-center justify-center rounded-full border border-gray-300 text-gray-900 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light focus-visible:ring-offset-2 group-hover:border-transparent group-hover:bg-gh-accent-light group-hover:text-white dark:border-gh-border dark:text-gh-text dark:focus-visible:ring-gh-accent dark:focus-visible:ring-offset-gh-surface dark:group-hover:bg-gh-accent dark:group-hover:text-gh-deep"
+              className="flex size-16 shrink-0 items-center justify-center rounded-full border border-gh-border text-gh-text transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-surface group-hover:border-transparent group-hover:bg-gh-accent group-hover:text-gh-deep"
             >
               <span
                 className="absolute inset-0 rounded-2xl"
@@ -264,14 +296,26 @@ function StatTile({
     <motion.article
       variants={ENTRY}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className={`${QUIET_TILE} relative flex flex-col justify-between gap-6 overflow-hidden rounded-2xl p-6`}
+      className={`${QUIET_TILE} group relative flex flex-col justify-between gap-6 overflow-hidden rounded-2xl p-6`}
     >
+      {/* The tile's own glyph again, oversized and nearly invisible. These
+          three were a small icon, a number and a label in a box with most of
+          its area empty, next to a feature tile carrying a 28rem Invertocat -
+          the emptiness read as unfinished rather than as restraint. Echoing
+          the glyph gives each tile a shape without adding anything to read,
+          and using the tile's *own* icon keeps the three told apart. */}
       <Icon
         aria-hidden="true"
-        className="h-5 w-5 text-gh-accent-light dark:text-gh-accent"
+        strokeWidth={1.1}
+        className="pointer-events-none absolute -bottom-7 -right-6 h-36 w-36 origin-bottom-right text-gh-text opacity-[0.055] transition-[transform,color,opacity] duration-700 ease-out group-hover:scale-[1.12] group-hover:text-gh-accent group-hover:opacity-25"
+      />
+
+      <Icon
+        aria-hidden="true"
+        className="relative h-5 w-5 text-gh-accent"
         strokeWidth={2}
       />
-      <div>
+      <div className="relative">
         <span
           className="block text-[clamp(28px,3vw,40px)] font-extrabold leading-none tracking-[-0.04em]"
           aria-label={`${(format ?? ((v: number) => v.toLocaleString()))(value)}${suffix ?? ""}`}
@@ -287,7 +331,7 @@ function StatTile({
             {suffix}
           </span>
         </span>
-        <p className="mt-3 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500 dark:text-gh-muted">
+        <p className="mt-3 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-gh-muted">
           {label}
         </p>
       </div>
@@ -315,7 +359,7 @@ function Ornament() {
   return (
     <FaGithub
       aria-hidden="true"
-      className="pointer-events-none absolute -bottom-24 -right-20 h-[28rem] w-[28rem] origin-bottom-right text-gray-900/[0.045] transition-[transform,color] ease-out [transition-duration:1200ms] group-hover:scale-[1.18] group-hover:text-gray-900/[0.075] dark:text-gh-text/[0.045] dark:group-hover:text-gh-text/[0.08]"
+      className="pointer-events-none absolute -bottom-24 -right-20 h-[28rem] w-[28rem] origin-bottom-right text-gh-text/[0.045] transition-[transform,color] ease-out [transition-duration:1200ms] group-hover:scale-[1.18] group-hover:text-gh-text/[0.08]"
     />
   )
 }

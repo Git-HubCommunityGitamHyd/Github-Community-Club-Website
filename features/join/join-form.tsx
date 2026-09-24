@@ -10,10 +10,9 @@ import {
 
 // text-base below sm: iOS Safari zooms the viewport on focus for anything under 16px
 const inputClass =
-  "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-base sm:text-sm text-black placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gh-border dark:bg-gh-elevated dark:text-gh-text dark:placeholder:text-gh-muted dark:focus:border-gh-accent dark:focus:ring-gh-accent"
+  "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
 
-const labelClass =
-  "mb-1 block text-sm font-medium text-gray-700 dark:text-gh-muted"
+const labelClass = "mb-1 block text-sm font-medium text-gh-muted"
 
 const EMPTY: ApplicationFormInput = {
   fullName: "",
@@ -78,10 +77,10 @@ export function JoinForm() {
 
   if (status === "success") {
     return (
-      <Card className="mx-auto max-w-2xl border-gray-200 bg-white dark:border-gh-border dark:bg-gh-surface">
+      <Card className="mx-auto max-w-2xl border-gh-border bg-gh-surface">
         <CardContent className="p-8 text-center">
           <h3 className="mb-2 text-2xl font-semibold">Application received!</h3>
-          <p className="text-gray-600 dark:text-gh-muted">
+          <p className="text-gh-muted">
             Thanks for applying — we&apos;ll be in touch soon.
           </p>
         </CardContent>
@@ -90,7 +89,7 @@ export function JoinForm() {
   }
 
   return (
-    <Card className="mx-auto max-w-2xl border-gray-200 bg-white dark:border-gh-border dark:bg-gh-surface">
+    <Card className="mx-auto max-w-2xl border-gh-border bg-gh-surface">
       <CardContent className="p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           {/* Honeypot — hidden from real users, bots fill every field */}

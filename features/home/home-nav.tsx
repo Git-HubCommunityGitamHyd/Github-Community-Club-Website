@@ -3,7 +3,6 @@
 import type { RefObject } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Github, Menu, X } from "lucide-react"
-import { ThemeToggle } from "@/components/theme/theme-toggle"
 import { NAV_ITEMS } from "@/features/home/content"
 
 export function HomeNav({
@@ -21,7 +20,7 @@ export function HomeNav({
 }) {
   return (
     <motion.nav
-      className="fixed top-0 z-40 w-full border-b border-gray-200 bg-white dark:border-gh-border dark:bg-gh-bg"
+      className="fixed top-0 z-40 w-full border-b border-gh-border bg-gh-bg"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
@@ -32,9 +31,7 @@ export function HomeNav({
             <Github className="h-7 w-7" />
             <span className="text-base font-extrabold tracking-tight sm:text-[17px]">
               GitHub Community{" "}
-              <span className="font-semibold text-gray-500 dark:text-gh-muted">
-                GITAM
-              </span>
+              <span className="font-semibold text-gh-muted">GITAM</span>
             </span>
           </div>
 
@@ -45,30 +42,29 @@ export function HomeNav({
                 onClick={() => onScrollTo(item.toLowerCase())}
                 className={`text-sm font-semibold transition-colors duration-200 ${
                   activeSection === item.toLowerCase()
-                    ? "text-black dark:text-gh-text"
-                    : "text-gray-500 hover:text-black dark:text-gh-muted dark:hover:text-gh-text"
+                    ? "text-gh-text"
+                    : "text-gh-muted hover:text-gh-text"
                 }`}
               >
                 {item}
               </button>
             ))}
-            <ThemeToggle />
+
             <button
               onClick={() => onScrollTo("join")}
-              className="rounded-md bg-gh-accent-light px-4 py-2 font-mono text-[13px] font-semibold text-white hover:opacity-90 dark:bg-gh-accent dark:text-gh-bg"
+              className="rounded-md bg-gh-accent px-4 py-2 font-mono text-[13px] font-semibold text-gh-bg hover:opacity-90"
             >
               Join →
             </button>
             {/* Reserves the docked spot — the real mascot floats above it
-                as a fixed-position element (see GhMascotToggle below). */}
+                as a fixed-position element (see GhMascotDock below). */}
             <div ref={navSlotRef} className="h-16 w-20" />
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-            <ThemeToggle />
             <button
               onClick={onToggleMenu}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 dark:border-gh-border dark:text-gh-muted"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-gh-border text-gh-muted"
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMenuOpen}
             >
@@ -85,7 +81,7 @@ export function HomeNav({
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            className="overflow-hidden border-t border-gray-200 dark:border-gh-border md:hidden"
+            className="overflow-hidden border-t border-gh-border md:hidden"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -98,8 +94,8 @@ export function HomeNav({
                   onClick={() => onScrollTo(item.toLowerCase())}
                   className={`py-3 text-left text-base font-medium ${
                     activeSection === item.toLowerCase()
-                      ? "text-black dark:text-gh-text"
-                      : "text-gray-500 dark:text-gh-muted"
+                      ? "text-gh-text"
+                      : "text-gh-muted"
                   }`}
                 >
                   {item}
@@ -107,7 +103,7 @@ export function HomeNav({
               ))}
               <button
                 onClick={() => onScrollTo("join")}
-                className="mt-3 rounded-md bg-gh-accent-light px-4 py-3 text-center font-mono text-sm font-semibold text-white dark:bg-gh-accent dark:text-gh-bg"
+                className="mt-3 rounded-md bg-gh-accent px-4 py-3 text-center font-mono text-sm font-semibold text-gh-bg"
               >
                 Join Community →
               </button>

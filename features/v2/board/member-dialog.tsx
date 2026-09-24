@@ -29,7 +29,7 @@ import { boardAccent } from "@/features/v2/board/accents"
  */
 
 const SOCIAL_LABEL =
-  "inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light dark:border-gh-border dark:text-gh-text dark:hover:border-gh-muted dark:hover:bg-gh-elevated dark:focus-visible:ring-gh-accent"
+  "inline-flex items-center gap-2 rounded-full border border-gh-border px-4 py-2 text-sm font-medium text-gh-text transition hover:border-gh-muted hover:bg-gh-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent"
 
 function initialsOf(name: string) {
   return name
@@ -112,7 +112,7 @@ export function MemberDialog({
                 what the old header had none of. */}
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute -top-6 right-4 select-none text-[140px] font-extrabold leading-none tracking-[-0.06em] text-gray-900/[0.05] dark:text-gh-text/[0.05]"
+              className="pointer-events-none absolute -top-6 right-4 select-none text-[140px] font-extrabold leading-none tracking-[-0.06em] text-gh-text/[0.05]"
             >
               {initialsOf(member.name)}
             </span>
@@ -131,7 +131,7 @@ export function MemberDialog({
                     background: `conic-gradient(from 0deg, ${accent.stops.join(", ")})`,
                   }}
                 />
-                <span className="relative block h-full w-full overflow-hidden rounded-[21px] bg-white dark:bg-gh-surface">
+                <span className="relative block h-full w-full overflow-hidden rounded-[21px] bg-gh-surface">
                   {member.image_url ? (
                     <Image
                       src={member.image_url}
@@ -141,7 +141,7 @@ export function MemberDialog({
                       className="object-cover"
                     />
                   ) : (
-                    <span className="flex h-full w-full items-center justify-center text-3xl font-extrabold text-gray-300 dark:text-gh-border">
+                    <span className="flex h-full w-full items-center justify-center text-3xl font-extrabold text-gh-border">
                       {initialsOf(member.name)}
                     </span>
                   )}
@@ -151,15 +151,15 @@ export function MemberDialog({
               <div className="min-w-0">
                 <h3
                   id="member-dialog-name"
-                  className="text-balance text-[clamp(28px,3.4vw,40px)] font-extrabold leading-[1.05] tracking-[-0.03em] text-gray-900 dark:text-gh-text"
+                  className="text-balance text-[clamp(28px,3.4vw,40px)] font-extrabold leading-[1.05] tracking-[-0.03em] text-gh-text"
                 >
                   {member.name}
                 </h3>
-                <p className="mt-3 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-gh-accent-light dark:text-gh-accent">
+                <p className="mt-3 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-gh-accent">
                   {member.role}
                 </p>
                 {member.github && (
-                  <p className="mt-2 font-mono text-sm text-gray-400 dark:text-gh-muted">
+                  <p className="mt-2 font-mono text-sm text-gh-muted">
                     @{member.github}
                   </p>
                 )}
@@ -167,8 +167,8 @@ export function MemberDialog({
             </div>
           </header>
 
-          <div className="border-t border-gray-200 px-8 py-8 dark:border-gh-border sm:px-10">
-            <p className="max-w-[58ch] text-pretty text-base leading-relaxed text-gray-600 dark:text-gh-muted">
+          <div className="border-t border-gh-border px-8 py-8 sm:px-10">
+            <p className="max-w-[58ch] text-pretty text-base leading-relaxed text-gh-muted">
               {member.description}
             </p>
 

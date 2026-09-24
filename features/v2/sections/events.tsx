@@ -20,7 +20,7 @@ export function V2EventsSection({ events }: { events: Event[] }) {
   return (
     <section
       id="events"
-      className="relative border-y border-gray-200 bg-gray-50 dark:border-gh-border dark:bg-gh-surface"
+      className="relative border-y border-gh-border bg-gh-surface"
     >
       <SectionTexture />
       <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8">
@@ -28,13 +28,13 @@ export function V2EventsSection({ events }: { events: Event[] }) {
         <h2 className="mb-4 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-[-0.03em]">
           What we&apos;ve run
         </h2>
-        <p className="mb-14 max-w-[52ch] text-pretty text-lg leading-relaxed text-gray-600 dark:text-gh-muted">
+        <p className="mb-14 max-w-[52ch] text-pretty text-lg leading-relaxed text-gh-muted">
           Workshops, hackathons and contribution drives from past semesters.
           Open any one for the full write-up and photos.
         </p>
 
         {events.length === 0 ? (
-          <p className="rounded-3xl border border-dashed border-gray-300 px-8 py-14 text-center text-gray-500 dark:border-gh-border dark:text-gh-muted">
+          <p className="rounded-3xl border border-dashed border-gh-border px-8 py-14 text-center text-gh-muted">
             Nothing scheduled yet. The first event of the semester goes up here.
           </p>
         ) : (

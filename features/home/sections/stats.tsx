@@ -7,18 +7,15 @@ export function StatsSection() {
     // broke the plain/tinted alternation the rest of the page keeps.
     // border-b only — the marquee directly above already closes with its
     // own border, and border-y here would stack two hairlines.
-    <section className="border-b border-gray-200 bg-gray-50 dark:border-gh-border dark:bg-gh-surface">
+    <section className="border-b border-gh-border bg-gh-surface">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           {STATS.map((stat) => (
-            <div
-              key={stat.label}
-              className="border-l border-gray-300 pl-4 dark:border-gh-border"
-            >
+            <div key={stat.label} className="border-l border-gh-border pl-4">
               <div className="font-mono text-[clamp(28px,4vw,44px)] font-bold tracking-tight">
                 {stat.value}
               </div>
-              <div className="mt-1 text-xs uppercase tracking-wide text-gray-500 dark:text-gh-muted">
+              <div className="mt-1 text-xs uppercase tracking-wide text-gh-muted">
                 {stat.label}
               </div>
             </div>

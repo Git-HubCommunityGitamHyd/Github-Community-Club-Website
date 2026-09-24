@@ -35,14 +35,11 @@ export function SectionLabel({
 }) {
   return (
     <div className={cn("flex items-center gap-3", className)}>
-      <span className="font-mono text-[11px] font-bold tabular-nums text-gh-accent-light dark:text-gh-accent">
+      <span className="font-mono text-[11px] font-bold tabular-nums text-gh-accent">
         {index}
       </span>
-      <span
-        aria-hidden="true"
-        className="h-px w-7 bg-gray-300 dark:bg-gh-border"
-      />
-      <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gh-muted">
+      <span aria-hidden="true" className="h-px w-7 bg-gh-border" />
+      <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-gh-muted">
         {children}
       </span>
     </div>

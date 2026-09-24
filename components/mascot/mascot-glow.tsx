@@ -2,23 +2,19 @@
 
 import { useEffect, useRef, useState } from "react"
 
-// Scoped to the mascot's own fixed z-50 wrapper, not just the aria-label —
-// components/theme-toggle.tsx (a separate, desktop-hidden mobile toggle)
-// shares the same "Toggle theme" label, and a plain label selector was
-// matching that hidden (0x0 rect) button first, so the glow's visibility
-// check failed every frame and it never showed.
+// Scoped to the mascot's own fixed wrapper, not just the aria-label, so a
+// hidden 0x0 button elsewhere in the tree can never win the match and leave
+// the glow failing its visibility check every frame.
 // v2's mascot wrapper is z-[60] (it docks over the page rather than into the
-// nav pill), v1's is z-50. Match either, still scoped to a fixed wrapper so it
-// does not pick up components/theme-toggle.tsx, which shares the label and
-// measures 0x0 on desktop.
+// nav pill), v1's is z-50. Match either.
 const MASCOT_SELECTOR =
-  '.z-50 > button[aria-label="Toggle theme"], .z-\\[60\\] > button[aria-label="Toggle theme"]'
+  '.z-50 > button[aria-label="Spin the octocat"], .z-\\[60\\] > button[aria-label="Spin the octocat"]'
 
 // Glow that tracks the mascot's on-screen position/size through its
 // scroll-driven shrink/dock animation. Reads the mascot's real rendered
 // bounding box (read-only DOM measurement) instead of touching
-// gh-mascot-toggle.tsx's internal motion values — zero edits to
-// gh-mascot-toggle.tsx / gh-mascot-3d.tsx (locked). Polls via rAF rather
+// gh-mascot-dock.tsx's internal motion values — zero edits to
+// gh-mascot-dock.tsx / gh-mascot-3d.tsx (locked). Polls via rAF rather
 // than scroll/resize listeners so it doesn't need to detect when the
 // dynamically-imported (ssr:false) mascot finishes mounting.
 export function MascotGlow() {

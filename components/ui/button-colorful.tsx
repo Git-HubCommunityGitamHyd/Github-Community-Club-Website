@@ -46,9 +46,9 @@ export function ButtonColorful({
     <Button
       className={cn(
         "group relative h-12 rounded-full px-7 text-[15px] font-semibold",
-        "bg-gh-accent-light text-white dark:bg-gh-accent dark:text-gh-deep",
-        "transition-transform duration-200 hover:bg-gh-accent-light active:scale-[0.98] dark:hover:bg-gh-accent",
-        "focus-visible:ring-gh-accent-light focus-visible:ring-offset-white dark:focus-visible:ring-gh-accent dark:focus-visible:ring-offset-gh-bg",
+        "bg-gh-accent text-gh-deep",
+        "transition-transform duration-200 hover:bg-gh-accent active:scale-[0.98]",
+        "focus-visible:ring-gh-accent focus-visible:ring-offset-gh-bg",
         className,
       )}
       {...props}

@@ -12,10 +12,9 @@ import {
 import type { JourneyEntry } from "@/lib/db/journey"
 
 const inputClass =
-  "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-base sm:text-sm text-black placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gh-border dark:bg-gh-elevated dark:text-gh-text dark:placeholder:text-gh-muted dark:focus:border-gh-accent dark:focus:ring-gh-accent"
+  "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
 
-const labelClass =
-  "mb-1 block text-sm font-medium text-gray-700 dark:text-gh-muted"
+const labelClass = "mb-1 block text-sm font-medium text-gh-muted"
 
 function IconPreview({ icon: Icon }: { icon: LucideIcon }) {
   return <Icon className="h-5 w-5" />
@@ -137,7 +136,7 @@ export function JourneyForm({ initial }: { initial?: JourneyEntry }) {
               set("entryDate", formatEntryDate(e.target.value))
             }}
           />
-          <p className="mt-1 text-sm text-gray-400 dark:text-gh-muted">
+          <p className="mt-1 text-sm text-gh-muted">
             {form.entryDate || "Shown on the timeline as “February 2022”"}
           </p>
           {errors.entryDate && (
@@ -156,7 +155,7 @@ export function JourneyForm({ initial }: { initial?: JourneyEntry }) {
             value={form.sortOrder}
             onChange={(e) => set("sortOrder", e.target.value)}
           />
-          <p className="mt-1 text-sm text-gray-400 dark:text-gh-muted">
+          <p className="mt-1 text-sm text-gh-muted">
             Low to high, oldest first. The timeline does not sort by date.
           </p>
           {errors.sortOrder && (
@@ -172,7 +171,7 @@ export function JourneyForm({ initial }: { initial?: JourneyEntry }) {
         <div className="flex items-center gap-3">
           <span
             aria-hidden="true"
-            className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-700 dark:border-gh-border dark:bg-gh-elevated dark:text-gh-text"
+            className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-gh-border bg-gh-elevated text-gh-text"
           >
             <IconPreview icon={previewGlyph} />
           </span>

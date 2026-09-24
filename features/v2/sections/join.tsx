@@ -8,6 +8,7 @@ import { JoinSquares } from "@/features/join/join-squares"
 import { MagneticButton } from "@/components/ui/magnetic-button"
 import { V2JoinForm } from "@/features/v2/join/join-form"
 import { SectionLabel } from "@/features/v2/section-label"
+import { SectionTexture } from "@/components/ui/texture"
 
 /**
  * The turning-tile background (`JoinSquares`) is deliberately untouched.
@@ -95,13 +96,18 @@ export function V2JoinSection({ onOpenQr }: { onOpenQr: () => void }) {
         </div>
       </div>
 
-      <div ref={formRef} id="join-form" className="scroll-mt-28 py-24">
-        <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
+      {/* The band above carries its own texture (the turning tiles), so it is
+          the one section that opts out of the doodle field. This half had
+          neither, which left it the only flat panel on the page and broke the
+          run of one continuous surface from About down. */}
+      <div ref={formRef} id="join-form" className="relative scroll-mt-28 py-24">
+        <SectionTexture />
+        <div className="relative mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
           <div className="lg:col-span-5">
             <h3 className="text-[clamp(26px,3vw,38px)] font-extrabold leading-[1.1] tracking-[-0.02em]">
               Apply to join
             </h3>
-            <p className="mt-4 text-pretty leading-relaxed text-gray-600 dark:text-gh-muted">
+            <p className="mt-4 text-pretty leading-relaxed text-gh-muted">
               Applications are read by the board, not a filter. Tell us what you
               are curious about and we will point you at the right first step.
             </p>
@@ -111,11 +117,11 @@ export function V2JoinSection({ onOpenQr }: { onOpenQr: () => void }) {
                 <li key={reason.title} className="flex gap-4">
                   <span
                     aria-hidden="true"
-                    className="mt-2 h-2 w-2 shrink-0 rounded-full bg-gh-accent-light dark:bg-gh-accent"
+                    className="mt-2 h-2 w-2 shrink-0 rounded-full bg-gh-accent"
                   />
                   <div>
                     <h4 className="font-semibold">{reason.title}</h4>
-                    <p className="mt-1.5 max-w-[42ch] text-pretty text-sm leading-relaxed text-gray-600 dark:text-gh-muted">
+                    <p className="mt-1.5 max-w-[42ch] text-pretty text-sm leading-relaxed text-gh-muted">
                       {reason.body}
                     </p>
                   </div>
@@ -126,7 +132,7 @@ export function V2JoinSection({ onOpenQr }: { onOpenQr: () => void }) {
             <button
               type="button"
               onClick={onOpenQr}
-              className="mt-10 inline-flex items-center gap-2 rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:border-gray-400 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light focus-visible:ring-offset-2 dark:border-gh-border dark:text-gh-text dark:hover:border-gh-muted dark:hover:bg-gh-elevated dark:focus-visible:ring-gh-accent dark:focus-visible:ring-offset-gh-bg"
+              className="mt-10 inline-flex items-center gap-2 rounded-full border border-gh-border px-5 py-2.5 text-sm font-medium text-gh-text transition-colors hover:border-gh-muted hover:bg-gh-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-bg"
             >
               <FaWhatsapp aria-hidden="true" className="h-4 w-4" />
               Prefer WhatsApp? Scan the group QR

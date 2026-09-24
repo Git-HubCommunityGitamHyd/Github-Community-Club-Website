@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, type RefObject } from "react"
 import dynamic from "next/dynamic"
 import { motion, useMotionValue } from "framer-motion"
-import { useTheme } from "@/components/theme/theme-provider"
 
 const GhMascot3D = dynamic(
   () => import("./gh-mascot-3d").then((m) => m.GhMascot3D),
@@ -38,14 +37,13 @@ const POINTER_RANGE = 200
 // navSlotRef's as you scroll, locking there. Position is written through
 // motion values, never React state — a setState per scroll event would
 // re-render the WebGL canvas wrapper every frame.
-export function GhMascotToggle({
+export function GhMascotDock({
   heroSlotRef,
   navSlotRef,
 }: {
   heroSlotRef: RefObject<HTMLDivElement | null>
   navSlotRef: RefObject<HTMLDivElement | null>
 }) {
-  const { toggle } = useTheme()
   const pointerRef = useRef({ x: 0, y: 0 })
   const spinRef = useRef(false)
 
@@ -144,8 +142,9 @@ export function GhMascotToggle({
     }
   }, [heroSlotRef, navSlotRef, x, y, scale])
 
+  // The site is dark-only now, so a click just spins it. This used to
+  // double as the theme toggle, which is where the old name came from.
   const handleClick = () => {
-    toggle()
     spinRef.current = true
   }
 
@@ -168,7 +167,7 @@ export function GhMascotToggle({
       <button
         onClick={handleClick}
         className="relative h-full w-full cursor-pointer"
-        aria-label="Toggle theme"
+        aria-label="Spin the octocat"
       >
         {/* No mask. The camera frames the whole model with margin on every
             side, so nothing is cut and there is no edge to hide — a fade

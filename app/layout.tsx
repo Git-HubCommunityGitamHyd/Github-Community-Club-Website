@@ -1,7 +1,6 @@
 import "./globals.css"
 import type { ReactNode } from "react"
 import type { Metadata } from "next"
-import { ThemeProvider } from "@/components/theme/theme-provider"
 import { MascotGlow } from "@/components/mascot/mascot-glow"
 import { MascotEasterEgg } from "@/components/mascot/mascot-easter-egg"
 
@@ -22,21 +21,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* Runs before React hydrates — prevents flash of wrong theme */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('theme')||((window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')}catch(e){}`,
-          }}
-        />
-      </head>
+    // No `suppressHydrationWarning` and no anti-FOUC script: both existed to
+    // cover a theme class written to <html> before hydration. There is one
+    // theme now, so the server and client markup already agree.
+    <html lang="en">
       <body>
-        <ThemeProvider>
-          <MascotGlow />
-          <MascotEasterEgg />
-          {children}
-        </ThemeProvider>
+        <MascotGlow />
+        <MascotEasterEgg />
+        {children}
       </body>
     </html>
   )

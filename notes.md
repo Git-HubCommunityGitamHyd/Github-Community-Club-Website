@@ -763,3 +763,433 @@ site's, on the single most important button on the page. The wash is the
 accent's own green ramp instead. The snippet's `overflow-hidden` is also
 dropped, because clipping the wash to the button's box cancels the blur it is
 paired with.
+
+## Phase 14 — the background stopped being a grid
+
+### Graph paper said nothing
+
+The Phase 13 texture was crossed hairlines on a 52px pitch. It fixed the
+flatness and that was all it did. A ruled grid is the background of a thousand
+developer landing pages, it belongs to no particular subject, and sitting
+behind a bento grid of rectangular tiles it read as a second set of boxes
+behind the first set of boxes, which is the opposite of what a background is
+for.
+
+It is a doodle field now: git branches, merges, pull requests, forks, commits,
+terminals, braces, a folder, a bug, a package, and one octocat, scattered at
+varying sizes, rotations and weights. Same job, and it is about something.
+
+### Why the pattern is generated rather than drawn
+
+`scripts/build-doodle-pattern.mjs` composes the tile from lucide-react's own
+`__iconNode` data and react-icons' FaGithub path. None of the icons are
+redrawn. Two reasons: the marks in the background are then literally the same
+marks used in the foreground of the site, and they stay correct if either
+library is updated. Hand-tracing sixteen icons into a static file would drift
+from the real ones within a release, and nobody would notice until the shapes
+were subtly wrong.
+
+Three details in the generator carry real weight:
+
+- **Stroke width is divided back out per mark.** Lucide is authored on a
+  24-unit grid at stroke-width 2, so scaling an icon to 30px renders a 2.5px
+  stroke and scaling it to 22px renders a 1.8px one. Left alone, the field
+  looks drawn with several different pens. Each mark's stroke-width is
+  corrected so every line lands at the same rendered weight, which is what
+  makes it read as one hand.
+- **Placement is hand-set, not seeded random.** A doodle field wants
+  deliberate irregularity. A seeded RNG reliably produces clumps and bald
+  patches that then have to be corrected by hand anyway, so the hand-placement
+  is the shorter path to the better result.
+- **Marks that cross a tile edge are re-emitted on the opposite side.** That is
+  what makes the tile wrap without a visible seam. The reach is deliberately
+  generous, because rotation grows a mark's effective box and an under-wrapped
+  mark shows up as a clipped icon at the seam, which is far more visible than a
+  redundant copy.
+
+### The octocat was giving away the repeat
+
+The first tile was 440px with two octocats in it. The repeat itself was
+invisible, but the octocats were not: they are the only _filled_ marks in a
+field of strokes, so the eye locks onto them, and at 440 they recurred about
+three times across a 1440px viewport in a visibly even rhythm. The fix was to
+widen the tile to 540, cut to one octocat, and drop its weight. The lesson
+generalises: in a scattered field, the heaviest mark is the one that betrays
+the grid, so its spacing is the spacing you actually have to hide.
+
+### One asset, two themes
+
+The field is painted by masking a flat `currentColor` fill with the SVG, rather
+than by loading the SVG as a background image. A background image carries its
+own colours and would need a second file for dark mode; a mask carries only
+alpha, so the colour comes from a Tailwind text utility and light and dark get
+separate values from one asset. The top and bottom fade is a second mask, and
+stacking two mask-images on one element requires `mask-composite`, which is
+still uneven across browsers, so the two are nested instead. Nesting composites
+them for free.
+
+### The empty tiles
+
+Three stat tiles and the "Start contributing" tile were a small icon, a number
+and a label in a box with most of its area empty, sitting next to a feature
+tile carrying a 28rem Invertocat. The emptiness read as unfinished rather than
+as restraint, which is the user's own observation and it was right.
+
+Each now carries an oversized, nearly invisible glyph. The three stat tiles
+echo their _own_ icon, so they stay told apart rather than all receiving the
+same decorative mark. The green members tile draws its `Users` mark in the
+tile's own text colour rather than a grey, so it stays a shade of the green
+instead of putting a third value on an accent surface. "Start contributing"
+gets a pull request arrow, because that is literally what its button asks for
+and because the terminal tile diagonally opposite ends on "Opened pull request
+#218" - the two tiles now answer each other.
+
+### Phase 14b — the doodles were still too coarse, and the one parallax
+
+The 540px tile with 22 marks at 22-36px was the wrong direction. Each mark was
+large enough and far enough from its neighbours to be read as a drawing, and a
+background made of readable drawings argues with the foreground instead of
+sitting behind it. The user's word for it was that it was shifting focus, and
+the reference they gave was right: the grip texture on a game controller, where
+many very small symbols packed tight at almost no contrast stop being symbols
+and become a material.
+
+So the tile is 306px with 81 marks at 13-18px on a staggered 34px lattice. The
+three variables move together and none of them works alone:
+
+- **Small.** Below roughly 20px a glyph stops asking to be identified.
+- **Tight.** A staggered lattice, so density is even with no corridors or
+  clumps. The stagger matters: a square lattice this tight reads as a grid of
+  dots from a distance, which is the thing being replaced.
+- **Faint.** Packing it this densely raises ink per square inch several times
+  over, so the layer alpha had to come down with it. Ink per square inch is
+  what the eye responds to, not the opacity of any one mark.
+
+Placement flipped from hand-set to a seeded jittered lattice, which reverses
+the reasoning recorded in Phase 14 above, and the reversal is the point: at 22
+sparse marks a lattice would have been obvious and hand-placement was the
+shorter path to an even field; at 81 dense marks the lattice is invisible and
+is the only thing that guarantees even density. The PRNG is seeded so the
+committed SVG stays reproducible and unrelated rebuilds do not produce a noisy
+diff.
+
+Two implementation details worth keeping. Each icon is emitted once into
+`<defs>` and referenced by `<use>` - at 93 placements, inlining the geometry
+every time would be most of the file. The symbols carry no `stroke-width` of
+their own, which is what lets each `<use>` wrapper inherit a different one, and
+that inheritance is what makes the per-mark stroke correction possible at all.
+
+### Dark mode is the calibration reference
+
+Worth writing down because it is not obvious from the code: this page is judged
+in dark mode first. The doodle alphas were set at 0.095 light against 0.05
+dark, which looked reasonable in isolation but ran visibly hotter than dark
+when the two were compared directly. Light came down to 0.055. When a value has
+separate light and dark settings on this site, set dark first and bring light
+to match it.
+
+### Parallax, in exactly one place
+
+The doodle field moves 28px either side of centre across a section and nothing
+else on the page moves at a different rate. It is the one layer whose entire
+job is to sit behind the content, so moving it slower is the literal thing
+parallax is for.
+
+Three constraints shaped the implementation. It uses `useScroll` against its
+own element rather than a scroll listener, because this page already has Lenis,
+a rAF loop for the mascot and a scroll handler for the journey rail competing
+for those frames. The moving layer overhangs its container by 44px, which has
+to exceed the 28px of travel or the translate exposes an uncovered strip at one
+edge of the section. And the container needs `overflow-hidden` to clip that
+overhang, which is safe here despite the sticky gotcha in CLAUDE.md only
+because nothing sticky lives in the subtree - it holds one decorative div.
+
+The travel is deliberately small. Past roughly 80px the field starts visibly
+sliding rather than sitting slightly back, and a texture that draws attention
+to its own movement fails in the same way as one drawn too large.
+
+## Phase 15 — three things that were structurally wrong
+
+### The fade was only half of why the pattern looked disconnected
+
+Each section painted its own copy of the doodle field, and each copy started
+its tile at its own top edge, so the pattern restarted at every boundary. The
+top-and-bottom fade then drew a line under that: instead of one surface the
+page sits on, you got a series of separate swatches.
+
+Both are fixed. The fade is gone entirely - the field runs edge to edge. And
+each section's mask is offset by that section's own position in the document
+(`documentTop % TILE`), so every copy is a window onto one grid that runs the
+whole page.
+
+The parallax had the same flaw and it is worth stating separately, because the
+first implementation looked correct in isolation. It used `useScroll` with the
+section as target, so each section had its own progress through the viewport
+and therefore its own phase of movement. Adjacent fields drift apart the moment
+you scroll, and a seam that is invisible at rest opens up as soon as it
+matters. It now reads the window's scroll and every section applies the same
+value, wrapped into one tile: the pattern is periodic with period `TILE`, so
+translating by a whole tile is indistinguishable from translating by nothing,
+which keeps the offset bounded on an arbitrarily long page and makes the wrap
+invisible.
+
+### The mascot's follow was doing a job it could not do
+
+`FOLLOW = 0.085` per frame was wrong twice over.
+
+It was frame-rate dependent: the same scroll converged twice as fast at 120Hz
+as at 60Hz, and under-converged on any dropped frame.
+
+The real problem was structural though. At 0.085 a frame the mascot needs about
+a second to cross the screen, and it was the _follow_ that carried it from one
+dock to the opposite one. Scroll past a section faster than that, which is most
+scrolling, and the next crossing began before the last finished. It never
+arrived anywhere; it hovered near the middle of the viewport drifting slowly
+leftward, which is exactly what got reported. Measured over a full-page scroll
+it covered x=738 to x=1283 when the two docks sit at 98 and 1342 - it reached
+neither, ever.
+
+The crossing belongs to `resolveDock`, which interpolates between docks across
+the last stretch of each section and is a pure function of scroll position, so
+it always completes exactly when the boundary is reached. The follow is now
+only a smoother on top of that, time-based (`1 - exp(-dt / FOLLOW_TAU)`) with
+dt clamped so a backgrounded tab does not resume with one enormous step.
+
+The general lesson: if an eased follow is the thing transporting an element
+between two states, the transition is at the mercy of how long the user spends
+there. Make the path a function of the driving input and let the easing only
+take the edge off.
+
+### The hero stare was a consequence of the docked rule
+
+The gaze blends by proximity so that a mascot parked at the edge of the page
+does not hold a saturated stare in one direction. In the hero that rule is
+exactly backwards: the mascot is the largest thing on screen and the only thing
+to look at, and the cursor is usually further away than `GAZE_FALLOFF`, so the
+proximity term was near zero and the resting bias won every frame. It now
+tracks at any distance while in the hero and fades into the proximity rule as
+it docks. The inward resting bias is faded in the same way, because a mascot
+presented face-on at full size should not be staring off the side of its slot.
+
+### Semi-transparent strokes compound where sub-paths cross
+
+A lucide glyph is several overlapping sub-paths - `git-branch` runs its line
+straight through the circle it joins, rather than stopping at the circumference.
+Painted with a semi-transparent _stroke colour_, each sub-path is composited
+separately, so the alpha adds where they cross and you see a darker line drawn
+over the shape it is supposed to connect to. At the very low alphas these
+ornaments use, that doubled segment is the most visible part of the glyph.
+
+Element `opacity` fixes it by definition: it establishes a compositing group,
+so the glyph is rendered opaque and the single result is then made transparent.
+Overlaps cannot compound. Every faint ornament now sets an opaque colour plus
+an opacity, and a sweep of the rendered page confirms no multi-element SVG is
+left with a semi-transparent `color`.
+
+One detail worth keeping: there is a single opacity value per ornament, with
+only the colour varying by theme. `dark:opacity-*` and `group-hover:opacity-*`
+set the same property at equal specificity, so which wins in a dark-mode hover
+would come down to Tailwind's emitted order, which is not something to rely on.
+
+### A base rotation added to a deflection is asymmetric by construction
+
+The mascot's yaw was `BASE_ROTATION_Y + pointer.x * 0.5`. The base exists to
+give the octocat a three-quarter resting pose rather than a flat front-on
+stare, which is right at centre and wrong at both extremes: at full left the
+base and the deflection point the same way and compound to 0.65 rad, at full
+right they oppose and cancel to 0.15, which is still almost face-on. The bug
+reads as "it only turns one way" but is really "the resting pose never goes
+away".
+
+The fix is to treat the base as a pose that belongs to the rest state and
+nowhere else: `BASE_ROTATION_Y * (1 - |x|) + x * MAX_YAW`. At x=0 it is exactly
+the old resting pose; at either extreme the base has faded out entirely and
+only `MAX_YAW` remains, so the two sides mirror.
+
+That was necessary and not sufficient, which is the more useful half of this.
+The weighting only sheds the base at `|x| = 1`, and the caller never sent it
+there: the docked gaze bias in `v2-mascot.tsx` was `+/-0.5`, so half the
+resting pose survived at both docks and the original asymmetry survived with
+it, merely halved - left at 0.65 rad, right at -0.25. Fixing the formula while
+leaving the input at half scale looked like a fix and measured like one at the
+extremes, but the extremes were never reached in practice.
+
+So the two constants are one decision, not two. The dock bias is a full
+deflection (`+/-1`) because a docked mascot pinned to an edge looking across
+the page _is_ the most turned it ever gets, and `MAX_YAW` carries the whole
+angle at 0.65 - chosen as exactly where the left already sat, so the side that
+looked right is unchanged and only the wrong side moves.
+
+Two general lessons. Any time a constant offset is added to a symmetric input,
+check both ends; the midpoint looks correct either way. And when a formula is
+conditioned on its input reaching a limit, check that the caller actually
+reaches it - a normalisation that is never driven to 1 silently leaves a
+fraction of whatever it was meant to cancel.
+
+### Removing a theme is mostly removing the machinery, not the colours
+
+Collapsing 470 `dark:` variants was the mechanical part and a lexer handled it.
+The parts that needed thought were all machinery:
+
+- `color-scheme: dark` has to be declared explicitly. Scrollbars, form controls
+  and the default canvas are the browser's to paint, and it paints them light
+  unless told otherwise. With a theme class there was something to hang that
+  off; without one it has to be stated.
+- `suppressHydrationWarning` and the anti-FOUC script both existed solely to
+  cover a class written to `<html>` before hydration. With one theme the server
+  and client markup already agree, so both are dead weight.
+- Names outlive their reasons. `GhMascotToggle` and `aria-label="Toggle theme"`
+  described a job the button no longer has, and two unrelated files
+  (`mascot-glow.tsx`, `mascot-easter-egg.tsx`) located the mascot _by that
+  label_. Renaming had to happen in the same change as the selectors, or the
+  glow would silently stop finding its target - a failure with no error, just a
+  glow that never appears.
+
+The lesson for the sweep itself: a regex that treats `'` as a string delimiter
+will eat prose comments. An apostrophe in "someone else's uptime" opened a
+phantom string that ran to the next apostrophe and collapsed everything
+between. A real lexer that tracks comment and string states is the only safe
+way to rewrite source text in bulk.
+
+### A marquee loops on the track, not on its rows
+
+The band under the hero animated each of its two rows by `translateX(-100%)`.
+That looks like the standard trick and is not: a row translated by -100% moves
+its own width, so the pair only ever covers two row-widths of travel and the
+cycle ends with the second row at x=0 and nothing after it. Whether the seam is
+visible then depends entirely on how the row's width compares to the viewport,
+which is why it looked fine at some sizes and visibly restarted at others.
+
+The correct shape is to animate the track and move it by a whole number of
+copies of its content. With exactly two identical halves that is `-50%`: the
+frame after the wrap is the same picture as the frame before it, at any
+viewport, because the track is literally periodic with that period. The only
+remaining requirement is that one half be wider than the screen, which is a
+content-length decision (three repeats of the word list here) rather than
+something the animation can fix.
+
+Worth keeping separate from the older `infinite-scroll` keyframe, which travels
+-100% and is correct for its own caller, where the animated element is each row
+and the rows are wide enough. Same-looking animations with different contracts
+should not share a name.
+
+### One icon family, including the wordmark
+
+The v2 nav carried lucide's `Github` while every other GitHub mark in the tree
+came from react-icons. At a glance it reads as "the logo looks slightly wrong"
+without the cause being obvious: the lucide mark is a hollow stroke outline and
+the react-icons one is solid, so the wordmark was thin and unfilled next to
+solid marks further down the same page.
+
+This is the kind of leftover that survives a redesign precisely because the
+wordmark is not thought of as an icon. It is worth checking the header against
+the icon inventory whenever the body of a page changes families.
+
+### An inverted vignette turns a backdrop into a rug
+
+The hero's contribution graph read as a mat the mascot was standing on. The
+cause was one gradient. The mask ran
+
+    radial-gradient(ellipse 62% 62% at 50% 50%, transparent 16%, black 76%)
+
+which is transparent at the centre and opaque at the rim: the exact inverse of
+a vignette. The intent was sound, clearing space behind the mascot so the
+graph would not compete with it. The side effect was that the cells reached
+full strength precisely where the grid's rectangle ended, drawing a hard
+rectangular boundary, centred on the subject. A bounded shape centred behind a
+subject is a rug, and no amount of tuning the colour would have changed that,
+because the shape was doing it.
+
+The general rule: a field with visible edges is an object, and a field that
+fades to nothing before its edges is environment. If a background should read
+as environment, its falloff has to be outward. Anchoring the ellipse at the
+edge the field bleeds off (`at 100% 50%`) gets both in one gradient: strongest
+where it leaves the frame, gone before it reaches the content.
+
+The second half of the fix was compositional rather than tonal. It was centred
+on the mascot, which is what made it read as _its_ mat rather than the page's
+atmosphere. Hanging it off the section instead of the mascot's column, and
+letting it overhang right, top and bottom, means it is never seen whole.
+
+The tell that the diagnosis was right: the join band runs the same motif and
+never had this problem, because it was already full-bleed with a directional
+scrim. When one instance of a motif works and another does not, compare their
+treatment before touching either one's colours.
+
+### The browser pane cannot judge a low-contrast animated field
+
+Tuning the graph's weight in the pane was actively misleading. The pane
+starves rAF, so the framer-motion entry animation and the per-cell CSS twinkle
+both sit frozen near the keyframe's trough, and the field renders far fainter
+than it actually is. Trusting that reading led to a first pass so light that
+the right half of the hero was empty again, which is the defect the graph was
+added to fix.
+
+The workaround is to pin the steady state before judging: set the entry
+element's `opacity` to 1 and `animation: none` on the cells, then screenshot.
+That shows what a real browser shows. Any future work on a faint animated
+texture should do this first rather than tuning against a frozen frame.
+
+### Reserving height with the content that varies defeats the point
+
+The terminal tile renders its finished transcript invisibly underneath and lays
+the typing over it, so the tile is its final height from the first frame rather
+than growing a line at a time and shoving the rest of the bento row down. That
+was right when there was one script.
+
+With ten scripts drawn at random it quietly stopped working, for a reason that
+is not obvious. The server renders the first script and the client swaps in a
+random one after hydration. The reservation was the drawn script's own lines,
+so if the drawn script wrapped a different number of lines than the first one -
+and at a 383px tile several of them do - the tile changed height just after
+hydration. The reservation was tracking the thing it was supposed to be
+insulating against.
+
+The fix is a reservation that is not the content: six lines built from the
+longest input, output and success text across every script. It is at least as
+tall as any variant, and byte-identical on both sides of hydration. It costs
+some slack at the bottom when a short script is drawn, which is a much better
+trade than a tile that resizes under the reader.
+
+The general shape: if a reserved dimension is computed from data that can
+change after first paint, it is not a reservation. Compute it from a bound over
+all possible data instead.
+
+### Randomising something that also renders on the server
+
+`Math.random()` during render is a hydration mismatch, which the contribution
+grid already documented in this codebase. The reflex fix is to set state in a
+mount effect, but that is also what `useSyncExternalStore`'s third argument
+exists for, and it says the intent directly: a fixed server snapshot, a cached
+client snapshot, and React swapping them after hydration. No effect, nothing
+for the `react-hooks/set-state-in-effect` rule to object to, and the cache
+lives at module scope so a remount does not re-roll mid-visit.
+
+### A marquee's `duration` is per copy, not per pixel
+
+`InfiniteSlider` animates its track from 0 to minus half the doubled content
+width over `duration` seconds. That means `duration` is the time to traverse
+_one copy of the list_, whatever that copy happens to be worth in pixels. Going
+from twelve tools to twenty-four therefore doubles the distance covered in the
+same time, and the marquee silently runs at twice the speed.
+
+Nothing about the call site hints at this: the prop is named for a duration and
+behaves like one, but the perceived speed is `width / duration` and only one of
+those two is written down. Any change to the number of items has to move
+`duration` with it to hold the speed. Worth checking whenever a list feeding a
+marquee grows.
+
+### Check the icon export before trusting the brand name
+
+Brand names and Simple Icons slugs are not the same namespace, and the gaps are
+not guessable. `SiCockroachlabs` exists and `SiCockroachdb` does not, because
+the set carries the company mark rather than the product's. More sharply, there
+is no AWS icon at all: Simple Icons removed every Amazon mark over trademark
+policy, so `SiAws`, `SiAmazonaws` and `SiAmazonwebservices` are all absent from
+react-icons 5.7.0.
+
+The temptation on a miss is to reach for the nearest thing that renders, which
+here would have been the Amazon retail smile standing in for AWS: a different
+company's logo, shipped silently. The right move is to check every name against
+the installed package first, and to report a gap as a gap rather than papering
+over it with a substitute or a hand-drawn path.

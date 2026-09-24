@@ -9,8 +9,8 @@ export default async function AdminLoginPage({
   const { error } = await searchParams
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-white px-4 dark:bg-gh-bg">
-      <Card className="w-full max-w-sm border-gray-200 bg-white dark:border-gh-border dark:bg-gh-surface">
+    <main className="flex min-h-screen items-center justify-center bg-gh-bg px-4">
+      <Card className="w-full max-w-sm border-gh-border bg-gh-surface">
         <CardContent className="p-8">
           <h1 className="mb-6 text-center text-xl font-semibold">
             Admin login
@@ -18,7 +18,7 @@ export default async function AdminLoginPage({
           <form action="/api/admin/login" method="POST" className="space-y-4">
             <div>
               <label
-                className="mb-1 block text-sm font-medium text-gray-700 dark:text-gh-muted"
+                className="mb-1 block text-sm font-medium text-gh-muted"
                 htmlFor="password"
               >
                 Password
@@ -29,7 +29,7 @@ export default async function AdminLoginPage({
                 type="password"
                 autoFocus
                 required
-                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gh-border dark:bg-gh-elevated dark:text-gh-text dark:focus:border-gh-accent dark:focus:ring-gh-accent"
+                className="w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-sm text-gh-text focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
               />
             </div>
             {error && (

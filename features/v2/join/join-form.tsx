@@ -11,13 +11,11 @@ import { cn } from "@/lib/utils"
 // text-base below sm: iOS Safari zooms the viewport on focus for anything
 // under 16px.
 const FIELD =
-  "w-full rounded-xl border bg-white px-4 py-3 text-base text-gray-900 transition-colors placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-0 dark:bg-gh-elevated dark:text-gh-text dark:placeholder:text-gh-muted sm:text-sm"
+  "w-full rounded-xl border bg-gh-elevated px-4 py-3 text-base text-gh-text transition-colors placeholder:text-gh-muted focus:outline-none focus:ring-2 focus:ring-offset-0 sm:text-sm"
 const FIELD_OK =
-  "border-gray-300 focus:border-gh-accent-light focus:ring-gh-accent-light/30 dark:border-gh-border dark:focus:border-gh-accent dark:focus:ring-gh-accent/30"
-const FIELD_BAD =
-  "border-red-400 focus:border-red-500 focus:ring-red-500/30 dark:border-red-500/70"
-const LABEL =
-  "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gh-muted"
+  "border-gh-border focus:border-gh-accent focus:ring-gh-accent/30"
+const FIELD_BAD = "border-red-500/70 focus:border-red-500 focus:ring-red-500/30"
+const LABEL = "mb-1.5 block text-sm font-medium text-gh-muted"
 
 const EMPTY: ApplicationFormInput = {
   fullName: "",
@@ -116,15 +114,15 @@ export function V2JoinForm() {
 
   if (status === "success") {
     return (
-      <div className="rounded-3xl border border-gray-200 bg-white p-10 dark:border-gh-border dark:bg-gh-surface">
+      <div className="rounded-3xl border border-gh-border bg-gh-surface p-10">
         <FaRegCircleCheck
           aria-hidden="true"
-          className="h-10 w-10 text-gh-accent-light dark:text-gh-accent"
+          className="h-10 w-10 text-gh-accent"
         />
         <h3 className="mt-6 text-2xl font-bold tracking-[-0.01em]">
           Your application is in
         </h3>
-        <p className="mt-3 text-pretty leading-relaxed text-gray-600 dark:text-gh-muted">
+        <p className="mt-3 text-pretty leading-relaxed text-gh-muted">
           We read every one. Expect a reply on email within a week, and an
           invite to the next workshop either way.
         </p>
@@ -147,7 +145,7 @@ export function V2JoinForm() {
       ref={formRef}
       onSubmit={handleSubmit}
       noValidate
-      className="rounded-3xl border border-gray-200 bg-white p-6 dark:border-gh-border dark:bg-gh-surface sm:p-8"
+      className="rounded-3xl border border-gh-border bg-gh-surface p-6 sm:p-8"
     >
       {/* Honeypot — hidden from real users, bots fill every field */}
       <div className="hidden" aria-hidden="true">
@@ -234,9 +232,7 @@ export function V2JoinForm() {
         <div className="sm:col-span-2">
           <label className={LABEL} htmlFor="githubUsername">
             GitHub username{" "}
-            <span className="font-normal text-gray-400 dark:text-gh-muted">
-              — optional
-            </span>
+            <span className="font-normal text-gh-muted">— optional</span>
           </label>
           <input
             {...fieldProps("githubUsername")}
@@ -257,7 +253,7 @@ export function V2JoinForm() {
                 "font-mono text-xs tabular-nums",
                 form.whyJoin.length > WHY_JOIN_LIMIT
                   ? "text-red-500"
-                  : "text-gray-400 dark:text-gh-muted",
+                  : "text-gh-muted",
               )}
             >
               {form.whyJoin.length}/{WHY_JOIN_LIMIT}
@@ -276,7 +272,7 @@ export function V2JoinForm() {
       {serverError && (
         <p
           role="alert"
-          className="mt-5 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-300"
+          className="mt-5 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300"
         >
           {serverError}
         </p>
@@ -285,12 +281,12 @@ export function V2JoinForm() {
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="mt-7 w-full rounded-full bg-gray-900 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gh-accent dark:text-gh-deep dark:hover:bg-[#56d364] dark:focus-visible:ring-gh-accent dark:focus-visible:ring-offset-gh-surface"
+        className="mt-7 w-full rounded-full bg-gh-accent px-6 py-3.5 text-sm font-semibold text-gh-deep transition-colors hover:bg-[#56d364] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-surface disabled:cursor-not-allowed disabled:opacity-60"
       >
         {status === "submitting" ? "Sending…" : "Send application"}
       </button>
 
-      <p className="mt-4 text-center text-xs text-gray-500 dark:text-gh-muted">
+      <p className="mt-4 text-center text-xs text-gh-muted">
         We only use this to get back to you about the club.
       </p>
     </form>
@@ -303,7 +299,7 @@ function FieldError({ name, message }: { name: string; message?: string }) {
     <p
       id={`${name}-error`}
       role="alert"
-      className="mt-1.5 text-sm text-red-600 dark:text-red-400"
+      className="mt-1.5 text-sm text-red-400"
     >
       {message}
     </p>

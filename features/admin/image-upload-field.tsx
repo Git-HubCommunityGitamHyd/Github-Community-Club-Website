@@ -62,7 +62,7 @@ export function ImageUploadField({
 
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gh-muted">
+      <label className="mb-1 block text-sm font-medium text-gh-muted">
         {label}
       </label>
       <div className="flex items-center gap-3">
@@ -84,7 +84,7 @@ export function ImageUploadField({
             const file = e.target.files?.[0]
             if (file) handleFile(file)
           }}
-          className="text-sm text-gray-600 dark:text-gh-muted"
+          className="text-sm text-gh-muted"
         />
         {value && (
           <Button
@@ -97,11 +97,7 @@ export function ImageUploadField({
           </Button>
         )}
       </div>
-      {busy && (
-        <p className="mt-1 text-sm text-gray-500 dark:text-gh-muted">
-          Uploading…
-        </p>
-      )}
+      {busy && <p className="mt-1 text-sm text-gh-muted">Uploading…</p>}
       {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
   )

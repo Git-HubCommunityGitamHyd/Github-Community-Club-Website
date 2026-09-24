@@ -10,12 +10,16 @@ export function V2BenefitsSection() {
   return (
     <section id="benefits" className="relative">
       <SectionTexture />
-      <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8">
+      {/* Extra room at the bottom, not the usual `py-24`. The scroll-stack
+          leaves its last card pinned close to the foot of the section, so with
+          symmetric padding the card ends 19px above the hatch band and reads
+          as stuck to it. */}
+      <div className="relative mx-auto max-w-6xl px-4 pb-48 pt-24 sm:px-6 lg:px-8">
         <SectionLabel index="05">Benefits</SectionLabel>
         <h2 className="mb-4 mt-5 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-[-0.03em]">
           Why join us?
         </h2>
-        <p className="mb-14 max-w-[52ch] text-pretty text-lg leading-relaxed text-gray-600 dark:text-gh-muted">
+        <p className="mb-14 max-w-[52ch] text-pretty text-lg leading-relaxed text-gh-muted">
           Six reasons students stay after their first workshop.
         </p>
 
@@ -32,7 +36,7 @@ export function V2BenefitsSection() {
           {V2_BENEFITS.map((benefit, index) => (
             <ScrollStackItem
               key={benefit.title}
-              itemClassName="h-72 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-[0_24px_60px_-32px_rgba(1,4,9,0.25)] transition-colors duration-300 hover:border-gh-accent-light/35 dark:border-gh-border dark:bg-gh-surface dark:shadow-[0_24px_60px_-32px_rgba(1,4,9,0.9)] dark:hover:border-gh-accent/35"
+              itemClassName="h-72 overflow-hidden rounded-3xl border border-gh-border bg-gh-surface shadow-[0_24px_60px_-32px_rgba(1,4,9,0.9)] transition-colors duration-300 hover:border-gh-accent/35"
             >
               <BenefitCard benefit={benefit} index={index} />
             </ScrollStackItem>

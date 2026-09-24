@@ -60,12 +60,11 @@ const PopupMascot = dynamic(() => Promise.resolve(PopupOctocat), {
 })
 
 // Same selector mascot-glow.tsx uses to find the real mascot button — scoped
-// to its z-50 wrapper, not just the aria-label, since theme-toggle.tsx's
-// mobile button shares that label. A document-level click listener (bubble
-// phase, no preventDefault/stopPropagation) only counts clicks — it never
-// touches gh-mascot-toggle.tsx's own onClick, so the theme toggle still
-// fires normally and the locked mascot files stay untouched.
-const MASCOT_SELECTOR = '.z-50 > button[aria-label="Toggle theme"]'
+// to its z-50 wrapper rather than the aria-label alone. A document-level
+// click listener (bubble phase, no preventDefault/stopPropagation) only
+// counts clicks — it never touches gh-mascot-dock.tsx's own onClick, so the
+// spin still fires normally and the mascot files stay untouched.
+const MASCOT_SELECTOR = '.z-50 > button[aria-label="Spin the octocat"]'
 const CLICKS_TO_UNLOCK = 7
 
 const TITLE = "Congrats on unlocking the easter egg!"

@@ -16,6 +16,15 @@ type SpinRef = MutableRefObject<boolean>
 const BASE_ROTATION_Y = 0.4
 const BASE_ROTATION_X = 0.15
 
+/**
+ * Yaw at full deflection, in radians, measured from facing the camera.
+ *
+ * 0.65 is where the left dock already sat under the old lopsided formula
+ * (0.4 + 0.5 x 0.5), which is the side that looked right. Keeping that exact
+ * angle means the left is unchanged and only the right moves to meet it.
+ */
+const MAX_YAW = 0.65
+
 // Framing: read straight out of the .glb's POSITION accessor bounds, the
 // whole model (NODE_333 carries the silhouette, whiskers and tentacles
 // included) spans x 0..12.98, y 0..9.99 — 12.98 x 9.99, aspect 1.299, which
@@ -105,7 +114,28 @@ function OctocatModel({
       return
     }
 
-    const targetY = BASE_ROTATION_Y + pointerRef.current.x * 0.5
+    // The yaw swings symmetrically about facing the camera, not about the
+    // resting pose.
+    //
+    // It used to be `BASE_ROTATION_Y + x * 0.5`, which looks symmetric and is
+    // not: BASE_ROTATION_Y is 0.4, so a full left deflection reached 0.65 rad
+    // and a full right one only 0.15 - still almost front-on. Docked on the
+    // left the mascot turned its head convincingly; docked on the right it
+    // barely moved, which is exactly what that looked like.
+    //
+    // Weighting the base by `1 - |x|` keeps the resting three-quarter pose at
+    // x = 0, where it is a good portrait angle, and blends it out as the gaze
+    // deflects so the two extremes are mirror images at +/- MAX_YAW.
+    // Clamped because the caller adds an idle wobble on top of a full-
+    // deflection dock bias, which can carry it just past 1. Past 1 the base
+    // weight below goes negative and the yaw overshoots away from the turn.
+    const swing = Math.max(-1, Math.min(1, pointerRef.current.x))
+    // The base is a resting pose, so it belongs to the rest state and nowhere
+    // else: full strength facing forward, faded out entirely at either
+    // extreme, where only MAX_YAW remains and the two sides mirror. Added
+    // rather than faded, it would compound with the deflection on one side and
+    // cancel against it on the other.
+    const targetY = BASE_ROTATION_Y * (1 - Math.abs(swing)) + swing * MAX_YAW
     const targetX = BASE_ROTATION_X + pointerRef.current.y * -0.3
     g.rotation.y += (targetY - g.rotation.y) * ease
     g.rotation.x += (targetX - g.rotation.x) * ease

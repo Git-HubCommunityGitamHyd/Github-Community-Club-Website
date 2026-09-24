@@ -75,7 +75,7 @@ function V2Shell({
   // never moves, so nothing sticks (the journey year rail sat 600px above the
   // viewport). `clip` clips the same overflow without creating one.
   return (
-    <div className="v2-root relative min-h-screen overflow-x-clip bg-white font-sans text-gray-900 dark:bg-gh-bg dark:text-gh-text">
+    <div className="v2-root relative min-h-screen overflow-x-clip bg-gh-bg font-sans text-gh-text">
       <V2Navbar activeSection={activeSection} onScrollTo={scrollToSection} />
       <V2Mascot heroSlotRef={heroSlotRef} />
 

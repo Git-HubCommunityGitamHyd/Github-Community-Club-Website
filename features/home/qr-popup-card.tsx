@@ -28,7 +28,7 @@ export function QRPopupCard({ isOpen, onClose }: QRPopupCardProps) {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 flex items-center justify-center bg-black/80 p-4 backdrop-blur-lg dark:bg-black/90"
+          className="fixed inset-0 flex items-center justify-center bg-black/90 p-4 backdrop-blur-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -39,7 +39,7 @@ export function QRPopupCard({ isOpen, onClose }: QRPopupCardProps) {
           style={{ zIndex: 9999 }}
         >
           <motion.div
-            className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl dark:bg-gh-surface dark:shadow-black/60 sm:p-12 md:rounded-3xl"
+            className="relative w-full max-w-sm rounded-2xl bg-gh-surface p-6 shadow-2xl shadow-black/60 sm:p-12 md:rounded-3xl"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
@@ -47,16 +47,16 @@ export function QRPopupCard({ isOpen, onClose }: QRPopupCardProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <motion.button
-              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 shadow-lg transition-colors duration-200 hover:bg-gray-200 dark:bg-gh-elevated dark:hover:bg-gh-border sm:right-6 sm:top-6"
+              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-gh-elevated shadow-lg transition-colors duration-200 hover:bg-gh-border sm:right-6 sm:top-6"
               onClick={onClose}
               aria-label="Close"
               whileHover={{ scale: 1.1, rotate: 90 }}
               whileTap={{ scale: 0.9 }}
             >
-              <X className="h-6 w-6 text-gray-600 dark:text-gh-muted" />
+              <X className="h-6 w-6 text-gh-muted" />
             </motion.button>
             <div className="text-center">
-              <h3 className="mb-4 pr-10 text-xl font-bold text-gray-900 dark:text-gh-text sm:pr-5 sm:text-2xl">
+              <h3 className="mb-4 pr-10 text-xl font-bold text-gh-text sm:pr-5 sm:text-2xl">
                 Join our WhatsApp Community
               </h3>
               <div className="flex justify-center">
@@ -68,7 +68,7 @@ export function QRPopupCard({ isOpen, onClose }: QRPopupCardProps) {
                   className="h-auto w-full max-w-[240px] sm:max-w-[300px]"
                 />
               </div>
-              <p className="mt-4 text-sm text-gray-600 dark:text-gh-muted sm:text-base">
+              <p className="mt-4 text-sm text-gh-muted sm:text-base">
                 Scan this code with your phone to join the group!
               </p>
             </div>

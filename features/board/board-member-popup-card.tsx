@@ -26,7 +26,7 @@ interface BoardMemberPopupCardProps {
 function MemberImage({ src, alt }: { src: string; alt: string }) {
   const [loaded, setLoaded] = useState(false)
   return (
-    <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-full border-2 border-gray-200 shadow-sm dark:border-gh-border">
+    <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-full border-2 border-gh-border shadow-sm">
       {!loaded && <div className="skeleton absolute inset-0 rounded-full" />}
       <Image
         src={src || "/placeholder.svg"}
@@ -43,7 +43,7 @@ function MemberImage({ src, alt }: { src: string; alt: string }) {
 function MemberImageLarge({ src, alt }: { src: string; alt: string }) {
   const [loaded, setLoaded] = useState(false)
   return (
-    <div className="relative h-40 w-40 flex-shrink-0 overflow-hidden rounded-full border-4 border-gray-200 shadow-lg dark:border-gh-border">
+    <div className="relative h-40 w-40 flex-shrink-0 overflow-hidden rounded-full border-4 border-gh-border shadow-lg">
       {!loaded && <div className="skeleton absolute inset-0 rounded-full" />}
       <Image
         src={src || "/placeholder.svg"}
@@ -62,7 +62,7 @@ export function BoardMemberPopupCard({
   index,
 }: BoardMemberPopupCardProps) {
   const frontContent = (
-    <Card className="h-full border-2 border-gray-200 bg-gradient-to-br from-gray-50 to-white transition-all duration-300 hover:border-gray-300 hover:shadow-lg dark:border-gh-border dark:from-gh-surface dark:to-gh-elevated dark:hover:border-gh-muted dark:hover:shadow-black/40">
+    <Card className="h-full border-2 border-gh-border bg-gradient-to-br from-gh-surface to-gh-elevated transition-all duration-300 hover:border-gh-muted hover:shadow-lg hover:shadow-black/40">
       <CardContent className="flex h-full flex-col items-center justify-center p-8 text-center">
         <motion.div
           whileHover={{ scale: 1.1, rotate: 5 }}
@@ -71,17 +71,17 @@ export function BoardMemberPopupCard({
         >
           <MemberImage src={member.image} alt={member.name} />
         </motion.div>
-        <CardTitle className="mb-4 text-2xl text-gray-900 dark:text-gh-text">
+        <CardTitle className="mb-4 text-2xl text-gh-text">
           {member.name}
         </CardTitle>
         <Badge
           variant="secondary"
-          className="mb-4 px-4 py-2 text-lg dark:border-gh-border dark:bg-gh-elevated dark:text-gh-text"
+          className="mb-4 border-gh-border bg-gh-elevated px-4 py-2 text-lg text-gh-text"
         >
           {member.role}
         </Badge>
         <motion.div
-          className="flex items-center gap-2 text-sm text-gray-500 dark:text-gh-muted"
+          className="flex items-center gap-2 text-sm text-gh-muted"
           initial={{ opacity: 0.7 }}
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
@@ -106,7 +106,7 @@ export function BoardMemberPopupCard({
         </motion.div>
         <div className="min-w-0 flex-1">
           <motion.h3
-            className="mb-4 break-words pr-10 text-3xl font-bold text-gray-900 dark:text-gh-text md:mb-6 md:pr-0 md:text-5xl"
+            className="mb-4 break-words pr-10 text-3xl font-bold text-gh-text md:mb-6 md:pr-0 md:text-5xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.3, ease: "easeOut" }}
@@ -120,7 +120,7 @@ export function BoardMemberPopupCard({
           >
             <Badge
               variant="outline"
-              className="border-gh-accent-light px-5 py-2 text-base font-medium text-gh-accent-light dark:border-gh-accent dark:text-gh-accent md:px-8 md:py-3 md:text-xl"
+              className="border-gh-accent px-5 py-2 text-base font-medium text-gh-accent md:px-8 md:py-3 md:text-xl"
             >
               {member.role}
             </Badge>
@@ -135,10 +135,10 @@ export function BoardMemberPopupCard({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.5, ease: "easeOut" }}
       >
-        <h4 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gh-text md:text-2xl">
+        <h4 className="mb-4 text-xl font-semibold text-gh-text md:text-2xl">
           About
         </h4>
-        <p className="text-base leading-relaxed text-gray-600 dark:text-gh-muted md:text-xl">
+        <p className="text-base leading-relaxed text-gh-muted md:text-xl">
           {member.description}
         </p>
       </motion.div>
@@ -149,7 +149,7 @@ export function BoardMemberPopupCard({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.6, ease: "easeOut" }}
       >
-        <h4 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gh-text md:text-2xl">
+        <h4 className="mb-4 text-xl font-semibold text-gh-text md:text-2xl">
           Connect
         </h4>
         <div className="flex flex-wrap gap-4">

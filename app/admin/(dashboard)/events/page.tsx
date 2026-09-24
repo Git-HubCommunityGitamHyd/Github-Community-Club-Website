@@ -8,24 +8,21 @@ export default async function AdminEventsPage() {
   const events = await listEvents()
 
   return (
-    <main className="min-h-screen bg-white px-4 py-10 dark:bg-gh-bg dark:text-gh-text">
+    <main className="min-h-screen bg-gh-bg px-4 py-10 text-gh-text">
       <div className="mx-auto max-w-6xl">
         <AdminNav active="/admin/events" />
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-semibold">
-            Events{" "}
-            <span className="text-gray-400 dark:text-gh-muted">
-              ({events.length})
-            </span>
+            Events <span className="text-gh-muted">({events.length})</span>
           </h1>
           <Link href="/admin/events/new">
             <Button>Add event</Button>
           </Link>
         </div>
 
-        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gh-border">
+        <div className="overflow-x-auto rounded-lg border border-gh-border">
           <table className="w-full min-w-[700px] text-left text-sm">
-            <thead className="bg-gray-50 dark:bg-gh-surface">
+            <thead className="bg-gh-surface">
               <tr>
                 <th className="px-4 py-3 font-medium">Title</th>
                 <th className="px-4 py-3 font-medium">Date</th>
@@ -36,10 +33,7 @@ export default async function AdminEventsPage() {
             </thead>
             <tbody>
               {events.map((event) => (
-                <tr
-                  key={event.id}
-                  className="border-t border-gray-200 dark:border-gh-border"
-                >
+                <tr key={event.id} className="border-t border-gh-border">
                   <td className="px-4 py-3">{event.title}</td>
                   <td className="px-4 py-3">{event.event_date}</td>
                   <td className="px-4 py-3">{event.category}</td>
@@ -63,7 +57,7 @@ export default async function AdminEventsPage() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-4 py-8 text-center text-gray-500 dark:text-gh-muted"
+                    className="px-4 py-8 text-center text-gh-muted"
                   >
                     No events yet.
                   </td>

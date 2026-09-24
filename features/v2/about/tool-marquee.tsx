@@ -2,18 +2,30 @@
 
 import type { IconType } from "react-icons"
 import {
+  SiCloudflare,
+  SiCockroachlabs,
   SiDocker,
   SiFigma,
+  SiFlutter,
+  SiFramer,
   SiGit,
   SiGithub,
   SiGithubactions,
+  SiGooglecloud,
+  SiHuggingface,
   SiLinux,
+  SiMongodb,
   SiNextdotjs,
   SiNodedotjs,
+  SiPostgresql,
+  SiPytorch,
   SiPython,
   SiReact,
+  SiSupabase,
   SiTailwindcss,
+  SiTensorflow,
   SiTypescript,
+  SiVercel,
 } from "react-icons/si"
 import { InfiniteSlider } from "@/components/ui/infinite-slider"
 
@@ -22,31 +34,60 @@ import { InfiniteSlider } from "@/components/ui/infinite-slider"
  *
  * The snippet fed its marquee remote SVGs from a third-party CDN. Those are
  * someone else's uptime, another origin to allow in `next.config.js`, and they
- * arrive as flat black bitmap-ish marks that need `dark:brightness-0 invert` to
- * survive dark mode — which is exactly the hack that makes a logo wall look
+ * arrive as flat black bitmap-ish marks that need a `brightness-0 invert`
+ * filter to survive a dark page, which is exactly the hack that makes a logo
+ * wall look
  * cheap. `react-icons/si` is Simple Icons, already a dependency, vector, one
  * stroke weight, and it inherits `currentColor`, so both themes come free and
  * nothing is fetched at runtime.
+ */
+/*
+ * Grouped rather than shuffled. A marquee is read in sequence, so neighbours
+ * should belong together: version control, then languages, then the web stack,
+ * mobile, data, machine learning, infrastructure, and design last. Twenty-four
+ * names arriving in no order reads as a dump; in runs it reads as a stack.
  */
 const TOOLS: { icon: IconType; label: string }[] = [
   { icon: SiGit, label: "Git" },
   { icon: SiGithub, label: "GitHub" },
   { icon: SiGithubactions, label: "Actions" },
+
   { icon: SiTypescript, label: "TypeScript" },
+  { icon: SiPython, label: "Python" },
+
   { icon: SiReact, label: "React" },
   { icon: SiNextdotjs, label: "Next.js" },
   { icon: SiNodedotjs, label: "Node" },
-  { icon: SiPython, label: "Python" },
+  { icon: SiTailwindcss, label: "Tailwind" },
+
+  { icon: SiFlutter, label: "Flutter" },
+
+  { icon: SiPostgresql, label: "Postgres" },
+  { icon: SiMongodb, label: "MongoDB" },
+  { icon: SiSupabase, label: "Supabase" },
+  // Simple Icons carries the company mark, Cockroach Labs, not a separate one
+  // for the database. The label is the product, which is what anyone reading
+  // the marquee is looking for.
+  { icon: SiCockroachlabs, label: "CockroachDB" },
+
+  { icon: SiTensorflow, label: "TensorFlow" },
+  { icon: SiPytorch, label: "PyTorch" },
+  { icon: SiHuggingface, label: "Hugging Face" },
+
   { icon: SiDocker, label: "Docker" },
   { icon: SiLinux, label: "Linux" },
-  { icon: SiTailwindcss, label: "Tailwind" },
+  { icon: SiCloudflare, label: "Cloudflare" },
+  { icon: SiVercel, label: "Vercel" },
+  { icon: SiGooglecloud, label: "Google Cloud" },
+
   { icon: SiFigma, label: "Figma" },
+  { icon: SiFramer, label: "Framer" },
 ]
 
 export function ToolMarquee() {
   return (
     <div className="relative">
-      <p className="mb-8 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500 dark:text-gh-muted">
+      <p className="mb-8 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-gh-muted">
         What we build with
       </p>
 
@@ -63,11 +104,15 @@ export function ToolMarquee() {
             "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
         }}
       >
-        <InfiniteSlider gap={72} duration={48} durationOnHover={140} reverse>
+        {/* Twice the names means twice the distance, and InfiniteSlider
+            covers one copy of the list in `duration` seconds regardless of how
+            wide that copy is. Left at 48 the marquee would simply run twice as
+            fast; these are doubled to hold the original speed. */}
+        <InfiniteSlider gap={72} duration={96} durationOnHover={280} reverse>
           {TOOLS.map((tool) => (
             <div
               key={tool.label}
-              className="flex shrink-0 items-center gap-3.5 text-gray-400 transition-colors duration-300 hover:text-gray-900 dark:text-gh-muted dark:hover:text-gh-text"
+              className="flex shrink-0 items-center gap-3.5 text-gh-muted transition-colors duration-300 hover:text-gh-text"
             >
               <tool.icon
                 aria-hidden="true"

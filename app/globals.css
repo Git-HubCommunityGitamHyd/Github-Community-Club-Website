@@ -3,36 +3,22 @@
 @tailwind utilities;
 
 @layer base {
+  /*
+   * The GitHub dark palette, as exact HSL conversions.
+   *
+   * There is one theme. These used to be light values on `:root` with a
+   * `.dark` block overriding every one of them, plus a class toggle, a
+   * provider and an anti-FOUC script to decide which applied. The site is
+   * dark-only now, so the dark values simply *are* the values and none of
+   * that machinery exists.
+   */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 137 66% 30%; /* #1a7f37 */
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
-    --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-  }
+    /* Scrollbars, form controls and the default canvas are the browser's
+       to paint, and it paints them light unless told otherwise. With a
+       theme class there was something to hang this off; without one it
+       has to be declared. */
+    color-scheme: dark;
 
-  /* GitHub dark theme — exact HSL conversions of GitHub's palette */
-  .dark {
     --background: 216 28% 7%; /* #0d1117 */
     --foreground: 210 32% 93%; /* #e6edf3 */
     --card: 213 21% 11%; /* #161b22 */
@@ -52,6 +38,7 @@
     --border: 210 12% 21%; /* #30363d */
     --input: 210 12% 21%;
     --ring: 128 49% 49%;
+    --radius: 0.5rem;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -219,7 +206,7 @@ textarea:focus-visible,
 .skeleton {
   position: relative;
   overflow: hidden;
-  background-color: #f3f4f6;
+  background-color: #161b22;
 }
 
 .skeleton::after {
@@ -229,23 +216,10 @@ textarea:focus-visible,
   background: linear-gradient(
     90deg,
     transparent 25%,
-    rgba(255, 255, 255, 0.6) 50%,
-    transparent 75%
-  );
-  animation: skeleton-shimmer 1.6s ease-in-out infinite;
-}
-
-.dark .skeleton {
-  background-color: #161b22;
-}
-
-.dark .skeleton::after {
-  background: linear-gradient(
-    90deg,
-    transparent 25%,
     rgba(33, 38, 45, 0.8) 50%,
     transparent 75%
   );
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
 }
 
 /* Utility to hide native scrollbars */
@@ -358,6 +332,28 @@ textarea:focus-visible,
 
 @media (prefers-reduced-motion: reduce) {
   .terminal-cursor {
+    animation: none;
+  }
+}
+
+/*
+ * The hero word band (components/mascot/gh-marquee.tsx).
+ *
+ * -50% across two identical halves, so the wrap lands exactly one half along
+ * and is invisible. Distinct from `infinite-scroll` in tailwind.config.js,
+ * which travels -100% and is still used by the v1 auto-scroll gallery, where
+ * the animated element is each row rather than the track.
+ */
+@keyframes gh-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.gh-marquee-track {
+  animation: gh-marquee 42s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gh-marquee-track {
     animation: none;
   }
 }

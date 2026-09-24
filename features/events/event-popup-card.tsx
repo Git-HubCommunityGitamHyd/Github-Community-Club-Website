@@ -23,24 +23,24 @@ interface EventPopupCardProps {
 
 export function EventPopupCard({ event, index }: EventPopupCardProps) {
   const frontContent = (
-    <Card className="h-full border-2 border-gray-200 bg-gradient-to-br from-white to-gray-50 transition-all duration-300 hover:border-gray-300 hover:shadow-lg dark:border-gh-border dark:from-gh-surface dark:to-gh-elevated dark:hover:border-gh-muted dark:hover:shadow-black/40">
+    <Card className="h-full border-2 border-gh-border bg-gradient-to-br from-gh-surface to-gh-elevated transition-all duration-300 hover:border-gh-muted hover:shadow-lg hover:shadow-black/40">
       <CardContent className="flex h-full flex-col items-center justify-center p-8 text-center">
-        <CardTitle className="mb-4 text-xl leading-tight text-gray-900 dark:text-gh-text">
+        <CardTitle className="mb-4 text-xl leading-tight text-gh-text">
           {event.title}
         </CardTitle>
 
         <div className="mb-4 space-y-2">
-          <div className="flex items-center justify-center text-gray-600 dark:text-gh-muted">
+          <div className="flex items-center justify-center text-gh-muted">
             <span className="text-sm font-medium">{event.date}</span>
           </div>
           {event.location && (
-            <div className="flex items-center justify-center text-gray-600 dark:text-gh-muted">
+            <div className="flex items-center justify-center text-gh-muted">
               <MapPin className="mr-2 h-4 w-4" />
               <span className="text-sm">{event.location}</span>
             </div>
           )}
           {event.attendees && (
-            <div className="flex items-center justify-center text-gray-600 dark:text-gh-muted">
+            <div className="flex items-center justify-center text-gh-muted">
               <Users className="mr-2 h-4 w-4" />
               <span className="text-sm">{event.attendees} attendees</span>
             </div>
@@ -49,13 +49,13 @@ export function EventPopupCard({ event, index }: EventPopupCardProps) {
 
         <Badge
           variant="secondary"
-          className="mb-4 px-3 py-1 dark:border-gh-border dark:bg-gh-elevated dark:text-gh-text"
+          className="mb-4 border-gh-border bg-gh-elevated px-3 py-1 text-gh-text"
         >
           {event.category}
         </Badge>
 
         <motion.div
-          className="flex items-center gap-2 text-sm text-gray-500 dark:text-gh-muted"
+          className="flex items-center gap-2 text-sm text-gh-muted"
           initial={{ opacity: 0.7 }}
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
@@ -72,7 +72,7 @@ export function EventPopupCard({ event, index }: EventPopupCardProps) {
       {/* Header */}
       <div className="mb-8">
         <motion.h3
-          className="mb-4 break-words pr-10 text-2xl font-bold text-gray-900 dark:text-gh-text md:mb-6 md:pr-0 md:text-4xl"
+          className="mb-4 break-words pr-10 text-2xl font-bold text-gh-text md:mb-6 md:pr-0 md:text-4xl"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
@@ -81,7 +81,7 @@ export function EventPopupCard({ event, index }: EventPopupCardProps) {
         </motion.h3>
 
         <motion.div
-          className="mb-6 flex flex-wrap gap-x-6 gap-y-3 text-sm text-gray-600 dark:text-gh-muted md:text-base"
+          className="mb-6 flex flex-wrap gap-x-6 gap-y-3 text-sm text-gh-muted md:text-base"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.3 }}
@@ -117,7 +117,7 @@ export function EventPopupCard({ event, index }: EventPopupCardProps) {
         >
           <Badge
             variant="outline"
-            className="border-gh-accent-light px-4 py-2 text-sm text-gh-accent-light dark:border-gh-accent dark:text-gh-accent md:px-6 md:py-3 md:text-base"
+            className="border-gh-accent px-4 py-2 text-sm text-gh-accent md:px-6 md:py-3 md:text-base"
           >
             {event.category}
           </Badge>
@@ -131,10 +131,10 @@ export function EventPopupCard({ event, index }: EventPopupCardProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.5 }}
       >
-        <h4 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gh-text md:mb-6 md:text-2xl">
+        <h4 className="mb-4 text-xl font-semibold text-gh-text md:mb-6 md:text-2xl">
           Event Details
         </h4>
-        <p className="text-base leading-relaxed text-gray-600 dark:text-gh-muted md:text-xl">
+        <p className="text-base leading-relaxed text-gh-muted md:text-xl">
           {event.description}
         </p>
       </motion.div>
@@ -147,7 +147,7 @@ export function EventPopupCard({ event, index }: EventPopupCardProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.6 }}
         >
-          <h4 className="mb-6 flex items-center gap-3 text-xl font-semibold text-gray-800 dark:text-gh-text md:mb-8 md:text-2xl">
+          <h4 className="mb-6 flex items-center gap-3 text-xl font-semibold text-gh-text md:mb-8 md:text-2xl">
             <ImageIcon className="h-5 w-5 md:h-6 md:w-6" />
             Event Gallery
           </h4>

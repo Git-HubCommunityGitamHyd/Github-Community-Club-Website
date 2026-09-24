@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { GhMascotToggle } from "@/components/mascot/gh-mascot-toggle"
+import { GhMascotDock } from "@/components/mascot/gh-mascot-dock"
 import { GhMarquee } from "@/components/mascot/gh-marquee"
 import type { BoardMember } from "@/lib/db/board-members"
 import type { Event } from "@/lib/db/events"
@@ -88,7 +88,7 @@ export function HomePage({
   }
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-white text-gray-900 dark:bg-gh-bg dark:text-gh-text">
+    <div className="relative min-h-screen overflow-x-hidden bg-gh-bg text-gh-text">
       <HomeNav
         activeSection={activeSection}
         isMenuOpen={isMenuOpen}
@@ -97,7 +97,7 @@ export function HomePage({
         navSlotRef={navSlotRef}
       />
 
-      <GhMascotToggle heroSlotRef={heroSlotRef} navSlotRef={navSlotRef} />
+      <GhMascotDock heroSlotRef={heroSlotRef} navSlotRef={navSlotRef} />
       <HeroSection heroSlotRef={heroSlotRef} onScrollTo={scrollToSection} />
       <GhMarquee />
       <StatsSection />

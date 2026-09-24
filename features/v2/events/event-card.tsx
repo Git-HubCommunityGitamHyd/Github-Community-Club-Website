@@ -32,13 +32,11 @@ import { cn } from "@/lib/utils"
  */
 
 const CARD_BASE =
-  "group/event relative flex h-full flex-col overflow-hidden rounded-3xl border bg-white transition-colors duration-300 dark:bg-gh-surface"
+  "group/event relative flex h-full flex-col overflow-hidden rounded-3xl border bg-gh-surface transition-colors duration-300"
 
 const CARD_TONE = {
-  plain:
-    "border-gray-200 hover:border-gray-300 dark:border-gh-border dark:hover:border-gh-muted",
-  featured:
-    "border-gray-200 hover:border-gh-accent-light/45 dark:border-gh-border dark:hover:border-gh-accent/45",
+  plain: "border-gh-border hover:border-gh-muted",
+  featured: "border-gh-border hover:border-gh-accent/45",
 }
 
 export function EventCard({
@@ -109,7 +107,7 @@ export function EventCard({
             {event.title}
           </h3>
 
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-500 dark:text-gh-muted">
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gh-muted">
             {facts.map((fact) => (
               <span
                 key={fact.value}
@@ -124,14 +122,14 @@ export function EventCard({
           {/* `flex-1` here rather than on the paragraph: it pushes the CTA to
               the bottom of the card, so a row of cards ends its links on one
               line no matter how long each description runs. */}
-          <p className="mt-5 max-w-[52ch] flex-1 text-pretty leading-relaxed text-gray-600 dark:text-gh-muted">
+          <p className="mt-5 max-w-[52ch] flex-1 text-pretty leading-relaxed text-gh-muted">
             {event.description}
           </p>
 
           <button
             type="button"
             onClick={onActivate}
-            className="group/cta mt-7 inline-flex w-fit items-center gap-2 text-sm font-semibold text-gray-900 transition-colors hover:text-gh-accent-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:text-gh-text dark:hover:text-gh-accent dark:focus-visible:ring-gh-accent dark:focus-visible:ring-offset-gh-surface"
+            className="group/cta mt-7 inline-flex w-fit items-center gap-2 text-sm font-semibold text-gh-text transition-colors hover:text-gh-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-4 focus-visible:ring-offset-gh-surface"
           >
             {/* Stretched over the whole card so the entire surface is the hit
                 target, while the accessibility tree still sees one button with
@@ -167,7 +165,7 @@ function EventCover({
   return (
     <div
       className={cn(
-        "relative overflow-hidden bg-gray-100 dark:bg-gh-elevated",
+        "relative overflow-hidden bg-gh-elevated",
         // One aspect ratio for every card in the grid, so the titles beneath
         // them line up. The featured card drops the ratio at lg and fills its
         // own column instead.
@@ -201,7 +199,7 @@ function EventCover({
           <Glyph
             aria-hidden="true"
             strokeWidth={1.2}
-            className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 text-gray-400/70 transition-transform duration-700 ease-out group-hover/event:scale-[1.08] dark:text-gh-muted/50"
+            className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 text-gh-muted opacity-65 transition-transform duration-700 ease-out group-hover/event:scale-[1.08]"
           />
         </div>
       )}
@@ -214,11 +212,8 @@ function EventCover({
         className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/45 to-transparent"
       />
 
-      <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-800 backdrop-blur-sm dark:bg-gh-deep/80 dark:text-gh-text">
-        <Glyph
-          aria-hidden="true"
-          className="h-3.5 w-3.5 text-gh-accent-light dark:text-gh-accent"
-        />
+      <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-gh-deep/80 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-gh-text backdrop-blur-sm">
+        <Glyph aria-hidden="true" className="h-3.5 w-3.5 text-gh-accent" />
         {category}
       </span>
 

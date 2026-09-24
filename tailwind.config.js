@@ -2,7 +2,6 @@ const defaultTheme = require("tailwindcss/defaultTheme")
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: ["class"],
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -58,8 +57,8 @@ module.exports = {
           border: "#30363d",
           text: "#e6edf3",
           muted: "#8b949e",
+          // One accent, site-wide.
           accent: "#3fb950",
-          "accent-light": "#1a7f37",
         },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

@@ -32,9 +32,9 @@ export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
   return (
     <div ref={containerRef} className="relative">
       {/* Animated timeline line */}
-      <div className="absolute left-4 h-full w-1 -translate-x-1/2 transform overflow-hidden rounded-full bg-gray-200 dark:bg-gh-elevated md:left-1/2">
+      <div className="absolute left-4 h-full w-1 -translate-x-1/2 transform overflow-hidden rounded-full bg-gh-elevated md:left-1/2">
         <motion.div
-          className="w-full rounded-full bg-gradient-to-b from-gh-accent-light via-gh-accent to-gh-accent-light dark:from-gh-accent dark:via-gh-muted dark:to-gh-accent"
+          className="w-full rounded-full bg-gradient-to-b from-gh-accent via-gh-muted to-gh-accent"
           style={{ height: lineHeight }}
           transition={{ duration: 0.3 }}
         />
@@ -57,9 +57,9 @@ export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
               transition={{ duration: 0.3 }}
               className="group"
             >
-              <Card className="relative overflow-hidden border-2 border-gray-200 bg-white transition-all duration-300 hover:border-gh-accent-light hover:shadow-xl hover:shadow-black/10 dark:border-gh-border dark:bg-gh-surface dark:hover:border-gh-accent dark:hover:shadow-black/40">
+              <Card className="relative overflow-hidden border-2 border-gh-border bg-gh-surface transition-all duration-300 hover:border-gh-accent hover:shadow-xl hover:shadow-black/40">
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-gh-elevated dark:to-gh-surface"
+                  className="absolute inset-0 bg-gradient-to-br from-gh-elevated to-gh-surface opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                   initial={false}
                 />
                 <CardHeader className="relative z-10">
@@ -67,17 +67,17 @@ export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
                     whileHover={{ x: index % 2 === 0 ? -5 : 5 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <CardTitle className="text-xl text-gray-900 transition-colors duration-300 group-hover:text-black dark:text-gh-text dark:group-hover:text-white">
+                    <CardTitle className="text-xl text-gh-text transition-colors duration-300 group-hover:text-white">
                       {item.title}
                     </CardTitle>
-                    <CardDescription className="text-lg font-semibold text-gh-accent-light dark:text-gh-accent">
+                    <CardDescription className="text-lg font-semibold text-gh-accent">
                       {item.date}
                     </CardDescription>
                   </motion.div>
                 </CardHeader>
                 <CardContent className="relative z-10">
                   <motion.p
-                    className="text-gray-600 transition-colors duration-300 group-hover:text-gray-800 dark:text-gh-muted dark:group-hover:text-gh-text"
+                    className="text-gh-muted transition-colors duration-300 group-hover:text-gh-text"
                     whileHover={{ x: index % 2 === 0 ? -3 : 3 }}
                     transition={{ duration: 0.2 }}
                   >
@@ -102,7 +102,7 @@ export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
             transition={{ duration: 0.3 }}
           >
             <motion.div
-              className="relative h-6 w-6 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-gh-accent-light shadow-lg dark:border-gh-bg dark:bg-gh-accent"
+              className="relative h-6 w-6 cursor-pointer overflow-hidden rounded-full border-4 border-gh-bg bg-gh-accent shadow-lg"
               whileHover={{
                 scale: 1.5,
                 boxShadow: "0 0 20px rgba(63,185,80,0.4)",
@@ -113,7 +113,7 @@ export function EnhancedTimeline({ items }: EnhancedTimelineProps) {
               viewport={{ once: true }}
             >
               <motion.div
-                className="absolute inset-0 rounded-full bg-gh-accent-light dark:bg-gh-accent"
+                className="absolute inset-0 rounded-full bg-gh-accent"
                 animate={{ scale: [1, 1.5, 1], opacity: [1, 0, 1] }}
                 transition={{
                   duration: 2,

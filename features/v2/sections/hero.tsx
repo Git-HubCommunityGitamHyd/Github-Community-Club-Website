@@ -39,6 +39,7 @@ export function V2HeroSection({
   return (
     <section id="hero" className="relative overflow-hidden">
       <HeroTexture />
+      <ContributionGrid />
 
       <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-4 pb-24 pt-40 sm:px-6 md:grid-cols-12 lg:px-8">
         <motion.div
@@ -65,7 +66,7 @@ export function V2HeroSection({
               lineHeight={4}
               animationDuration={14}
             />
-            <span className="text-gh-accent-light dark:text-gh-accent">.</span>
+            <span className="text-gh-accent">.</span>
           </motion.h1>
 
           {/* The old line was "Empowering developers, fostering collaboration,
@@ -74,7 +75,7 @@ export function V2HeroSection({
           <motion.p
             variants={ENTRY}
             transition={{ duration: 0.6 }}
-            className="mt-8 max-w-[52ch] text-pretty text-lg leading-relaxed text-gray-600 dark:text-gh-muted"
+            className="mt-8 max-w-[52ch] text-pretty text-lg leading-relaxed text-gh-muted"
           >
             A student community at GITAM University that learns Git in public,
             maintains real repositories together, and gets first pull requests
@@ -97,7 +98,7 @@ export function V2HeroSection({
             <button
               type="button"
               onClick={() => onScrollTo("journey")}
-              className="group inline-flex items-center gap-1.5 text-[15px] font-semibold text-gray-700 underline-offset-[6px] transition-colors duration-200 hover:text-gray-900 hover:underline dark:text-gh-muted dark:hover:text-gh-text"
+              className="group inline-flex items-center gap-1.5 text-[15px] font-semibold text-gh-muted underline-offset-[6px] transition-colors duration-200 hover:text-gh-text hover:underline"
             >
               Read our story
               <ArrowRight
@@ -113,7 +114,6 @@ export function V2HeroSection({
             to match the nav slot — the dock scale is derived from height
             alone, so a mismatch stretches the model on the way down. */}
         <div className="relative md:col-span-5">
-          <ContributionGrid />
           <div
             ref={heroSlotRef}
             className="pointer-events-none relative z-10 mx-auto hidden h-[240px] w-[300px] md:block lg:h-[300px] lg:w-[375px]"
@@ -139,7 +139,7 @@ function HeroTexture() {
     <>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-[0.55] dark:opacity-40"
+        className="pointer-events-none absolute inset-0 opacity-40 opacity-[0.55]"
         style={{
           backgroundImage:
             "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)",
@@ -164,12 +164,27 @@ function HeroTexture() {
 }
 
 /**
- * A contribution graph, sat behind the mascot as texture.
+ * A contribution graph, bled off the right edge of the hero as atmosphere.
  *
  * The right half of the hero was a mascot floating in empty space. This fills
  * it with the one motif that belongs here without claiming anything: it is
  * `aria-hidden`, carries no caption and no number, so it reads as GitHub's
  * texture rather than as a statistic the club would have to stand behind.
+ *
+ * It used to read as a carpet the mascot was standing on, and the mask was the
+ * reason. It ran `transparent 16%, black 76%` from the centre out, which
+ * clears a hole behind the mascot but puts the cells at *full strength exactly
+ * where the grid ends*. A bounded rectangle at full strength, centred on the
+ * subject, is a rug. The mask now falls off outward from the right edge
+ * instead: one ellipse anchored at `100% 50%`, opaque where it leaves the
+ * screen and gone before it reaches the headline. A field that fades to
+ * nothing has no boundary to read as an object.
+ *
+ * It is also no longer centred on the mascot. It hangs off the section rather
+ * than the mascot's column, overhanging right, top and bottom so it is never
+ * seen whole, and fades leftward toward the copy. That is the same treatment
+ * the join band gives this same motif, which is why that one never looked like
+ * a mat, and it makes the two bookend the page on purpose.
  *
  * The pattern is a hash of the cell index, not `Math.random()` — this renders
  * on the server as well as the client, and a random fill would produce a
@@ -181,13 +196,21 @@ function HeroTexture() {
  * own CSS keyframe (`contribution-cell` in globals.css), with the delay
  * derived from the same hash so the field twinkles unevenly the way a real
  * contribution graph fills rather than pulsing in unison. It is pure CSS —
- * 450 cells on a framer-motion value each would cost a JavaScript frame
- * budget for something that is decoration.
+ * hundreds of cells on a framer-motion value each would cost a JavaScript
+ * frame budget for something that is decoration.
+ */
+/*
+ * Bigger cells rather than more of them. Covering the whole hero at the old
+ * 25px pitch would have taken about 900 cells, and `.contribution-cell` sets
+ * `will-change: opacity, transform`, so every cell is its own compositor
+ * layer. Widening the pitch to 35px covers 2.6x the area at the same count.
+ * The join band already runs this motif at a 64px cell, so a larger square
+ * here is within the vocabulary rather than a new one.
  */
 const COLUMNS = 30
-const ROWS = 15
-const CELL = 18
-const GAP = 7
+const ROWS = 20
+const CELL = 26
+const GAP = 9
 
 function ContributionGrid() {
   const cells = Array.from({ length: COLUMNS * ROWS }, (_, index) => {
@@ -203,10 +226,20 @@ function ContributionGrid() {
     }
   })
 
+  // Anchored at the right edge and overhanging it, so the grid's own right,
+  // top and bottom boundaries are all off-screen. `overflow-hidden` on the
+  // section does the clipping.
+  // The opaque core has to reach well across the grid before it falls away.
+  // A tighter core put the falloff on screen at the mascot and left the right
+  // half of the hero looking empty again, which is the problem the graph was
+  // added to solve.
+  const MASK =
+    "radial-gradient(ellipse 112% 94% at 100% 50%, black 0%, black 46%, transparent 93%)"
+
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block"
+      className="pointer-events-none absolute -right-24 top-1/2 hidden -translate-y-1/2 md:block"
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.94 }}
@@ -218,10 +251,8 @@ function ContributionGrid() {
           gridTemplateColumns: `repeat(${COLUMNS}, ${CELL}px)`,
           gridTemplateRows: `repeat(${ROWS}, ${CELL}px)`,
           gridAutoFlow: "column",
-          maskImage:
-            "radial-gradient(ellipse 62% 62% at 50% 50%, transparent 16%, black 76%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 62% 62% at 50% 50%, transparent 16%, black 76%)",
+          maskImage: MASK,
+          WebkitMaskImage: MASK,
         }}
       >
         {cells.map((cell, index) => (
@@ -231,10 +262,14 @@ function ContributionGrid() {
             style={{
               animationDelay: `${cell.delay}s`,
               animationDuration: `${cell.duration}s`,
+              // A touch lighter than the old bounded version, since the mask
+              // no longer clears a hole behind the mascot and more of the
+              // field is on screen. Not much lighter: dropping it far enough
+              // to be safe made the right half of the hero read as empty.
               backgroundColor:
                 cell.level === 0
-                  ? "rgba(140,149,159,0.13)"
-                  : `rgba(63,185,80,${0.1 + cell.level * 0.11})`,
+                  ? "rgba(140,149,159,0.11)"
+                  : `rgba(63,185,80,${0.09 + cell.level * 0.1})`,
             }}
           />
         ))}

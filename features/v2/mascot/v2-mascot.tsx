@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, type RefObject } from "react"
 import dynamic from "next/dynamic"
 import { motion, useMotionValue, useReducedMotion } from "framer-motion"
-import { useTheme } from "@/components/theme/theme-provider"
 import { MASCOT_DOCKS, DOCK_BLEND, type Dock } from "@/features/v2/mascot/docks"
 
 const GhMascot3D = dynamic(
@@ -47,8 +46,28 @@ const LEASH = 58
 /** Cursor distance at which the pull is at full strength. */
 const LEASH_RANGE = 520
 
-/** Per-frame follow rate. Low enough that it lopes after the cursor. */
-const FOLLOW = 0.085
+/**
+ * Follow time constant, in seconds.
+ *
+ * This used to be a per-frame rate of 0.085, which was wrong twice over.
+ *
+ * It was frame-rate dependent: the same scroll converged twice as fast on a
+ * 120Hz display as on a 60Hz one, and under-converged on any dropped frame.
+ *
+ * Worse, it was doing the wrong job. At 0.085 a frame the mascot needs about a
+ * second to cross the screen, and it was the *follow* that carried it from one
+ * dock to the opposite one. Scroll past a section faster than that - which is
+ * most scrolling - and the next crossing began before the last one finished,
+ * so it never arrived anywhere and simply hovered near the middle of the
+ * viewport drifting slowly leftward. Measured over a full-page scroll it
+ * covered only x=738 to x=1283 when the two docks sit at 98 and 1342.
+ *
+ * The crossing belongs to `resolveDock`, which interpolates between docks
+ * across the last stretch of each section and is a pure function of scroll
+ * position, so it always completes exactly when the boundary is reached. This
+ * is now only a smoother on top of that, and it is short enough to keep up.
+ */
+const FOLLOW_TAU = 0.085
 
 /** Per-frame rate at which the gaze catches up. Slower than the body. */
 const GAZE_FOLLOW = 0.11
@@ -113,7 +132,6 @@ export function V2Mascot({
 }: {
   heroSlotRef: RefObject<HTMLDivElement | null>
 }) {
-  const { theme, toggle } = useTheme()
   const reducedMotion = useReducedMotion()
 
   const pointerRef = useRef({ x: 0, y: 0 })
@@ -132,6 +150,8 @@ export function V2Mascot({
   /** Index of the dock it last settled into, and when — drives the landing beat. */
   const dockIndexRef = useRef(-1)
   const arrivedAtRef = useRef(0)
+  /** Timestamp of the previous frame, for frame-rate independent smoothing. */
+  const lastFrameRef = useRef(0)
 
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -184,17 +204,32 @@ export function V2Mascot({
     }
 
     /**
-     * Gaze. Near the cursor it tracks; far from it, it looks in toward the
-     * page and drifts, so it reads as alive rather than as saturated.
+     * Gaze.
+     *
+     * `docked` is the hero-to-dock progress. In the hero the mascot is the
+     * largest thing on the screen and the only thing to look at, so it tracks
+     * the cursor at any distance - the distance falloff below is for the
+     * docked state, where it lives at the edge of the page and a saturated
+     * stare in one direction is the failure mode.
+     *
+     * With no cursor seen yet it looks straight ahead in the hero and inward
+     * at the content once docked, in both cases with a slow drift so it is
+     * never quite still. The inward bias is faded in with `docked` for the
+     * same reason: a mascot presented face-on at full size should not be
+     * staring off the side of its own slot.
      */
-    const syncGaze = (now: number) => {
+    const syncGaze = (now: number, docked: number) => {
       const m = mouseRef.current
       const centre = centreRef.current
 
-      // Resting gaze: toward the content, which is whichever way the page is.
       const idle = reducedMotion ? 0 : 1
+      // Full deflection, not half. A docked mascot is pinned to one edge
+      // looking across the page, which is the most turned it ever gets, and
+      // the yaw formula in gh-mascot-3d only sheds its resting pose at |x|=1.
+      // At 0.5 half the resting pose survived, adding to the turn on the left
+      // and subtracting from it on the right, so the right barely turned.
       let targetX =
-        (sideRef.current === "right" ? -0.5 : 0.5) +
+        (sideRef.current === "right" ? -1 : 1) * docked +
         Math.sin(now / 2100) * 0.14 * idle
       let targetY = Math.sin(now / 1450) * 0.2 * idle
 
@@ -202,8 +237,12 @@ export function V2Mascot({
         const dx = m.x - centre.x
         const dy = m.y - centre.y
         const distance = Math.hypot(dx, dy)
-        const near = clamp01(
-          1 - (distance - POINTER_RANGE) / (GAZE_FALLOFF - POINTER_RANGE),
+        const near = Math.max(
+          // In the hero, always. `1 - docked` is 1 there and 0 once parked.
+          1 - docked,
+          clamp01(
+            1 - (distance - POINTER_RANGE) / (GAZE_FALLOFF - POINTER_RANGE),
+          ),
         )
         if (near > 0) {
           const cursorX = Math.max(-1, Math.min(1, dx / POINTER_RANGE))
@@ -225,6 +264,7 @@ export function V2Mascot({
       if (!heroDoc || !heroDoc.height) return
 
       const now = performance.now()
+      if (!lastFrameRef.current) lastFrameRef.current = now
       const p = Math.min(1, Math.max(0, window.scrollY / DOCK_SCROLL))
 
       const dockedScale = DOCK_HEIGHT / heroDoc.height
@@ -256,10 +296,16 @@ export function V2Mascot({
       const targetCy = startCy + (dockCy - startCy) * p
 
       const eased = easedRef.current ?? { x: targetCx, y: targetCy }
+      // Frame-time based, so the smoothing is identical at 60Hz and 120Hz and
+      // a dropped frame catches up instead of falling behind. Clamped at 50ms
+      // so a backgrounded tab does not resume with one enormous step.
+      const dt = Math.min(0.05, (now - lastFrameRef.current) / 1000)
+      lastFrameRef.current = now
       // Only the docked follow is smoothed. Easing the hero-to-dock journey as
       // well would fight the scroll: the mascot would still be catching up
       // with where the page was a moment ago.
-      const rate = reducedMotion ? 1 : FOLLOW + (1 - FOLLOW) * (1 - p)
+      const smoothing = 1 - Math.exp(-dt / FOLLOW_TAU)
+      const rate = reducedMotion ? 1 : smoothing + (1 - smoothing) * (1 - p)
       eased.x += (targetCx - eased.x) * rate
       eased.y += (targetCy - eased.y) * rate
       easedRef.current = eased
@@ -279,7 +325,7 @@ export function V2Mascot({
       x.set(eased.x - (heroDoc.width * drawn) / 2)
       y.set(eased.y - (heroDoc.height * drawn) / 2)
       scale.set(drawn)
-      syncGaze(now)
+      syncGaze(now, p)
     }
 
     const measure = () => {
@@ -360,19 +406,17 @@ export function V2Mascot({
     >
       <button
         onClick={() => {
-          toggle()
           spinRef.current = true
         }}
         className="relative h-full w-full cursor-pointer"
-        aria-label="Toggle theme"
+        aria-label="Spin the octocat"
       >
         <GhMascot3D
           pointerRef={pointerRef}
           spinRef={spinRef}
-          // The dark canvas needs the silhouette drawn back in — a black model
-          // on #0d1117 has no edge of its own. Against a white page it
-          // separates without help.
-          rimIntensity={theme === "dark" ? 3 : 0.6}
+          // The canvas needs the silhouette drawn back in — a black model on
+          // #0d1117 has no edge of its own.
+          rimIntensity={3}
         />
       </button>
     </motion.div>

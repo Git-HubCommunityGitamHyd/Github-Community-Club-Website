@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Github } from "lucide-react"
+import { FaGithub } from "react-icons/fa6"
 import {
   MobileNav,
   MobileNavHeader,
@@ -11,7 +11,6 @@ import {
   NavItems,
   Navbar,
 } from "@/components/ui/resizable-navbar"
-import { ThemeToggle } from "@/components/theme/theme-toggle"
 import { NAV_ITEMS } from "@/features/home/content"
 
 // The line the scroll spy tests against, and the offset section anchors need to
@@ -23,16 +22,32 @@ export const V2_NAV_OFFSET = 112
 
 const ITEMS = NAV_ITEMS.map((name) => ({ name, link: name.toLowerCase() }))
 
+/**
+ * The lockup carried over from v1 used lucide's `Github`, a hollow stroke
+ * outline, while every other GitHub mark in the v2 tree is a solid one from
+ * react-icons. Two icon families in one page is the tell; next to the solid
+ * marks further down the page the thin outline read as unfinished.
+ *
+ * `GITAM` also becomes a mono uppercase tag rather than a lighter weight of
+ * the same sentence. That is the register v2 uses for every qualifier on the
+ * page (section labels, the benefit proofs, event categories), and it
+ * separates the club from the campus without a second font weight.
+ */
 function Wordmark() {
   return (
     <a
       href="#hero"
-      className="relative z-20 flex shrink-0 items-center gap-2.5 rounded-lg px-1 py-1 text-gray-900 dark:text-gh-text"
+      className="group relative z-20 flex shrink-0 items-center gap-2.5 rounded-lg px-1 py-1 text-gh-text"
     >
-      <Github className="h-6 w-6" aria-hidden="true" />
-      <span className="text-[15px] font-extrabold tracking-tight">
-        GitHub Community{" "}
-        <span className="font-semibold text-gray-500 dark:text-gh-muted">
+      <FaGithub
+        aria-hidden="true"
+        className="h-[22px] w-[22px] transition-colors duration-300 group-hover:text-gh-accent"
+      />
+      <span className="flex items-baseline gap-2">
+        <span className="text-[15px] font-extrabold tracking-[-0.02em]">
+          GitHub Community
+        </span>
+        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-gh-muted transition-colors duration-300 group-hover:text-gh-text">
           GITAM
         </span>
       </span>
@@ -51,7 +66,7 @@ function JoinButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full bg-gh-accent-light px-4 py-2 font-mono text-[13px] font-semibold text-white transition duration-200 hover:opacity-90 active:scale-95 dark:bg-gh-accent dark:text-gh-bg ${className ?? ""}`}
+      className={`rounded-full bg-gh-accent px-4 py-2 font-mono text-[13px] font-semibold text-gh-bg transition duration-200 hover:opacity-90 active:scale-95 ${className ?? ""}`}
     >
       Join →
     </button>
@@ -71,8 +86,8 @@ const SURFACE =
 const SURFACE_VISIBLE = [
   "border-gray-200/70 bg-white/92",
   "shadow-[0_8px_32px_-12px_rgba(1,4,9,0.18),inset_0_1px_0_0_rgba(255,255,255,0.9)]",
-  "dark:border-gh-border dark:bg-gh-surface/92",
-  "dark:shadow-[0_8px_32px_-12px_rgba(1,4,9,0.9),inset_0_1px_0_0_rgba(255,255,255,0.06)]",
+  "border-gh-border bg-gh-surface/92",
+  "shadow-[0_8px_32px_-12px_rgba(1,4,9,0.9),inset_0_1px_0_0_rgba(255,255,255,0.06)]",
 ].join(" ")
 
 export function V2Navbar({
@@ -95,7 +110,6 @@ export function V2Navbar({
         <Wordmark />
         <NavItems items={ITEMS} activeItem={activeSection} onItemClick={go} />
         <div className="relative z-20 flex shrink-0 items-center gap-3">
-          <ThemeToggle />
           <JoinButton onClick={() => go("join")} />
         </div>
       </NavBody>
@@ -104,18 +118,17 @@ export function V2Navbar({
         <MobileNavHeader>
           <Wordmark />
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <MobileNavToggle
               isOpen={isMobileMenuOpen}
               onClick={() => setIsMobileMenuOpen((open) => !open)}
-              className="border border-gray-200 text-gray-600 dark:border-gh-border dark:text-gh-muted"
+              className="border border-gh-border text-gh-muted"
             />
           </div>
         </MobileNavHeader>
 
         <MobileNavMenu
           isOpen={isMobileMenuOpen}
-          className="border-gray-200 bg-white/95 shadow-[0_8px_32px_-12px_rgba(1,4,9,0.18)] backdrop-blur-xl dark:border-gh-border dark:bg-gh-surface/95 dark:shadow-[0_8px_32px_-12px_rgba(1,4,9,0.9)]"
+          className="border-gh-border bg-gh-surface/95 shadow-[0_8px_32px_-12px_rgba(1,4,9,0.9)] backdrop-blur-xl"
         >
           {ITEMS.map((item) => (
             <button
@@ -124,8 +137,8 @@ export function V2Navbar({
               onClick={() => go(item.link)}
               className={`w-full rounded-lg px-3 py-2.5 text-left text-base font-medium transition duration-200 ${
                 activeSection === item.link
-                  ? "bg-gray-100 text-gray-900 dark:bg-gh-elevated dark:text-gh-text"
-                  : "text-gray-500 dark:text-gh-muted"
+                  ? "bg-gh-elevated text-gh-text"
+                  : "text-gh-muted"
               }`}
             >
               {item.name}

@@ -128,15 +128,13 @@ export function NavItems({
             aria-current={isActive ? "true" : undefined}
             className={cn(
               "relative rounded-full px-4 py-2 transition-colors duration-200",
-              isActive
-                ? "text-gray-900 dark:text-gh-text"
-                : "text-gray-500 hover:text-gray-900 dark:text-gh-muted dark:hover:text-gh-text",
+              isActive ? "text-gh-text" : "text-gh-muted hover:text-gh-text",
             )}
           >
             {hovered === idx && (
               <motion.span
                 layoutId="nav-hover-pill"
-                className="absolute inset-0 rounded-full bg-gray-100 dark:bg-gh-elevated"
+                className="absolute inset-0 rounded-full bg-gh-elevated"
                 transition={{ type: "spring", stiffness: 380, damping: 32 }}
               />
             )}
@@ -144,7 +142,7 @@ export function NavItems({
             {isActive && (
               <motion.span
                 layoutId="nav-active-underline"
-                className="absolute inset-x-4 -bottom-0.5 z-20 h-px bg-gh-accent-light dark:bg-gh-accent"
+                className="absolute inset-x-4 -bottom-0.5 z-20 h-px bg-gh-accent"
                 transition={{ type: "spring", stiffness: 380, damping: 32 }}
               />
             )}

@@ -162,8 +162,8 @@ function PhotoCard({
       onClick={() => onSelect(member)}
       style={{ aspectRatio: aspect }}
       className={cn(
-        "relative w-full overflow-hidden rounded-2xl bg-gray-100 transition duration-300 dark:bg-gh-elevated",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-gh-accent dark:focus-visible:ring-offset-gh-bg",
+        "relative w-full overflow-hidden rounded-2xl bg-gh-elevated transition duration-300",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-bg",
         isDimmed ? "opacity-55" : "opacity-100",
       )}
     >
@@ -183,7 +183,7 @@ function PhotoCard({
       ) : (
         <span
           aria-hidden="true"
-          className="flex h-full w-full items-center justify-center font-mono text-2xl font-bold text-gray-400 dark:text-gh-muted"
+          className="flex h-full w-full items-center justify-center font-mono text-2xl font-bold text-gh-muted"
         >
           {initials(member.name)}
         </span>
@@ -243,9 +243,7 @@ function MemberRow({
           aria-hidden="true"
           className={cn(
             "h-3 shrink-0 rounded-[5px] transition-all duration-300",
-            isActive
-              ? "w-5 bg-gh-accent-light dark:bg-gh-accent"
-              : "w-4 bg-gray-900/20 dark:bg-gh-text/25",
+            isActive ? "w-5 bg-gh-accent" : "w-4 bg-gh-text/25",
           )}
         />
         <button
@@ -255,10 +253,8 @@ function MemberRow({
           onBlur={() => onHover(null)}
           className={cn(
             "rounded text-left text-base font-semibold leading-none tracking-tight transition-colors duration-300 md:text-[18px]",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light dark:focus-visible:ring-gh-accent",
-            isActive
-              ? "text-gray-900 dark:text-gh-text"
-              : "text-gray-900/80 dark:text-gh-text/80",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent",
+            isActive ? "text-gh-text" : "text-gh-text/80",
           )}
         >
           {member.name}
@@ -280,7 +276,7 @@ function MemberRow({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={social.label}
-                className="rounded p-1 text-gray-500 transition hover:bg-gray-900/10 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent-light dark:text-gh-muted dark:hover:bg-gh-text/10 dark:hover:text-gh-text dark:focus-visible:ring-gh-accent"
+                className="rounded p-1 text-gh-muted transition hover:bg-gh-text/10 hover:text-gh-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent"
               >
                 <social.icon className="h-3.5 w-3.5" />
               </a>
@@ -289,7 +285,7 @@ function MemberRow({
         )}
       </div>
 
-      <p className="mt-2 pl-[27px] font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-gray-500 dark:text-gh-muted">
+      <p className="mt-2 pl-[27px] font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-gh-muted">
         {member.role}
       </p>
     </li>

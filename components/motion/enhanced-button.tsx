@@ -38,12 +38,12 @@ export function EnhancedButton({
         return "bg-green-600 hover:bg-green-700 text-white border-green-600 shadow-lg hover:shadow-xl"
       case "community":
         return variant === "outline"
-          ? "border-2 border-gh-accent-light text-gh-accent-light hover:bg-gh-accent-light/10 bg-transparent dark:border-gh-accent dark:text-gh-accent dark:hover:bg-gh-accent/10"
-          : "bg-gradient-to-r from-gh-accent-light via-[#2ea043] to-gh-accent-light hover:opacity-90 dark:from-gh-accent dark:via-[#2ea043] dark:to-gh-accent text-white border-gh-accent-light dark:border-gh-accent shadow-2xl"
+          ? "border-2 border-gh-accent text-gh-accent hover:bg-gh-accent/10 bg-transparent"
+          : "bg-gradient-to-r from-gh-accent via-[#2ea043] to-gh-accent hover:opacity-90 text-white border-gh-accent shadow-2xl"
       default:
         return isPrimary
-          ? "bg-black hover:bg-gray-800 dark:bg-gh-elevated dark:hover:bg-gh-border dark:border-gh-border text-white border-black hover:shadow-lg hover:shadow-black/25 dark:hover:shadow-gh-accent/10"
-          : "border-black dark:border-gh-border text-black dark:text-gh-text hover:bg-gray-50 dark:hover:bg-gh-elevated bg-transparent hover:shadow-md"
+          ? "bg-gh-elevated hover:bg-gh-border text-white border-gh-border hover:shadow-lg hover:shadow-gh-accent/10"
+          : "border-gh-border text-gh-text hover:bg-gh-elevated bg-transparent hover:shadow-md"
     }
   }
 

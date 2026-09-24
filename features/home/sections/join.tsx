@@ -66,11 +66,11 @@ export function JoinSection({ onOpenQr }: { onOpenQr: () => void }) {
             <h3 className="mb-3 text-2xl font-bold md:text-3xl">
               Apply to join
             </h3>
-            <p className="text-gray-600 dark:text-gh-muted">
+            <p className="text-gh-muted">
               Fill out the form and we&apos;ll be in touch —{" "}
               <button
                 onClick={onOpenQr}
-                className="font-medium text-gh-accent-light underline underline-offset-2 dark:text-gh-accent"
+                className="font-medium text-gh-accent underline underline-offset-2"
               >
                 prefer WhatsApp instead?
               </button>

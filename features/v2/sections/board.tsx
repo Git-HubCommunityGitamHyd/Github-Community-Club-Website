@@ -33,7 +33,7 @@ export function V2BoardSection({ members }: { members: BoardMember[] }) {
         <h2 className="mb-4 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-[-0.03em]">
           The people behind it
         </h2>
-        <p className="mb-14 max-w-[52ch] text-pretty text-lg leading-relaxed text-gray-600 dark:text-gh-muted">
+        <p className="mb-14 max-w-[52ch] text-pretty text-lg leading-relaxed text-gh-muted">
           Students who run the workshops, review the pull requests and keep the
           community going. Pick a name to read their story.
         </p>
@@ -52,7 +52,7 @@ export function V2BoardSection({ members }: { members: BoardMember[] }) {
         ) : (
           // The board is CMS-driven and can legitimately be empty between
           // handovers. An empty grid would read as a broken page.
-          <p className="rounded-3xl border border-dashed border-gray-300 px-8 py-14 text-center text-gray-500 dark:border-gh-border dark:text-gh-muted">
+          <p className="rounded-3xl border border-dashed border-gh-border px-8 py-14 text-center text-gh-muted">
             The board for this term has not been published yet.
           </p>
         )}

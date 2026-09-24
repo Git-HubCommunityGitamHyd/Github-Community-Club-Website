@@ -78,15 +78,15 @@ export function BenefitCard({
       <Icon
         aria-hidden="true"
         strokeWidth={1.4}
-        className="pointer-events-none absolute bottom-8 right-9 h-36 w-36 origin-bottom-right text-gray-900/[0.06] transition-[transform,color] duration-700 ease-out group-hover/benefit:scale-[1.12] group-hover/benefit:text-gh-accent-light/20 dark:text-gh-text/[0.06] dark:group-hover/benefit:text-gh-accent/20"
+        className="pointer-events-none absolute bottom-8 right-9 h-36 w-36 origin-bottom-right text-gh-text opacity-[0.06] transition-[transform,color,opacity] duration-700 ease-out group-hover/benefit:scale-[1.12] group-hover/benefit:text-gh-accent group-hover/benefit:opacity-20"
       />
 
       <div className="relative flex h-full flex-col justify-between">
         <div className="flex items-start justify-between gap-6">
-          <span className="font-mono text-[28px] font-extrabold tabular-nums leading-none text-gray-200 transition-colors duration-300 group-hover/benefit:text-gh-accent-light/60 dark:text-gh-border dark:group-hover/benefit:text-gh-accent/50">
+          <span className="font-mono text-[28px] font-extrabold tabular-nums leading-none text-gh-border transition-colors duration-300 group-hover/benefit:text-gh-accent/50">
             {String(index + 1).padStart(2, "0")}
           </span>
-          <span className="rounded-full border border-gray-200 px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500 transition-colors duration-300 group-hover/benefit:border-gh-accent-light/40 group-hover/benefit:text-gh-accent-light dark:border-gh-border dark:text-gh-muted dark:group-hover/benefit:border-gh-accent/40 dark:group-hover/benefit:text-gh-accent">
+          <span className="rounded-full border border-gh-border px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-gh-muted transition-colors duration-300 group-hover/benefit:border-gh-accent/40 group-hover/benefit:text-gh-accent">
             {benefit.proof}
           </span>
         </div>
@@ -96,12 +96,12 @@ export function BenefitCard({
               possible thing that makes the card feel like it answered. */}
           <span
             aria-hidden="true"
-            className="mb-5 block h-0.5 w-10 origin-left scale-x-100 rounded-full bg-gray-200 transition-all duration-500 ease-out group-hover/benefit:w-24 group-hover/benefit:bg-gh-accent-light dark:bg-gh-border dark:group-hover/benefit:bg-gh-accent"
+            className="mb-5 block h-0.5 w-10 origin-left scale-x-100 rounded-full bg-gh-border transition-all duration-500 ease-out group-hover/benefit:w-24 group-hover/benefit:bg-gh-accent"
           />
           <h3 className="text-[clamp(26px,3vw,40px)] font-extrabold leading-[1.05] tracking-[-0.02em]">
             {benefit.title}
           </h3>
-          <p className="mt-4 max-w-[48ch] text-pretty text-base leading-relaxed text-gray-600 dark:text-gh-muted sm:text-lg">
+          <p className="mt-4 max-w-[48ch] text-pretty text-base leading-relaxed text-gh-muted sm:text-lg">
             {benefit.desc}
           </p>
         </div>

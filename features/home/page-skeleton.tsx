@@ -4,7 +4,7 @@ function SkeletonBlock({ className }: { className?: string }) {
 
 function SkeletonCard() {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-2xl border border-gray-200 bg-white p-8 dark:border-gh-border dark:bg-gh-surface">
+    <div className="flex flex-col items-center gap-4 rounded-2xl border border-gh-border bg-gh-surface p-8">
       <SkeletonBlock className="h-20 w-20 rounded-full" />
       <SkeletonBlock className="h-5 w-32" />
       <SkeletonBlock className="h-4 w-24" />
@@ -15,7 +15,7 @@ function SkeletonCard() {
 
 function SkeletonEventCard() {
   return (
-    <div className="flex h-80 flex-col items-center gap-4 rounded-2xl border border-gray-200 bg-white p-8 dark:border-gh-border dark:bg-gh-surface">
+    <div className="flex h-80 flex-col items-center gap-4 rounded-2xl border border-gh-border bg-gh-surface p-8">
       <SkeletonBlock className="h-16 w-16 rounded-full" />
       <SkeletonBlock className="h-5 w-40" />
       <SkeletonBlock className="h-4 w-32" />
@@ -27,9 +27,9 @@ function SkeletonEventCard() {
 
 export function PageSkeleton() {
   return (
-    <div className="min-h-screen bg-white text-gray-900 dark:bg-gh-bg dark:text-gh-text">
+    <div className="min-h-screen bg-gh-bg text-gh-text">
       {/* Nav skeleton */}
-      <div className="fixed top-0 z-40 flex h-16 w-full items-center border-b border-gray-200 bg-white/90 px-8 dark:border-gh-border dark:bg-gh-surface/90">
+      <div className="fixed top-0 z-40 flex h-16 w-full items-center border-b border-gh-border bg-gh-surface/90 px-8">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between">
           <div className="flex items-center gap-3">
             <SkeletonBlock className="h-8 w-8 rounded-full" />
@@ -60,7 +60,7 @@ export function PageSkeleton() {
       </section>
 
       {/* About skeleton */}
-      <section className="bg-gray-50 py-20 dark:bg-gh-surface">
+      <section className="bg-gh-surface py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 flex flex-col items-center gap-4">
             <SkeletonBlock className="h-10 w-64" />
@@ -70,7 +70,7 @@ export function PageSkeleton() {
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="flex flex-col items-center gap-4 rounded-2xl border border-gray-200 bg-white p-8 dark:border-gh-border dark:bg-gh-surface"
+                className="flex flex-col items-center gap-4 rounded-2xl border border-gh-border bg-gh-surface p-8"
               >
                 <SkeletonBlock className="h-12 w-12 rounded-xl" />
                 <SkeletonBlock className="h-5 w-32" />
@@ -97,7 +97,7 @@ export function PageSkeleton() {
       </section>
 
       {/* Events skeleton */}
-      <section className="bg-gray-50 py-20 dark:bg-gh-surface">
+      <section className="bg-gh-surface py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 flex flex-col items-center gap-4">
             <SkeletonBlock className="h-10 w-72" />

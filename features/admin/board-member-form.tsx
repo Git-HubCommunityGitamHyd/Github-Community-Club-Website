@@ -12,10 +12,9 @@ import {
 } from "@/features/v2/board/accents"
 
 const inputClass =
-  "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-base sm:text-sm text-black placeholder:text-gray-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gh-border dark:bg-gh-elevated dark:text-gh-text dark:placeholder:text-gh-muted dark:focus:border-gh-accent dark:focus:ring-gh-accent"
+  "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
 
-const labelClass =
-  "mb-1 block text-sm font-medium text-gray-700 dark:text-gh-muted"
+const labelClass = "mb-1 block text-sm font-medium text-gh-muted"
 
 type FormState = {
   name: string
@@ -230,7 +229,7 @@ export function BoardMemberForm({ initial }: { initial?: BoardMember }) {
             ))}
           </select>
         </div>
-        <p className="mt-1 text-sm text-gray-400 dark:text-gh-muted">
+        <p className="mt-1 text-sm text-gh-muted">
           Shown around their photo when someone opens their profile.
         </p>
         {errors.accent && (
