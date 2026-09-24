@@ -1,7 +1,6 @@
 import "./globals.css"
 import type { ReactNode } from "react"
 import type { Metadata } from "next"
-import { MascotGlow } from "@/components/mascot/mascot-glow"
 import { MascotEasterEgg } from "@/components/mascot/mascot-easter-egg"
 
 export const metadata: Metadata = {
@@ -26,7 +25,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // theme now, so the server and client markup already agree.
     <html lang="en">
       <body>
-        <MascotGlow />
+        {/* The easter egg stays global: it is one click listener and does
+            nothing until the mascot is clicked. The glow that used to sit
+            here ran a measuring loop on every frame of every page, /admin
+            included; each homepage now owns its own. */}
         <MascotEasterEgg />
         {children}
       </body>

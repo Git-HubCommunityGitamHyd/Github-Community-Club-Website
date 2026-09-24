@@ -1,10 +1,11 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { MotionConfig } from "framer-motion"
 import type { BoardMember } from "@/lib/db/board-members"
 import type { Event } from "@/lib/db/events"
 import type { JourneyEntry } from "@/lib/db/journey"
+import type { Project } from "@/lib/db/projects"
 import { NAV_ITEMS } from "@/features/home/content"
 import { SmoothScroll } from "@/features/v2/smooth-scroll"
 import { useActiveSection } from "@/features/v2/use-active-section"
@@ -25,16 +26,34 @@ import { V2JourneySection } from "@/features/v2/sections/journey"
 import { V2BenefitsSection } from "@/features/v2/sections/benefits"
 import { V2BoardSection } from "@/features/v2/sections/board"
 import { V2EventsSection } from "@/features/v2/sections/events"
+import { V2ProjectsSection } from "@/features/v2/sections/projects"
 import { V2JoinSection } from "@/features/v2/sections/join"
 import { V2Mascot } from "@/features/v2/mascot/v2-mascot"
 
-// Module scope, not rebuilt per render — it is a dependency of the spy's effect.
-const SECTION_IDS = ["hero", ...NAV_ITEMS.map((item) => item.toLowerCase())]
+/**
+ * The nav, and with it the scroll spy, depends on whether there are any
+ * projects. An empty projects section is not rendered at all, so a "Projects"
+ * nav item would scroll to nothing.
+ *
+ * Built here rather than added to the shared NAV_ITEMS because that list is
+ * still what the v1 homepage renders, and v1 has no projects section.
+ */
+function navItemsFor(hasProjects: boolean) {
+  const names = hasProjects
+    ? ["About", "Journey", "Board", "Events", "Projects", "Benefits"]
+    : NAV_ITEMS
+  return names.map((name) => ({ name, link: name.toLowerCase() }))
+}
+
+function sectionIdsFor(hasProjects: boolean) {
+  return ["hero", ...navItemsFor(hasProjects).map((item) => item.link)]
+}
 
 export function V2Page(props: {
   boardMembers: BoardMember[]
   events: Event[]
   journeyEntries: JourneyEntry[]
+  projects: Project[]
 }) {
   // The shell sits inside the provider so the scroll spy can read the page's
   // single Lenis instance rather than racing it.
@@ -56,13 +75,20 @@ function V2Shell({
   boardMembers,
   events,
   journeyEntries,
+  projects,
 }: {
   boardMembers: BoardMember[]
   events: Event[]
   journeyEntries: JourneyEntry[]
+  projects: Project[]
 }) {
   const [isQrPopupOpen, setIsQrPopupOpen] = useState(false)
-  const activeSection = useActiveSection(SECTION_IDS, V2_NAV_OFFSET)
+  const hasProjects = projects.length > 0
+  // Recomputed only when that boolean flips, so the spy's effect is not
+  // handed a fresh array on every render.
+  const navItems = useMemo(() => navItemsFor(hasProjects), [hasProjects])
+  const sectionIds = useMemo(() => sectionIdsFor(hasProjects), [hasProjects])
+  const activeSection = useActiveSection(sectionIds, V2_NAV_OFFSET)
   const heroSlotRef = useRef<HTMLDivElement>(null)
 
   const scrollToSection = (sectionId: string) => {
@@ -76,7 +102,11 @@ function V2Shell({
   // viewport). `clip` clips the same overflow without creating one.
   return (
     <div className="v2-root relative min-h-screen overflow-x-clip bg-gh-bg font-sans text-gh-text">
-      <V2Navbar activeSection={activeSection} onScrollTo={scrollToSection} />
+      <V2Navbar
+        items={navItems}
+        activeSection={activeSection}
+        onScrollTo={scrollToSection}
+      />
       <V2Mascot heroSlotRef={heroSlotRef} />
 
       <main>
@@ -95,6 +125,9 @@ function V2Shell({
         <V2JourneySection entries={journeyEntries} />
         <V2BoardSection members={boardMembers} />
         <V2EventsSection events={events} />
+        {/* Absent, not empty, when there is nothing to show. The nav item and
+            the scroll spy entry come and go with it. */}
+        {hasProjects && <V2ProjectsSection projects={projects} />}
         <V2BenefitsSection />
 
         <HatchBand />

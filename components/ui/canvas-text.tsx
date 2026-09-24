@@ -61,6 +61,14 @@ export function CanvasText({
     backgroundImage: `repeating-linear-gradient(to bottom, ${stops})`,
     backgroundSize: `100% ${period}px`,
     animationDuration: `${animationDuration}s`,
+    // Stepped at half a CSS pixel, which is one device pixel on a retina
+    // screen: the finest movement the display can actually show. Animating
+    // background-position is a main-thread repaint every frame, and this one
+    // travels a few pixels a second, so run linearly at 120Hz it was
+    // repainting the word for movements far smaller than a pixel. Stepped, it
+    // repaints only when there is a visible pixel to move, a dozen or so times
+    // a second, and looks the same.
+    animationTimingFunction: `steps(${period * 2}, end)`,
     ["--canvas-text-period" as string]: `${period}px`,
   } as CSSProperties
 

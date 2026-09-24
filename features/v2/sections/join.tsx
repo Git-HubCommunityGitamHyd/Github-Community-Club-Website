@@ -75,7 +75,7 @@ export function V2JoinSection({ onOpenQr }: { onOpenQr: () => void }) {
             transition={{ duration: 0.5, ease: "easeOut" }}
             className="max-w-2xl"
           >
-            <SectionLabel index="06">Join</SectionLabel>
+            <SectionLabel index="07">Join</SectionLabel>
             <h2 className="mb-5 mt-4 text-[clamp(36px,6vw,72px)] font-extrabold leading-[1.02] tracking-[-0.03em]">
               Build what&apos;s next with us.
             </h2>

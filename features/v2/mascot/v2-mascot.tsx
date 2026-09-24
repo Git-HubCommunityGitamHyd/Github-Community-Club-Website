@@ -3,7 +3,15 @@
 import { useEffect, useRef, useState, type RefObject } from "react"
 import dynamic from "next/dynamic"
 import { motion, useMotionValue, useReducedMotion } from "framer-motion"
-import { MASCOT_DOCKS, DOCK_BLEND, type Dock } from "@/features/v2/mascot/docks"
+import {
+  MASCOT_DOCKS,
+  DOCK_BLEND,
+  assignSides,
+  type Dock,
+  type Side,
+} from "@/features/v2/mascot/docks"
+import { getPerch, type Perch } from "@/features/v2/mascot/perch"
+import { FACING_FORWARD_X } from "@/components/mascot/pose"
 
 const GhMascot3D = dynamic(
   () => import("@/components/mascot/gh-mascot-3d").then((m) => m.GhMascot3D),
@@ -72,12 +80,40 @@ const FOLLOW_TAU = 0.085
 /** Per-frame rate at which the gaze catches up. Slower than the body. */
 const GAZE_FOLLOW = 0.11
 
+/**
+ * The old glow was `radial-gradient(0.6 -> 0 at 70%)` at 50% opacity under a
+ * 70px blur. Blurring a radial gradient mostly lowers its peak and stretches
+ * its tail, so these stops are that result drawn directly, without paying for
+ * a filter to compute it.
+ */
+const GLOW =
+  "radial-gradient(circle closest-side, rgba(63,185,80,0.26) 0%, rgba(63,185,80,0.17) 30%, rgba(63,185,80,0.07) 58%, rgba(63,185,80,0.02) 80%, rgba(63,185,80,0) 100%)"
+
 /** Duration of the settle after it lands in a new dock, in ms. */
 const ARRIVAL_MS = 520
 
+/**
+ * Height the mascot shrinks to while perched on a hover preview, in px.
+ *
+ * Smaller than DOCK_HEIGHT because it is sitting on a 380px card rather than
+ * beside a full section, and something the height of the card's image reads as
+ * standing in front of the preview rather than perching on it.
+ */
+const PERCH_HEIGHT = 84
+
+/**
+ * Time constant for handing the mascot to and from a perch, in seconds.
+ *
+ * Slower than FOLLOW_TAU on purpose. The dock follow is a correction and wants
+ * to be invisible; leaving the rail to go and sit on a card is the one moment
+ * the mascot does something a reader should notice, so it takes long enough to
+ * read as a trip rather than a cut.
+ */
+const PERCH_TAU = 0.16
+
 type Rect = { top: number; left: number; width: number; height: number }
 type Point = { x: number; y: number }
-type Placed = Dock & { top: number; height: number }
+type Placed = Dock & { side: Side; top: number; height: number }
 
 function documentRect(el: HTMLElement): Rect {
   let top = 0
@@ -152,6 +188,15 @@ export function V2Mascot({
   const arrivedAtRef = useRef(0)
   /** Timestamp of the previous frame, for frame-rate independent smoothing. */
   const lastFrameRef = useRef(0)
+  /** How much of the way it is to a perch: 0 on its dock, 1 sitting on a card. */
+  const perchWeightRef = useRef(0)
+  /**
+   * The last perch asked for, kept after it is cleared so the return journey
+   * has somewhere to start from. Dropping it on release would snap the mascot
+   * back to its dock in one frame, which is the bug this whole mechanism
+   * exists to avoid.
+   */
+  const lastPerchRef = useRef<Perch | null>(null)
 
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -196,6 +241,13 @@ export function V2Mascot({
       if (!next || progress < 1 - DOCK_BLEND) return here
 
       const t = smoothstep((progress - (1 - DOCK_BLEND)) / DOCK_BLEND)
+      // The gaze follows where the body is going, not where it started. Past
+      // the midpoint of a crossing the mascot is nearer the next dock than its
+      // own, and a gaze still keyed to the old side looks outward, off the
+      // page. That is the failure a missing dock used to hold for an entire
+      // section; flipping at the midpoint means a position and a gaze can no
+      // longer disagree for longer than half a crossing.
+      if (t > 0.5) sideRef.current = next.side
       const there = dockPoint(next, 0)
       return {
         x: here.x + (there.x - here.x) * t,
@@ -218,7 +270,7 @@ export function V2Mascot({
      * same reason: a mascot presented face-on at full size should not be
      * staring off the side of its own slot.
      */
-    const syncGaze = (now: number, docked: number) => {
+    const syncGaze = (now: number, docked: number, perched: number) => {
       const m = mouseRef.current
       const centre = centreRef.current
 
@@ -251,6 +303,12 @@ export function V2Mascot({
           targetY += (cursorY - targetY) * near
         }
       }
+
+      // On a preview card it faces the viewer squarely. The card already
+      // moves with the cursor, so tracking the cursor on top of that turned
+      // it sideways at the very moment it is presented face-on.
+      targetX += (FACING_FORWARD_X - targetX) * perched
+      targetY -= targetY * perched
 
       const gaze = gazeRef.current
       const rate = reducedMotion ? 1 : GAZE_FOLLOW
@@ -287,6 +345,26 @@ export function V2Mascot({
         dockCy += (dy / distance) * pull
       }
 
+      // Frame-time based, so the smoothing is identical at 60Hz and 120Hz and
+      // a dropped frame catches up instead of falling behind. Clamped at 50ms
+      // so a backgrounded tab does not resume with one enormous step.
+      const dt = Math.min(0.05, (now - lastFrameRef.current) / 1000)
+      lastFrameRef.current = now
+
+      // Perch, applied after the leash so the mascot lands exactly where the
+      // preview asked rather than somewhere the cursor dragged it.
+      const perch = getPerch()
+      if (perch) lastPerchRef.current = perch
+      const smoothPerch = reducedMotion ? 1 : 1 - Math.exp(-dt / PERCH_TAU)
+      perchWeightRef.current +=
+        ((perch ? 1 : 0) - perchWeightRef.current) * smoothPerch
+      const w = perchWeightRef.current
+      const anchor = lastPerchRef.current
+      if (anchor && w > 0.001) {
+        dockCx += (anchor.x - dockCx) * w
+        dockCy += (anchor.y - dockCy) * w
+      }
+
       const startCx = heroDoc.left + heroDoc.width / 2
       const startCy = heroDoc.top - window.scrollY + heroDoc.height / 2
 
@@ -296,16 +374,18 @@ export function V2Mascot({
       const targetCy = startCy + (dockCy - startCy) * p
 
       const eased = easedRef.current ?? { x: targetCx, y: targetCy }
-      // Frame-time based, so the smoothing is identical at 60Hz and 120Hz and
-      // a dropped frame catches up instead of falling behind. Clamped at 50ms
-      // so a backgrounded tab does not resume with one enormous step.
-      const dt = Math.min(0.05, (now - lastFrameRef.current) / 1000)
-      lastFrameRef.current = now
       // Only the docked follow is smoothed. Easing the hero-to-dock journey as
       // well would fight the scroll: the mascot would still be catching up
       // with where the page was a moment ago.
       const smoothing = 1 - Math.exp(-dt / FOLLOW_TAU)
-      const rate = reducedMotion ? 1 : smoothing + (1 - smoothing) * (1 - p)
+      // Perched, the target is the preview card's own spring position, which
+      // is already smooth; easing it a second time only makes the mascot
+      // trail the card as if it were being dragged behind it rather than
+      // sitting on it. So the follow hands over to the perch by the same
+      // weight that carries it there, and on arrival it tracks the card
+      // exactly. The flight itself stays smooth because `w` is eased.
+      const followRate = smoothing + (1 - smoothing) * (1 - p)
+      const rate = reducedMotion ? 1 : followRate + (1 - followRate) * w
       eased.x += (targetCx - eased.x) * rate
       eased.y += (targetCy - eased.y) * rate
       easedRef.current = eased
@@ -321,11 +401,14 @@ export function V2Mascot({
       }
 
       centreRef.current = { x: eased.x, y: eased.y }
-      const drawn = s * settle
+      // Shrunk by the same weight that moved it, so leaving the rail for a
+      // card is one movement rather than a slide and then a resize.
+      const perchScale = PERCH_HEIGHT / heroDoc.height
+      const drawn = (s + (perchScale - s) * w) * settle
       x.set(eased.x - (heroDoc.width * drawn) / 2)
       y.set(eased.y - (heroDoc.height * drawn) / 2)
       scale.set(drawn)
-      syncGaze(now, p)
+      syncGaze(now, p, w)
     }
 
     const measure = () => {
@@ -350,12 +433,14 @@ export function V2Mascot({
       // no journey entries). Docks for missing sections are dropped rather
       // than defaulted, so the mascot never waits at a station that is not
       // there.
-      docksRef.current = MASCOT_DOCKS.flatMap((dock) => {
-        const el = document.getElementById(dock.id)
-        if (!el) return []
-        const r = documentRect(el)
-        return [{ ...dock, top: r.top, height: r.height }]
-      })
+      docksRef.current = assignSides(
+        MASCOT_DOCKS.flatMap((dock) => {
+          const el = document.getElementById(dock.id)
+          if (!el) return []
+          const r = documentRect(el)
+          return [{ ...dock, top: r.top, height: r.height }]
+        }),
+      )
 
       apply()
     }
@@ -392,33 +477,71 @@ export function V2Mascot({
 
   if (!size) return null
 
+  // The glow and the mascot share one set of motion values, so they cannot
+  // drift apart and the glow costs nothing per frame beyond a transform.
+  const placement = {
+    x,
+    y,
+    scale,
+    width: size.width,
+    height: size.height,
+    transformOrigin: "top left",
+  }
+
   return (
-    <motion.div
-      className="fixed left-0 top-0 z-[60] hidden md:block"
-      style={{
-        x,
-        y,
-        scale,
-        width: size.width,
-        height: size.height,
-        transformOrigin: "top left",
-      }}
-    >
-      <button
-        onClick={() => {
-          spinRef.current = true
-        }}
-        className="relative h-full w-full cursor-pointer"
-        aria-label="Spin the octocat"
+    <>
+      {/*
+        The green light behind the mascot.
+
+        This used to be MascotGlow, mounted in the root layout, which found the
+        mascot with a document-wide querySelector on every animation frame,
+        read its box with getBoundingClientRect (forcing a style and layout
+        flush mid-frame), called setState, and wrote width and height onto an
+        element carrying `blur(70px)`. So every frame, on every page including
+        /admin, it re-laid-out and re-rasterised a 70px Gaussian blur up to
+        about 1400px across. Measured, it was the single most expensive thing
+        on the page: 207ms of main thread per second at 107fps.
+
+        Here it is a sibling of the mascot riding the same x, y and scale, so
+        its position is a compositor transform and nothing is measured. The
+        blur is gone too: a radial gradient is already soft, and the stops
+        below are the old gradient-plus-blur flattened into one.
+
+        z-[45] rather than inside the mascot's own z-[60] layer so it stays
+        under the navbar (z-50), as before. Above it, the glow would tint the
+        nav labels green whenever the mascot sits in the hero.
+      */}
+      <motion.div
+        aria-hidden="true"
+        className="pointer-events-none fixed left-0 top-0 z-[45] hidden md:block"
+        style={placement}
       >
-        <GhMascot3D
-          pointerRef={pointerRef}
-          spinRef={spinRef}
-          // The canvas needs the silhouette drawn back in — a black model on
-          // #0d1117 has no edge of its own.
-          rimIntensity={3}
+        <div
+          className="absolute left-1/2 top-1/2 aspect-square w-[300%] -translate-x-1/2 -translate-y-1/2"
+          style={{ background: GLOW }}
         />
-      </button>
-    </motion.div>
+      </motion.div>
+
+      <motion.div
+        className="fixed left-0 top-0 z-[60] hidden md:block"
+        style={placement}
+      >
+        <button
+          onClick={() => {
+            spinRef.current = true
+          }}
+          className="relative h-full w-full cursor-pointer"
+          aria-label="Spin the octocat"
+        >
+          <GhMascot3D
+            pointerRef={pointerRef}
+            spinRef={spinRef}
+            // The canvas needs the silhouette drawn back in — a black model on
+            // #0d1117 has no edge of its own.
+            rimIntensity={3}
+          />
+        </button>
+      </motion.div>
+    </>
   )
 }

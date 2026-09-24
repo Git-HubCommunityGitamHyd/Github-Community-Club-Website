@@ -1233,3 +1233,313 @@ and search that, which is what the reader actually sees regardless of where it
 came from. The source grep then only tells you which half of the problem is
 yours to fix in code and which half belongs in `/admin`, and the CMS half has
 to be fixed on the remote database too, not just the local seed.
+
+### A 3D model's container is not free to be any shape
+
+The octocat inside the project hover preview was drawn as a head with no arms.
+The cause was not the model or the lighting: `gh-mascot-3d` positions its
+camera to frame the whole model at an aspect of about 1.25 and does not reframe
+for whatever container it lands in, so a 76x88 portrait box simply cut the
+sides off. Every other slot on the site happens to be 1.25 already, which is
+why this had never surfaced. The box is 110x88 now, and the ratio is recorded
+in a comment at the call site because the next person to nudge those numbers
+has no other way to know it matters.
+
+### A pointer-following card makes viewport-relative gaze meaningless
+
+The same mascot was fed the cursor's position within the viewport as its gaze
+target, which is the obvious thing to write and is wrong here. The preview card
+is pinned to the cursor, so the mascot's offset from the cursor never changes;
+feeding it viewport coordinates meant it swung its head to the extreme left or
+right purely because the pointer happened to be near a screen edge, while the
+thing it was supposedly looking at was in the same place the whole time.
+
+The honest value is a constant: the angle from the mascot's corner of the card
+back down to the cursor, mirrored when the card flips to the other side of the
+pointer near the viewport edge. A slow sine drift sits on top, because a
+perfectly still head on an otherwise animated model reads as broken rather than
+as calm.
+
+### Lazily mounting an expensive child without setting state in an effect
+
+The WebGL mascot should not mount until someone goes near the project list.
+Written as an effect watching the hover target, that is `set-state-in-effect`,
+which React's lint rules now reject; written as a ref latched during render, it
+is `react-hooks/refs`, which they also reject. The version that is both legal
+and better is to arm it from the pointer handler that already exists on the
+list container: arming is a response to an event, and the first pointer move
+over the list arrives slightly before hover intent resolves, so the model gets
+a head start. React bails out of the re-render once the value stops changing,
+so calling the setter on every move costs nothing.
+
+### One mascot, and a perch it can be called to
+
+The project hover preview mounted its own `GhMascot3D` inside the card. It
+looked right in a still screenshot and was wrong in motion: the page's mascot
+carried on down its scroll rail while a second one blinked into existence on
+the card, and when the preview closed that second one vanished rather than
+going anywhere. There is one octocat in the fiction, so there is one in the
+DOM.
+
+The mechanism is a module-level perch (`features/v2/mascot/perch.ts`) that the
+preview writes and the mascot's existing frame loop reads. It is deliberately
+not context or state: the only reader is a requestAnimationFrame loop that is
+already running every frame, and routing a pointer-rate number through React
+would re-render the mascot on every mouse move to deliver something a ref
+carries for free.
+
+The mascot blends toward the perch with its own time constant, slower than the
+dock follow. The dock follow is a correction and wants to be invisible; leaving
+the rail to go and sit on a card is the one moment the mascot does something a
+reader should notice, so it takes long enough to read as a trip. The same
+weight drives the scale, so the journey is one movement rather than a slide
+followed by a resize, and the last perch is kept after it is cleared so the
+return has somewhere to start from rather than snapping.
+
+The gaze needed no special case at all. Perched, the mascot is genuinely within
+a few hundred pixels of the cursor, so the distance falloff that already
+governs its docked gaze picks the cursor up on its own and it looks down at the
+pointer. The fixed-angle hack written for the old in-card mascot went with it.
+
+A row with no live URL publishes no preview and therefore no perch, so a
+project the CMS marks in progress keeps the mascot on its rail without any code
+that knows about statuses.
+
+### Where a divider is allowed to go
+
+The projects section ran straight into the benefits stack with nothing between
+them: measured, both boundaries sat at the same pixel. The obvious fix is a
+`HatchBand`, and it is the wrong one. The hatch on this page means "the
+textured middle of the document starts or stops here", which is why there are
+exactly two of them; a third mid-run would demote it from a structural mark to
+a decorative motif. The section gets a hairline bottom rule instead, which is
+the language it already speaks internally, since its own rows are separated
+that way.
+
+### Every client-only fact a component branches on has to arrive the same way
+
+GlassSurface picks one of four style branches from three client-only facts:
+whether an SVG filter works inside `backdrop-filter`, whether plain
+`backdrop-filter` works at all, and whether the reader has asked for reduced
+transparency. Two of them went through `useSyncExternalStore` with a
+conservative server snapshot, and the third was left as a direct call in
+render.
+
+That one call was enough. It answered false on the server and true in the
+browser, so the server emitted the fully solid branch and the client's first
+render produced the blurred one, and React reported a hydration mismatch
+listing every property of both branches - a wall of output whose actual cause
+was a single unwrapped function call. The rule is not "wrap the interesting
+probes"; it is that if a component branches on a client-only fact, every such
+fact has to reach render through the same mechanism, because the branches are
+all-or-nothing and one stray value picks the wrong one.
+
+The same report flagged a numeric CSS custom property. React serialises
+`"--glass-frost": 0.24` into the server HTML differently from the client style
+object, so custom properties are set as strings.
+
+### A backdrop filter cannot be nested inside another one
+
+The navbar shell animates `backdrop-filter: blur(12px)` on the bar itself as it
+shrinks. Dropping a refractive surface inside that does not compose: the outer
+filter establishes a backdrop root, so the inner one filters an already-blurred
+image and the refraction turns into a smudge. The shell grew a `backdrop` slot
+that both renders the surface behind the bar's contents and switches the bar's
+own filter off, so the two cannot be enabled at once by accident.
+
+The slot is a render prop taking `visible`, because only the shell knows the
+shrink state, and the surface has to fade in with it. The function is hoisted to
+module scope: defined inline it would be a new identity every render, which
+remounts GlassSurface and with it the `useId` its filter is keyed on, leaving
+`backdrop-filter` pointing at a filter that no longer exists.
+
+### Measure CPU against the process, then attribute it inside the page
+
+"The site uses too much CPU" was answered by numbers rather than by suspects.
+`top` against the browser pane's renderer process, averaged over several
+seconds, gives a real figure (115% on `/v2` against 6% for a trivial page).
+Switching one suspect off at a time from the console and resampling gives each
+one's share. Wrapping `requestAnimationFrame` for a few seconds attributes the
+main-thread share to individual loops by name.
+
+The largest single cost was not on the list of suspects at all. `MascotGlow`,
+mounted in the root layout and so running on every page including `/admin`,
+did a document-wide `querySelector`, a layout-forcing `getBoundingClientRect`
+and a `setState` on every frame, then wrote a new width and height onto an
+element with `blur(70px)`, which re-laid-out and re-rasterised the blur every
+frame. It cost more than everything else on the main thread combined. The
+lesson is to profile before optimising: the glass, which looked expensive, was
+second; the grid was third.
+
+### A reference backdrop-filter is paid per composited frame, not per change
+
+With every animation on the page stopped, the SVG-filter glass cost nothing
+(renderer 2%). With anything moving anywhere, it re-ran every frame, because
+Chromium re-renders a `backdrop-filter: url(#...)` whenever it produces a
+frame, not only when the region behind it changes. So its cost is the filter's
+complexity multiplied by how often the page composites. Both halves were cut:
+fewer things composite constantly (the grid is a 24fps canvas that stops off
+screen, the scan lines only repaint when they move a whole device pixel), and
+the filter is one displacement instead of three plus recolouring and blending.
+The colour split was compared side by side in the browser at the bar's tint
+and was not visible, while it was about 70% of the glass's cost. It remains a
+prop, on by default, so the component still does what the snippet did.
+
+### Many small animated elements are a layer each
+
+600 `<span>`s each running a CSS keyframe with `will-change` are 600 compositor
+layers and 600 animations ticked at the display's refresh rate, whether or not
+they are on screen: CSS animations on a scrolled-away element keep running.
+One canvas redrawn at 24fps is visually identical for a 5-to-9-second breathing
+cycle, keeps the same hash-derived pattern, and can actually stop, via an
+IntersectionObserver, which a stylesheet cannot. Its backing store is capped at
+1.5x device pixels because at 2x it is 11.5MB for soft, low-alpha squares under
+a mask.
+
+### Sub-pixel animation of a repaint-bound property is waste
+
+`background-position` animates on the main thread with a repaint per frame.
+The hero's scan lines travel a few pixels a second, so at 120Hz almost every
+repaint moved them by a small fraction of a pixel. Stepping the animation at
+half a CSS pixel, one device pixel on retina, repaints only when there is a
+visible pixel to move, and cannot look different because the display cannot
+show finer movement.
+
+### Forced-flush cost moves; it does not disappear
+
+After the glow was removed, the mascot's own loop appeared to cost more (9 to
+about 25ms/s). It reads `window.scrollY` and `innerWidth`, which force a style
+flush if anything changed since the last one, and the glow's loop used to run
+first each frame and pay that flush inside its own, much larger, number. The
+flush is work the browser does once per frame for any animated style anyway,
+so moving the reads would only move the number again. Total rAF main-thread
+time is the figure that matters, and it fell from about 250ms/s to 73ms/s.
+
+### A section without a dock inherits a contradiction
+
+The mascot's docks are a list of section ids, and projects was added to the
+page without being added to that list. A section with no dock does not leave
+the mascot idle: `resolveDock` keeps the previous section's dock with its
+progress pinned at 100%, which puts the position fully into the crossover to
+the next dock while the gaze, keyed to the dock it is nominally on, still
+thinks it is on the other side. For projects that meant sitting on the right
+and staring off the right edge for the entire section.
+
+Three changes, each closing a different way back into that state. Projects has
+a dock. Sides are no longer written per dock but assigned from order among
+the docks actually present, because sections are CMS-driven and hard-coded
+sides only zig-zag when every section exists. And during a crossing the gaze
+switches to the destination's side at the midpoint, so position and gaze can
+never disagree for more than half a crossing, whatever the dock list says.
+
+Alternation is a default rather than a rule: benefits pins itself right,
+because its stacked cards put their headings at the left edge and a left dock
+sits on top of them. Measured, not assumed; the strict alternation looked
+right until the benefits screenshot.
+
+### Publish a follower's target from what the leader draws, continuously
+
+The perch was sent once, on hover start, from a value that the pointer handler
+kept updating and never sent again. The mascot therefore flew to the card's
+first position and stayed there as the card followed the cursor away, which is
+how it ended up sitting on the preview image rather than on its rim. Now the
+perch is derived from the card's drawn motion values and republished on every
+change, so the two cannot come apart. Once perched, the mascot also drops its
+own follow smoothing (by the same eased weight that carried it there), since
+the card is already spring-smoothed and easing it twice reads as dragging.
+
+### Snap or spring is a decision for the move handler, not an effect
+
+The card should appear at the cursor and only then glide. With `useSpring`
+over a raw target that required `jump()` on the spring when the hover began,
+in an effect; whether that effect ran before or after the first cursor
+position was recorded depended on whether React or the native listener saw
+the entering event first. When React won, the spring was left parked near the
+top-left corner until the next move. Plain motion values with the decision
+made inside the move handler (snap while hidden or just appeared, `animate`
+with the spring once showing) have no ordering to get wrong.
+
+### This pane starves animation frames between screenshots
+
+A verification loop that scrolled to each section and waited on `setTimeout`
+reported the mascot on the wrong side in projects, which sent me looking for a
+bug that was not there: without something pumping frames the mascot had not
+moved yet. Anything animated has to be measured after a screenshot or a
+`computer` wait, never after a bare timer.
+
+
+## Phase 23 - project pages, people, commit counts
+
+### Facing the viewer is not gaze zero
+
+The model's yaw is `BASE_ROTATION_Y * (1 - |x|) + x * MAX_YAW`, so a gaze of
+0 keeps the resting 0.4 rad turn. That is why the perched mascot looked
+sideways even with the cursor ignored. Facing the camera is
+`x = -BASE / (BASE + MAX_YAW)`, about -0.38, exported as `FACING_FORWARD_X`.
+The pose constants moved to `components/mascot/pose.ts` so the v2 rig can
+import them without pulling three.js out of the model's lazy chunk. While
+perched, cursor tracking and idle drift are blended out by the same weight
+that flies it to the card.
+
+### One people table, shaped like the board
+
+`members` copies the board_members columns (role as headline, description
+as bio, github as a username, accent as a BOARD_ACCENTS key), so a board
+member and a project contributor render through one `ProfileDialog`. The
+coming members page reads the same table and opens the same dialog, which
+is what the brief asked for. The dialog was `MemberDialog` in
+`features/v2/board/`; it moved to `features/v2/people/profile-dialog.tsx`
+and takes `children` for context from where it was opened ("Team lead on
+Campus Mess Menu" and their contribution).
+
+The project role is `project_members.role`, a key into `PROJECT_ROLES`. It
+is aliased to `project_role` when joined, because `members.role` is already
+the person's headline. Sorting by role happens in JS from `rank`, so the
+order (maintainers, lead, members) has one source.
+
+A photo falls back to `avatars.githubusercontent.com/<username>`, which
+serves the image directly (no redirect), so most contributors get a face
+without anyone uploading one.
+
+### Commit counts are cached, never fetched on a view
+
+GitHub returns the total in one request: `per_page=1` makes the `Link`
+header's `rel="last"` page number the commit count. It is stored in D1.
+Saving in the CMS always re-syncs (so saving is also the way to refresh);
+page views refresh counts older than a day inside `after()`, so the visitor
+gets the cached number and the next visitor the fresh one. A failed refresh
+keeps the old number but still stamps the time, so a dead repo is retried
+daily rather than on every view. A CMS save with a failed fetch clears it,
+since a changed repo URL must not keep the old repo's number.
+
+### Why the page transition is hand-rolled
+
+The brief wanted the opening from a card into a project to feel continuous.
+The View Transitions API does that, but it has to be told when the new page
+is on screen, and an App Router navigation gives no such signal. React's
+`<ViewTransition>` and Next's `experimental.viewTransition` are the intended
+route, and this Next build (16.3.5) has neither the flag nor the types.
+Instead `TransitionLink` starts the transition and navigates, and
+`<TransitionSettled />` resolves it from a layout effect once the
+destination has committed. The 2.5s fallback means a slow or failed
+navigation cannot leave the old page frozen. The homepage does not mount
+the settler, so the back link to it opts out; any new destination has to
+mount one or it will sit on the fallback.
+
+`transitionName()` lives in its own non-client file: the project page is a
+server component and cannot call a function exported from a `"use client"`
+module.
+
+The title morph uses an inline-block span on the project page, so its box
+hugs the words like the card's does. Two boxes with the same shape scale
+cleanly; a full-width h1 would stretch the text mid-flight.
+
+### AvatarCircles
+
+The shadcn install command given fails with "Authentication required": the
+21st.dev registry wants a login. The component has no dependencies beyond
+`cn`, so it was written from the pasted source and adapted there: people
+rather than URLs (for names and initials), faces as buttons, an overflow
+count computed from what was hidden (the original rendered "+undefined"
+without `numPeople`, and `href=""` reloaded the page), a ring in the page
+background colour, and next/image.

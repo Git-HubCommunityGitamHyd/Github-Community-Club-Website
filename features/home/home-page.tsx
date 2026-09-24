@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { GhMascotDock } from "@/components/mascot/gh-mascot-dock"
+import { MascotGlow } from "@/components/mascot/mascot-glow"
 import { GhMarquee } from "@/components/mascot/gh-marquee"
 import type { BoardMember } from "@/lib/db/board-members"
 import type { Event } from "@/lib/db/events"
@@ -97,6 +98,7 @@ export function HomePage({
         navSlotRef={navSlotRef}
       />
 
+      <MascotGlow />
       <GhMascotDock heroSlotRef={heroSlotRef} navSlotRef={navSlotRef} />
       <HeroSection heroSlotRef={heroSlotRef} onScrollTo={scrollToSection} />
       <GhMarquee />

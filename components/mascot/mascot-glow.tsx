@@ -25,20 +25,37 @@ export function MascotGlow() {
     const el = ref.current
     if (!el) return
 
+    // Only the v1 homepage mounts this now; v2 draws its glow inside
+    // V2Mascot. Three things below used to happen unconditionally on every
+    // frame and now only happen when something changed: finding the mascot
+    // (a document-wide selector match), telling React it is visible, and
+    // writing a new size onto a `blur(70px)` element, which re-lays it out and
+    // re-rasterises the whole blur.
     let frame: number
+    let mascot: HTMLElement | null = null
+    let shown = false
+    let last = ""
     const tick = () => {
-      const mascot = document.querySelector<HTMLElement>(MASCOT_SELECTOR)
+      if (!mascot?.isConnected) {
+        mascot = document.querySelector<HTMLElement>(MASCOT_SELECTOR)
+      }
       const r = mascot?.getBoundingClientRect()
-      if (r && r.width && r.height) {
-        setVisible(true)
-        const cx = r.left + r.width / 2
-        const cy = r.top + r.height / 2
-        const size = Math.max(r.width, r.height) * 3
-        el.style.transform = `translate3d(${cx}px, ${cy}px, 0) translate(-50%, -50%)`
-        el.style.width = `${size}px`
-        el.style.height = `${size}px`
-      } else {
-        setVisible(false)
+      const ok = Boolean(r && r.width && r.height)
+      if (ok !== shown) {
+        shown = ok
+        setVisible(ok)
+      }
+      if (r && ok) {
+        const cx = Math.round(r.left + r.width / 2)
+        const cy = Math.round(r.top + r.height / 2)
+        const size = Math.round(Math.max(r.width, r.height) * 3)
+        const key = `${cx},${cy},${size}`
+        if (key !== last) {
+          last = key
+          el.style.transform = `translate3d(${cx}px, ${cy}px, 0) translate(-50%, -50%)`
+          el.style.width = `${size}px`
+          el.style.height = `${size}px`
+        }
       }
       frame = requestAnimationFrame(tick)
     }

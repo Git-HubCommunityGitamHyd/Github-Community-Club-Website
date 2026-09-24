@@ -3,12 +3,18 @@
 import Image from "next/image"
 import { FaGithub, FaLinkedinIn, FaRegEnvelope } from "react-icons/fa6"
 import type { IconType } from "react-icons"
-import type { BoardMember } from "@/lib/db/board-members"
+import type { ReactNode } from "react"
 import { DialogShell } from "@/features/v2/dialog-shell"
 import { boardAccent } from "@/features/v2/board/accents"
+import { initialsOf } from "@/components/ui/avatar-circles"
+import { profilePhoto, type Profile } from "@/features/v2/people/profile"
 
 /**
- * A board member's profile.
+ * A person's profile: a board member from the board section, or someone
+ * tagged on a project. The coming members page opens this same dialog, which
+ * is why it takes a `Profile` rather than either table's row. `children` is
+ * for context that belongs to where it was opened from, such as what they did
+ * on the project being viewed.
  *
  * The old panel was a 112px square photo, a name, a role, a paragraph, a rule
  * and three pill links — a contact card, and a flat one. Nothing on it
@@ -31,23 +37,16 @@ import { boardAccent } from "@/features/v2/board/accents"
 const SOCIAL_LABEL =
   "inline-flex items-center gap-2 rounded-full border border-gh-border px-4 py-2 text-sm font-medium text-gh-text transition hover:border-gh-muted hover:bg-gh-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent"
 
-function initialsOf(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-}
-
-export function MemberDialog({
+export function ProfileDialog({
   member,
   onClose,
+  children,
 }: {
-  member: BoardMember | null
+  member: Profile | null
   onClose: () => void
+  children?: ReactNode
 }) {
+  const photo = member && profilePhoto(member)
   const accent = boardAccent(member?.accent)
 
   const socials = member
@@ -132,9 +131,9 @@ export function MemberDialog({
                   }}
                 />
                 <span className="relative block h-full w-full overflow-hidden rounded-[21px] bg-gh-surface">
-                  {member.image_url ? (
+                  {photo ? (
                     <Image
-                      src={member.image_url}
+                      src={photo}
                       alt=""
                       fill
                       sizes="128px"
@@ -155,9 +154,11 @@ export function MemberDialog({
                 >
                   {member.name}
                 </h3>
-                <p className="mt-3 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-gh-accent">
-                  {member.role}
-                </p>
+                {member.role && (
+                  <p className="mt-3 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-gh-accent">
+                    {member.role}
+                  </p>
+                )}
                 {member.github && (
                   <p className="mt-2 font-mono text-sm text-gh-muted">
                     @{member.github}
@@ -168,12 +169,15 @@ export function MemberDialog({
           </header>
 
           <div className="border-t border-gh-border px-8 py-8 sm:px-10">
-            <p className="max-w-[58ch] text-pretty text-base leading-relaxed text-gh-muted">
-              {member.description}
-            </p>
+            {children}
+            {member.description && (
+              <p className="max-w-[58ch] text-pretty text-base leading-relaxed text-gh-muted">
+                {member.description}
+              </p>
+            )}
 
             {socials.length > 0 && (
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-8 flex flex-wrap gap-3 first:mt-0">
                 {socials.map((social) => (
                   <a
                     key={social.label}

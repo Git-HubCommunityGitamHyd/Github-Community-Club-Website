@@ -6,24 +6,16 @@ import { Suspense, useMemo, useRef, type MutableRefObject } from "react"
 import { Canvas, useFrame } from "@react-three/fiber"
 import { useGLTF, Center } from "@react-three/drei"
 import type * as THREE from "three"
+import {
+  BASE_ROTATION_X,
+  BASE_ROTATION_Y,
+  MAX_YAW,
+} from "@/components/mascot/pose"
 
 useGLTF.preload("/models/github-octocat.glb")
 
 type PointerRef = MutableRefObject<{ x: number; y: number }>
 type SpinRef = MutableRefObject<boolean>
-
-// Baseline tilt so the (fairly flat) model reads as 3D even at rest.
-const BASE_ROTATION_Y = 0.4
-const BASE_ROTATION_X = 0.15
-
-/**
- * Yaw at full deflection, in radians, measured from facing the camera.
- *
- * 0.65 is where the left dock already sat under the old lopsided formula
- * (0.4 + 0.5 x 0.5), which is the side that looked right. Keeping that exact
- * angle means the left is unchanged and only the right moves to meet it.
- */
-const MAX_YAW = 0.65
 
 // Framing: read straight out of the .glb's POSITION accessor bounds, the
 // whole model (NODE_333 carries the silhouette, whiskers and tentacles

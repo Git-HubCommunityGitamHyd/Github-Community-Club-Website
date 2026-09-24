@@ -3,7 +3,7 @@
 import { useState } from "react"
 import type { BoardMember } from "@/lib/db/board-members"
 import { TeamShowcase, type TeamMember } from "@/components/ui/team-showcase"
-import { MemberDialog } from "@/features/v2/board/member-dialog"
+import { ProfileDialog } from "@/features/v2/people/profile-dialog"
 import { SectionLabel } from "@/features/v2/section-label"
 import { SectionTexture } from "@/components/ui/texture"
 
@@ -58,7 +58,7 @@ export function V2BoardSection({ members }: { members: BoardMember[] }) {
         )}
       </div>
 
-      <MemberDialog member={selected} onClose={() => setSelected(null)} />
+      <ProfileDialog member={selected} onClose={() => setSelected(null)} />
     </section>
   )
 }

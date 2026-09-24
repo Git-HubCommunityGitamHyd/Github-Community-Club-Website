@@ -11,6 +11,14 @@ const nextConfig = {
     unoptimized: false,
     qualities: [75, 95],
     remotePatterns: [
+      // GitHub avatars: the fallback photo for anyone on a project who has
+      // not uploaded one (features/v2/people/profile.ts).
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+        port: "",
+        pathname: "/**",
+      },
       {
         protocol: "http",
         hostname: "localhost",
@@ -26,6 +34,15 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/**",
+      },
+      // Seed and placeholder imagery only. Real content goes to Cloudinary
+      // through the signed-upload flow; this is here so a freshly seeded
+      // local database renders instead of 400ing on every image.
+      {
+        protocol: "https",
+        hostname: "picsum.photos",
         port: "",
         pathname: "/**",
       },

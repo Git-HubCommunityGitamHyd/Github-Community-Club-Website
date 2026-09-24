@@ -20,24 +20,70 @@
  * centre. They are kept well inside 0.25–0.75 so it never collides with the
  * sticky navbar at the top or slides under the fold at the bottom.
  */
+export type Side = "left" | "right"
+
 export type Dock = {
   /** The `id` of the section this dock belongs to. */
   id: string
-  side: "left" | "right"
+  /**
+   * Pin this dock to a side instead of alternating. Only for a section whose
+   * layout has a side the mascot must not sit on.
+   */
+  side?: Side
   /** Viewport-height fraction of the mascot's centre on entering the section. */
   from: number
   /** …and on leaving it. */
   to: number
 }
 
+/**
+ * In page order. A section whose element is not in the document gets no dock.
+ *
+ * There is no `side` here any more. Sides used to be written per dock, which
+ * only zig-zags if every section is present, and sections are CMS-driven: an
+ * empty projects table removes the projects section, and with fixed sides
+ * that left events and benefits both on the left, so the mascot stopped
+ * crossing. Worse, projects was added to the page without a dock at all, and
+ * a section with no dock inherits the previous section's: the mascot sat in
+ * the crossover to benefits on the right while still believing it was on the
+ * left, and stared off the edge of the page for the whole section. Sides are
+ * now assigned by `sideOf` from position among the docks actually present, so
+ * the zig-zag holds whatever the CMS leaves out.
+ *
+ * Alternation is the default, not a law. Benefits is pinned right: its
+ * stacked cards put the heading and copy against the left edge and only a
+ * faint glyph on the right, so a left dock sits on top of the text. With
+ * projects present that means projects and benefits share the right side and
+ * the mascot simply drifts down it rather than crossing; without projects the
+ * sequence is exactly the original one.
+ */
 export const MASCOT_DOCKS: Dock[] = [
-  { id: "about", side: "right", from: 0.3, to: 0.68 },
-  { id: "journey", side: "left", from: 0.34, to: 0.64 },
-  { id: "board", side: "right", from: 0.28, to: 0.66 },
-  { id: "events", side: "left", from: 0.32, to: 0.7 },
+  { id: "about", from: 0.3, to: 0.68 },
+  { id: "journey", from: 0.34, to: 0.64 },
+  { id: "board", from: 0.28, to: 0.66 },
+  { id: "events", from: 0.32, to: 0.7 },
+  { id: "projects", from: 0.3, to: 0.66 },
   { id: "benefits", side: "right", from: 0.3, to: 0.62 },
-  { id: "join", side: "left", from: 0.36, to: 0.6 },
+  { id: "join", from: 0.36, to: 0.6 },
 ]
+
+/**
+ * Sides for the docks actually on the page, in order: each pinned dock keeps
+ * its side and every other dock takes the opposite of the one before it.
+ *
+ * Right first: the hero holds the mascot on the right, so the first dock must
+ * be on the same side or the page would open with a pointless crossing.
+ */
+export function assignSides<T extends Dock>(
+  present: T[],
+): (T & { side: Side })[] {
+  let previous: Side = "left"
+  return present.map((dock) => {
+    const side: Side = dock.side ?? (previous === "right" ? "left" : "right")
+    previous = side
+    return { ...dock, side }
+  })
+}
 
 /**
  * Fraction of a section spent crossing to the next dock.

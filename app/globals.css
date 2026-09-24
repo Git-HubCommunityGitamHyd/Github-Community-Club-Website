@@ -266,33 +266,6 @@ textarea:focus-visible,
   }
 }
 
-/* The hero's contribution field. Each cell runs this on its own delay and
-   duration (set inline from a hash of the cell index), so the grid twinkles
-   unevenly instead of pulsing in unison. Kept in CSS rather than on a motion
-   value because there are 450 of them and it is decoration. */
-@keyframes contribution-cell {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: scale(0.9);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-.contribution-cell {
-  animation-name: contribution-cell;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  will-change: opacity, transform;
-}
-@media (prefers-reduced-motion: reduce) {
-  .contribution-cell {
-    animation: none;
-  }
-}
-
 /* The rotating ring around a board member's photo. The element turns rather
    than the gradient's angle, because animating a conic-gradient angle needs
    `@property` to register it as an <angle> and a transform has always been
@@ -354,6 +327,38 @@ textarea:focus-visible,
 }
 @media (prefers-reduced-motion: reduce) {
   .gh-marquee-track {
+    animation: none;
+  }
+}
+
+/* Listing to project page (features/v2/projects/transition.tsx). The shared
+   cover and title glide on an ease-out with no bounce; the rest of the page
+   cross-fades faster underneath so the moving pieces are what the eye
+   follows. */
+::view-transition-group(*) {
+  animation-duration: 480ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 240ms;
+}
+
+/* Staggered arrival for the parts of a project page that are not travelling
+   from the card. `--i` is each block's place in the order. `both` holds the
+   start state through the delay, so nothing flashes in early. */
+@keyframes project-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+.project-rise {
+  animation: project-rise 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 70ms + 80ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .project-rise {
     animation: none;
   }
 }

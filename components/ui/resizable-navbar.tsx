@@ -63,6 +63,18 @@ interface NavBodyProps {
   /** Applied only once the bar has shrunk, so the caller owns the palette. */
   visibleClassName?: string
   visible?: boolean
+  /**
+   * A surface painted behind the bar, given the current shrink state.
+   *
+   * A render prop rather than a node because only this component knows
+   * `visible` (Navbar clones it in), and the surface has to fade with it.
+   *
+   * Supplying one also switches off the animated `backdrop-filter` below. Two
+   * nested backdrop filters do not compose: the outer one establishes a
+   * backdrop root, so the inner one filters an already-blurred image. A
+   * refractive surface underneath a blur just looks like a smudge.
+   */
+  backdrop?: (visible: boolean) => React.ReactNode
 }
 
 export function NavBody({
@@ -70,11 +82,14 @@ export function NavBody({
   className,
   visibleClassName,
   visible,
+  backdrop,
 }: NavBodyProps) {
   return (
     <motion.nav
       animate={{
-        backdropFilter: visible ? "blur(12px)" : "blur(0px)",
+        ...(backdrop
+          ? {}
+          : { backdropFilter: visible ? "blur(12px)" : "blur(0px)" }),
         width: visible ? "min(62rem, 92%)" : "100%",
         y: visible ? 14 : 0,
         borderRadius: visible ? 999 : 0,
@@ -89,6 +104,7 @@ export function NavBody({
         visible && visibleClassName,
       )}
     >
+      {backdrop?.(Boolean(visible))}
       {children}
     </motion.nav>
   )
@@ -113,7 +129,12 @@ export function NavItems({
     <motion.div
       onMouseLeave={() => setHovered(null)}
       className={cn(
-        "absolute inset-0 hidden flex-1 flex-row items-center justify-center text-sm font-medium lg:flex",
+        // The shadow is what keeps the labels legible over the glass. Behind a
+        // translucent bar the page is still visible, refracted, and the hero's
+        // bright green grid and white display type pass directly under these
+        // labels. A one-pixel dark halo separates each glyph from whatever is
+        // behind it without darkening the bar as a whole.
+        "absolute inset-0 hidden flex-1 flex-row items-center justify-center text-sm font-medium [text-shadow:0_1px_2px_rgba(1,4,9,0.75)] lg:flex",
         className,
       )}
     >
@@ -128,13 +149,24 @@ export function NavItems({
             aria-current={isActive ? "true" : undefined}
             className={cn(
               "relative rounded-full px-4 py-2 transition-colors duration-200",
-              isActive ? "text-gh-text" : "text-gh-muted hover:text-gh-text",
+              // Not gh-muted. That grey is tuned for body copy on a flat
+              // #0d1117 page; over a moving, refracted backdrop it sat at
+              // roughly the brightness of the grid behind it and the labels
+              // dissolved into the field.
+              isActive ? "text-gh-text" : "text-gh-text/75 hover:text-gh-text",
             )}
           >
             {hovered === idx && (
+              // A lighter pane of the same glass, not a solid chip. The old
+              // pill was `bg-gh-elevated`, an opaque grey slab, which sat
+              // inside a translucent bar like a sticker: flat, a different
+              // material, and the one thing on the bar you could not see
+              // through. Translucent white lifts the item the way a pressed
+              // region of glass catches more light, and the inset hairlines
+              // give it the same lit top edge the bar itself has.
               <motion.span
                 layoutId="nav-hover-pill"
-                className="absolute inset-0 rounded-full bg-gh-elevated"
+                className="absolute inset-0 rounded-full bg-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.14),inset_0_0_0_1px_rgba(255,255,255,0.06)]"
                 transition={{ type: "spring", stiffness: 380, damping: 32 }}
               />
             )}
@@ -159,6 +191,18 @@ interface MobileNavProps {
   /** Applied only once the bar has shrunk, so the caller owns the palette. */
   visibleClassName?: string
   visible?: boolean
+  /**
+   * A surface painted behind the bar, given the current shrink state.
+   *
+   * A render prop rather than a node because only this component knows
+   * `visible` (Navbar clones it in), and the surface has to fade with it.
+   *
+   * Supplying one also switches off the animated `backdrop-filter` below. Two
+   * nested backdrop filters do not compose: the outer one establishes a
+   * backdrop root, so the inner one filters an already-blurred image. A
+   * refractive surface underneath a blur just looks like a smudge.
+   */
+  backdrop?: (visible: boolean) => React.ReactNode
 }
 
 export function MobileNav({
@@ -166,11 +210,14 @@ export function MobileNav({
   className,
   visibleClassName,
   visible,
+  backdrop,
 }: MobileNavProps) {
   return (
     <motion.nav
       animate={{
-        backdropFilter: visible ? "blur(12px)" : "blur(0px)",
+        ...(backdrop
+          ? {}
+          : { backdropFilter: visible ? "blur(12px)" : "blur(0px)" }),
         width: visible ? "92%" : "100%",
         borderRadius: visible ? 16 : 0,
         y: visible ? 10 : 0,
@@ -182,6 +229,7 @@ export function MobileNav({
         visible && visibleClassName,
       )}
     >
+      {backdrop?.(Boolean(visible))}
       {children}
     </motion.nav>
   )

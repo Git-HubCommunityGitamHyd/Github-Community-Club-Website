@@ -1,7 +1,7 @@
 "use client"
 
-import type { RefObject } from "react"
-import { motion } from "framer-motion"
+import { useEffect, useRef, type RefObject } from "react"
+import { motion, useReducedMotion } from "framer-motion"
 import { ArrowRight } from "lucide-react"
 import { ButtonColorful } from "@/components/ui/button-colorful"
 import { CanvasText } from "@/components/ui/canvas-text"
@@ -192,39 +192,158 @@ function HeroTexture() {
  *
  * It used to stagger in once and then sit frozen for the rest of the visit,
  * which is the worst of both: an animation nobody who lands mid-page ever
- * sees, and a dead texture for everybody else. Every cell now breathes on its
- * own CSS keyframe (`contribution-cell` in globals.css), with the delay
- * derived from the same hash so the field twinkles unevenly the way a real
- * contribution graph fills rather than pulsing in unison. It is pure CSS —
- * hundreds of cells on a framer-motion value each would cost a JavaScript
- * frame budget for something that is decoration.
+ * sees, and a dead texture for everybody else. Every cell breathes on its own
+ * delay and duration, derived from the same hash, so the field twinkles
+ * unevenly the way a real contribution graph fills rather than pulsing in
+ * unison.
+ *
+ * It is drawn on one canvas. It used to be 600 `<span>`s, each running its own
+ * CSS keyframe with `will-change` set, which is 600 compositor layers and 600
+ * animations ticked at the display's refresh rate, forever, whether the hero
+ * was on screen or not. Measured, pausing them alone took about a third of a
+ * CPU core off the page. The canvas redraws the same field at 24fps, which is
+ * indistinguishable for a 5-to-9-second breathing cycle, and stops entirely
+ * once the hero scrolls out of view. It also stops invalidating the navbar's
+ * glass, which has to re-run its filter every time something under it
+ * changes.
  */
 /*
- * Bigger cells rather than more of them. Covering the whole hero at the old
- * 25px pitch would have taken about 900 cells, and `.contribution-cell` sets
- * `will-change: opacity, transform`, so every cell is its own compositor
- * layer. Widening the pitch to 35px covers 2.6x the area at the same count.
- * The join band already runs this motif at a 64px cell, so a larger square
- * here is within the vocabulary rather than a new one.
+ * Bigger cells rather than more of them: covering the whole hero at the old
+ * 25px pitch would have taken about 900 cells. The join band already runs
+ * this motif at a 64px cell, so a larger square here is within the vocabulary
+ * rather than a new one.
  */
 const COLUMNS = 30
 const ROWS = 20
 const CELL = 26
 const GAP = 9
 
-function ContributionGrid() {
-  const cells = Array.from({ length: COLUMNS * ROWS }, (_, index) => {
+/** Canvas redraw rate. The slowest visible change is a 5.5s breathing cycle. */
+const GRID_FPS = 24
+
+const GRID_W = COLUMNS * CELL + (COLUMNS - 1) * GAP
+const GRID_H = ROWS * CELL + (ROWS - 1) * GAP
+
+type GridCell = {
+  x: number
+  y: number
+  /** Alpha of the cell's colour before the breathing multiplies it. */
+  alpha: number
+  green: boolean
+  /** Seconds into its own cycle at t=0, and the cycle's length. */
+  offset: number
+  duration: number
+}
+
+/**
+ * Same hash, same pattern, same cells as the DOM version. `gridAutoFlow:
+ * column` filled columns first, so index -> (column, row) is divmod by ROWS,
+ * and keeping that mapping is what keeps the field looking identical.
+ */
+const GRID_CELLS: GridCell[] = Array.from(
+  { length: COLUMNS * ROWS },
+  (_, index) => {
     const hash = (index * 2654435761) % 4294967296
     const unit = hash / 4294967296
+    const level = Math.floor(unit * 5)
     return {
-      level: Math.floor(unit * 5),
-      // Negative delay starts each cell part-way through its own cycle, so
-      // the field is already alive on the first painted frame instead of
-      // every cell beginning together.
-      delay: -(unit * 7).toFixed(2),
-      duration: (5.5 + unit * 4).toFixed(2),
+      x: Math.floor(index / ROWS) * (CELL + GAP),
+      y: (index % ROWS) * (CELL + GAP),
+      alpha: level === 0 ? 0.11 : 0.09 + level * 0.1,
+      green: level !== 0,
+      offset: unit * 7,
+      duration: 5.5 + unit * 4,
     }
-  })
+  },
+  // Grey first, then green, so the fill colour changes once per frame
+  // rather than on most cells.
+).sort((a, b) => Number(a.green) - Number(b.green))
+
+function ContributionGrid() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const reducedMotion = useReducedMotion()
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const ctx = canvas?.getContext("2d")
+    if (!canvas || !ctx) return
+
+    // Capped at 1.5. These are soft, low-alpha squares under a mask, and the
+    // backing store is width x height x dpr^2 x 4 bytes: at 2x it is 11.5MB
+    // for decoration, at 1.5x it is 6.5MB and looks the same.
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+    canvas.width = Math.round(GRID_W * dpr)
+    canvas.height = Math.round(GRID_H * dpr)
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+
+    // `breathe` 0..1 follows the old keyframe: 0.45 opacity and 0.9 scale at
+    // the ends of the cycle, full at the middle. A cosine is the old
+    // ease-in-out segments to within what a 24fps redraw can show.
+    const draw = (seconds: number | null) => {
+      ctx.clearRect(0, 0, GRID_W, GRID_H)
+      let green: boolean | null = null
+      for (const cell of GRID_CELLS) {
+        if (cell.green !== green) {
+          green = cell.green
+          ctx.fillStyle = green ? "rgb(63,185,80)" : "rgb(140,149,159)"
+        }
+        // Reduced motion matches what `animation: none` left behind: every
+        // cell at rest at full opacity and full size.
+        const breathe =
+          seconds === null
+            ? 1
+            : 0.5 -
+              0.5 *
+                Math.cos(
+                  (2 * Math.PI * (seconds + cell.offset)) / cell.duration,
+                )
+        const size = CELL * (0.9 + 0.1 * breathe)
+        const inset = (CELL - size) / 2
+        ctx.globalAlpha = cell.alpha * (0.45 + 0.55 * breathe)
+        ctx.beginPath()
+        ctx.roundRect(cell.x + inset, cell.y + inset, size, size, 4)
+        ctx.fill()
+      }
+      ctx.globalAlpha = 1
+    }
+
+    if (reducedMotion) {
+      draw(null)
+      return
+    }
+
+    let frame = 0
+    let last = -Infinity
+    let running = false
+    const start = performance.now()
+
+    const loop = (now: number) => {
+      if (now - last >= 1000 / GRID_FPS) {
+        last = now
+        draw((now - start) / 1000)
+      }
+      frame = requestAnimationFrame(loop)
+    }
+
+    // Only while the hero is on screen. The DOM version had no way to stop:
+    // CSS animations on a scrolled-away element keep ticking.
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !running) {
+        running = true
+        frame = requestAnimationFrame(loop)
+      } else if (!entry.isIntersecting && running) {
+        running = false
+        cancelAnimationFrame(frame)
+      }
+    })
+    observer.observe(canvas)
+    draw(0)
+
+    return () => {
+      observer.disconnect()
+      cancelAnimationFrame(frame)
+    }
+  }, [reducedMotion])
 
   // Anchored at the right edge and overhanging it, so the grid's own right,
   // top and bottom boundaries are all off-screen. `overflow-hidden` on the
@@ -245,34 +364,13 @@ function ContributionGrid() {
         initial={{ opacity: 0, scale: 0.94 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-        className="grid"
-        style={{
-          gap: `${GAP}px`,
-          gridTemplateColumns: `repeat(${COLUMNS}, ${CELL}px)`,
-          gridTemplateRows: `repeat(${ROWS}, ${CELL}px)`,
-          gridAutoFlow: "column",
-          maskImage: MASK,
-          WebkitMaskImage: MASK,
-        }}
+        style={{ maskImage: MASK, WebkitMaskImage: MASK }}
       >
-        {cells.map((cell, index) => (
-          <span
-            key={index}
-            className="contribution-cell rounded-[4px]"
-            style={{
-              animationDelay: `${cell.delay}s`,
-              animationDuration: `${cell.duration}s`,
-              // A touch lighter than the old bounded version, since the mask
-              // no longer clears a hole behind the mascot and more of the
-              // field is on screen. Not much lighter: dropping it far enough
-              // to be safe made the right half of the hero read as empty.
-              backgroundColor:
-                cell.level === 0
-                  ? "rgba(140,149,159,0.11)"
-                  : `rgba(63,185,80,${0.09 + cell.level * 0.1})`,
-            }}
-          />
-        ))}
+        <canvas
+          ref={canvasRef}
+          className="block"
+          style={{ width: GRID_W, height: GRID_H }}
+        />
       </motion.div>
     </div>
   )
