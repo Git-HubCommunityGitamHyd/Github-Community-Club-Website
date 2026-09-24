@@ -6,7 +6,7 @@ import {
   TrackPage,
   formatWhen,
   type Stage,
-} from "@/features/v2/tracking/track-page"
+} from "@/features/tracking/track-page"
 
 export const dynamic = "force-dynamic"
 

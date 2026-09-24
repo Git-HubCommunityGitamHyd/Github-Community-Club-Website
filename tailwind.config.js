@@ -4,16 +4,14 @@ const defaultTheme = require("tailwindcss/defaultTheme")
 module.exports = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./features/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       fontFamily: {
-        // Geist is loaded by app/v2/layout.tsx and the variables are defined on
-        // that subtree only, so `/` keeps rendering in the stack it uses today.
+        // Geist is loaded by app/layout.tsx, which sets these variables on
+        // <html>.
         //
         // The fallback INSIDE var() is load-bearing, not belt-and-braces: an
         // undefined custom property makes the whole font-family declaration
@@ -29,15 +27,6 @@ module.exports = {
           "var(--font-geist-mono, ui-monospace)",
           ...defaultTheme.fontFamily.mono,
         ],
-      },
-      animation: {
-        "infinite-scroll": "infinite-scroll 25s linear infinite",
-      },
-      keyframes: {
-        "infinite-scroll": {
-          from: { transform: "translateX(0)" },
-          to: { transform: "translateX(-100%)" },
-        },
       },
       borderRadius: {
         lg: "var(--radius)",

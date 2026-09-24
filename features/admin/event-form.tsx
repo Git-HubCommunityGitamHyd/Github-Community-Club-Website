@@ -3,11 +3,12 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { X } from "lucide-react"
+import { ArrowLeft, ArrowRight, Star, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ImageUploadField } from "@/features/admin/image-upload-field"
 import type { Event } from "@/lib/db/events"
-import { EVENT_CATEGORIES } from "@/features/v2/events/categories"
+import { EVENT_CATEGORIES } from "@/features/events/categories"
+import { EVENT_IMAGES_MAX } from "@/lib/validation/event"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -79,6 +80,15 @@ export function EventForm({ initial }: { initial?: Event }) {
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function moveImage(from: number, to: number) {
+    setForm((prev) => {
+      const images = [...prev.images]
+      const [moved] = images.splice(from, 1)
+      images.splice(to, 0, moved)
+      return { ...prev, images }
+    })
   }
 
   function setDates(start: string, end: string) {
@@ -185,7 +195,7 @@ export function EventForm({ initial }: { initial?: Event }) {
             Category
           </label>
           {/* A dropdown rather than free text, because the public card picks
-              its glyph from this value (features/v2/events/categories.ts) and a
+              its glyph from this value (features/events/categories.ts) and a
               typo would silently fall back to the generic calendar. A category
               a row already has is kept as an option so editing an older event
               never rewrites it. */}
@@ -255,44 +265,101 @@ export function EventForm({ initial }: { initial?: Event }) {
         )}
       </div>
 
-      <div>
-        <span className={labelClass}>Photos</span>
-        {form.images.length > 0 && (
-          <div className="mb-3 flex flex-wrap gap-2">
+      {/* The first photo is the cover (the card image and the top of the
+          popup); the rest are the gallery, in this order. */}
+      <fieldset className="rounded-lg border border-gh-border p-4">
+        <legend className="px-1 text-sm font-medium text-gh-muted">
+          Photos{" "}
+          <span className="font-normal">
+            ({form.images.length}/{EVENT_IMAGES_MAX})
+          </span>
+        </legend>
+        {form.images.length > 0 ? (
+          <ol className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {form.images.map((url, i) => (
-              <div key={url} className="relative">
-                <Image
-                  src={url}
-                  alt=""
-                  width={64}
-                  height={64}
-                  className="h-16 w-16 rounded object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    set(
-                      "images",
-                      form.images.filter((_, idx) => idx !== i),
-                    )
-                  }
-                  className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800 text-white"
-                  aria-label="Remove photo"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
+              <li key={url} className="space-y-1.5">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-md border border-gh-border bg-gh-elevated">
+                  <Image
+                    src={url}
+                    alt=""
+                    fill
+                    sizes="160px"
+                    className="object-cover"
+                  />
+                  {i === 0 && (
+                    <span className="absolute left-1.5 top-1.5 rounded bg-gh-accent px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-gh-deep">
+                      Cover
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-1">
+                  <div className="flex gap-1">
+                    <IconButton
+                      label="Move earlier"
+                      disabled={i === 0}
+                      onClick={() => moveImage(i, i - 1)}
+                    >
+                      <ArrowLeft className="h-3.5 w-3.5" />
+                    </IconButton>
+                    <IconButton
+                      label="Move later"
+                      disabled={i === form.images.length - 1}
+                      onClick={() => moveImage(i, i + 1)}
+                    >
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </IconButton>
+                  </div>
+                  <div className="flex gap-1">
+                    {i !== 0 && (
+                      <IconButton
+                        label="Make cover"
+                        onClick={() => moveImage(i, 0)}
+                      >
+                        <Star className="h-3.5 w-3.5" />
+                      </IconButton>
+                    )}
+                    <IconButton
+                      label="Remove photo"
+                      onClick={() =>
+                        setForm((prev) => ({
+                          ...prev,
+                          images: prev.images.filter((_, idx) => idx !== i),
+                        }))
+                      }
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </IconButton>
+                  </div>
+                </div>
+              </li>
             ))}
-          </div>
+          </ol>
+        ) : (
+          <p className="mb-4 text-sm text-gh-muted">
+            No photos yet. Without one, the card shows the category glyph.
+          </p>
         )}
-        <ImageUploadField
-          label="Add a photo"
-          value={null}
-          onChange={(url) => {
-            if (url) set("images", [...form.images, url])
-          }}
-        />
-      </div>
+        {form.images.length < EVENT_IMAGES_MAX && (
+          <ImageUploadField
+            folder="events"
+            label="Add photos"
+            value={null}
+            multiple
+            onChange={(url) => {
+              if (!url) return
+              setForm((prev) =>
+                prev.images.length >= EVENT_IMAGES_MAX
+                  ? prev
+                  : { ...prev, images: [...prev.images, url] },
+              )
+            }}
+            hint="Landscape works best. The first photo is the cover."
+          />
+        )}
+        {errors.images && (
+          <p className="mt-2 text-sm text-red-500">{errors.images}</p>
+        )}
+      </fieldset>
 
       <div>
         <label className={labelClass} htmlFor="sortOrder">
@@ -322,5 +389,30 @@ export function EventForm({ initial }: { initial?: Event }) {
         </Button>
       </div>
     </form>
+  )
+}
+
+function IconButton({
+  label,
+  disabled,
+  onClick,
+  children,
+}: {
+  label: string
+  disabled?: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="flex h-7 w-7 items-center justify-center rounded border border-gh-border text-gh-muted transition-colors hover:border-gh-muted hover:text-gh-text disabled:pointer-events-none disabled:opacity-30"
+    >
+      {children}
+    </button>
   )
 }

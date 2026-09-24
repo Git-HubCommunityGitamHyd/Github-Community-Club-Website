@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS board_members (
   github       TEXT,
   linkedin     TEXT,
   email        TEXT,
-  -- Key into BOARD_ACCENTS (features/v2/board/accents.ts) — the ring around
+  -- Key into BOARD_ACCENTS (features/board/accents.ts) — the ring around
   -- the photo in their dialog. A key, not a hex value, so the CMS cannot put
   -- an off-palette colour on the page. Existing databases get this through
   -- db/migrations/2026-09-board-member-accent.sql.
@@ -46,9 +46,9 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 -- The homepage timeline. It used to be a hardcoded JOURNEY_ITEMS array in
--- features/home/content.ts, which meant a club milestone needed a developer,
+-- source code, which meant a club milestone needed a developer,
 -- a commit and a deploy. `icon` is a key into JOURNEY_ICONS
--- (features/v2/journey/icons.ts) rather than a class name or an SVG, so the
+-- (features/journey/icons.ts) rather than a class name or an SVG, so the
 -- CMS never stores markup and an unknown key falls back instead of breaking
 -- the page.
 CREATE TABLE IF NOT EXISTS journey_entries (
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS journey_entries (
 
 -- Club projects, shown as a short list on the homepage and in full at
 -- /projects. `status` is a key into PROJECT_STATUSES
--- (features/v2/projects/statuses.ts) rather than a label or a colour, for the
+-- (features/projects/statuses.ts) rather than a label or a colour, for the
 -- same reason events.category and journey_entries.icon are: a free-text field
 -- here means a typo renders the fallback badge forever, and a free colour
 -- field means a hue that belongs to no palette ends up on the site.
@@ -138,7 +138,7 @@ CREATE TABLE IF NOT EXISTS members (
 );
 
 -- Who worked on which project. role is a key into PROJECT_ROLES
--- (features/v2/projects/roles.ts): maintainer, lead or member, which is also
+-- (features/projects/roles.ts): maintainer, lead or member, which is also
 -- the order a project page lists them in. contribution is free text, in the
 -- CMS author's words. Deleting either side removes the tag.
 CREATE TABLE IF NOT EXISTS project_members (
@@ -153,7 +153,7 @@ CREATE INDEX IF NOT EXISTS project_members_member ON project_members(member_id);
 
 -- Project ideas students send the club, from /proposals/new. Everything
 -- arrives as status 'pending' and stays private until an admin moves it to a
--- public status (PROPOSAL_STATUSES in features/v2/proposals/keys.ts). reg_no
+-- public status (PROPOSAL_STATUSES in features/proposals/keys.ts). reg_no
 -- and phone are never shown publicly; public_name is what the public page
 -- prints (their first name by default, editable in the CMS). audience, format,
 -- help and year are keys, like every other fixed choice in this schema.

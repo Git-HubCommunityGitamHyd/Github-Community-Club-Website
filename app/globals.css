@@ -56,97 +56,9 @@
   }
 }
 
-/* Custom styles for 3D flip cards */
-.perspective-1000 {
-  perspective: 1000px;
-}
-
+/* 3D children keep their depth (the join squares, the benefits stack). */
 .preserve-3d {
   transform-style: preserve-3d;
-}
-
-.backface-hidden {
-  backface-visibility: hidden;
-}
-
-/* Custom scrollbar for image galleries */
-.scrollbar-thin {
-  scrollbar-width: thin;
-}
-
-.scrollbar-thumb-gray-600 {
-  scrollbar-color: #4b5563 transparent;
-}
-
-.scrollbar-track-gray-800 {
-  scrollbar-color: #1f2937 transparent;
-}
-
-/* Webkit scrollbar styles */
-.scrollbar-thin::-webkit-scrollbar {
-  height: 6px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: #1f2937;
-  border-radius: 3px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #4b5563;
-  border-radius: 3px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
-}
-
-/* Enhanced custom scrollbar styles */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Horizontal scrollbar for image galleries */
-.custom-scrollbar-horizontal {
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
-}
-
-.custom-scrollbar-horizontal::-webkit-scrollbar {
-  height: 8px;
-}
-
-.custom-scrollbar-horizontal::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
-}
-
-.custom-scrollbar-horizontal::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-.custom-scrollbar-horizontal::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
 }
 
 /* Smooth scrolling — on the scrolling element, not every node */
@@ -154,14 +66,9 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Keep section headings clear of the 4rem fixed nav when jumped to */
+/* Keep section headings clear of the floating nav when jumped to.
+   Keep this in step with NAV_OFFSET in features/site/navbar.tsx. */
 section[id] {
-  scroll-margin-top: 4rem;
-}
-
-/* v2's nav floats rather than sitting flush, so its anchors need more clearance.
-   Keep this in step with V2_NAV_OFFSET in features/v2/sections/navbar.tsx. */
-.v2-root section[id] {
   scroll-margin-top: 7rem;
 }
 
@@ -178,11 +85,9 @@ section[id] {
   }
 }
 
-/* Enhanced focus styles for better accessibility */
-/* Every focusable thing, not just button/a — the board and event cards
-   are focusable divs and were falling through to the browser's default
-   orange ring. Colour comes from the --ring token so the two palettes
-   stay in one place. */
+/* One focus ring for every focusable thing, not just button and a, so a
+   focusable div never falls through to the browser's default ring. The
+   colour comes from the --ring token. */
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
@@ -191,53 +96,6 @@ textarea:focus-visible,
 [tabindex]:focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
-}
-
-/* Skeleton shimmer — transform-only so the browser composites on the GPU */
-@keyframes skeleton-shimmer {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(100%);
-  }
-}
-
-.skeleton {
-  position: relative;
-  overflow: hidden;
-  background-color: #161b22;
-}
-
-.skeleton::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 25%,
-    rgba(33, 38, 45, 0.8) 50%,
-    transparent 75%
-  );
-  animation: skeleton-shimmer 1.6s ease-in-out infinite;
-}
-
-/* Utility to hide native scrollbars */
-.hide-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-.hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-
-/* Ensure popups appear above everything */
-.popup-overlay {
-  z-index: 9999999 !important;
-}
-
-.popup-content {
-  z-index: 10000000 !important;
 }
 
 /* CanvasText (components/ui/canvas-text.tsx).
@@ -285,7 +143,7 @@ textarea:focus-visible,
 }
 
 /*
- * The terminal tile's block cursor (features/v2/about/terminal-tile.tsx).
+ * The terminal tile's block cursor (features/about/terminal-tile.tsx).
  * A hard on/off step, not a fade — a terminal cursor does not ease.
  */
 @keyframes terminal-cursor {
@@ -310,12 +168,10 @@ textarea:focus-visible,
 }
 
 /*
- * The hero word band (components/mascot/gh-marquee.tsx).
+ * The word band under the hero (features/home/gh-marquee.tsx).
  *
  * -50% across two identical halves, so the wrap lands exactly one half along
- * and is invisible. Distinct from `infinite-scroll` in tailwind.config.js,
- * which travels -100% and is still used by the v1 auto-scroll gallery, where
- * the animated element is each row rather than the track.
+ * and is invisible.
  */
 @keyframes gh-marquee {
   to {
@@ -331,7 +187,7 @@ textarea:focus-visible,
   }
 }
 
-/* Listing to project page (features/v2/projects/transition.tsx). The shared
+/* Listing to project page (features/site/transition.tsx). The shared
    cover and title glide on an ease-out with no bounce; the rest of the page
    cross-fades faster underneath so the moving pieces are what the eye
    follows. */

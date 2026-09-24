@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
-import { FormPage } from "@/features/v2/forms/form-page"
-import { ProposalForm } from "@/features/v2/proposals/proposal-form"
+import { FormPage } from "@/features/forms/form-page"
+import { ProposalForm } from "@/features/proposals/proposal-form"
 
 export const metadata: Metadata = {
   title: "Propose a project | GitHub Community GITAM",

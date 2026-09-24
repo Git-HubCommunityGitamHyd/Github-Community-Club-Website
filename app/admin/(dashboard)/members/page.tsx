@@ -3,7 +3,7 @@ import { listMembers } from "@/lib/db/members"
 import { Button } from "@/components/ui/button"
 import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"
-import { MemberAvatar } from "@/features/v2/people/member-avatar"
+import { MemberAvatar } from "@/features/people/member-avatar"
 import { requireAdminPage } from "@/lib/auth/require-admin"
 
 export default async function AdminMembersPage() {

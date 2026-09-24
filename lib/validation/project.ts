@@ -1,5 +1,5 @@
-import { PROJECT_STATUSES } from "@/features/v2/projects/statuses"
-import { PROJECT_ROLES } from "@/features/v2/projects/roles"
+import { PROJECT_STATUSES } from "@/features/projects/statuses"
+import { PROJECT_ROLES } from "@/features/projects/roles"
 import type { ProjectInput, TeamEntry } from "@/lib/db/projects"
 
 export type ProjectFormInput = {

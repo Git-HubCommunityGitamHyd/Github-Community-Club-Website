@@ -8,7 +8,7 @@ import {
   JOURNEY_ICONS,
   JOURNEY_ICON_KEYS,
   journeyIcon,
-} from "@/features/v2/journey/icons"
+} from "@/features/journey/icons"
 import type { JourneyEntry } from "@/lib/db/journey"
 
 const inputClass =

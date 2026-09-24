@@ -5,21 +5,21 @@ import type { ReactNode } from "react"
 import { CalendarCheck, Github, Globe, Star } from "lucide-react"
 import { getPublicBuildBySlug } from "@/lib/db/builds"
 import { parseRepo, refreshStaleBuildCommitCounts } from "@/lib/github/commits"
-import { monthLabel, weekLabel } from "@/features/v2/builds/keys"
-import { stackOf } from "@/features/v2/builds/format"
-import { BuildGallery } from "@/features/v2/builds/build-gallery"
-import { BuildFaces, BuildPeople } from "@/features/v2/builds/build-people"
-import { ProjectsPageChrome } from "@/features/v2/projects/page-chrome"
-import { ProjectsBackLink } from "@/features/v2/projects/back-link"
-import { ProjectProse } from "@/features/v2/projects/prose"
-import { CommitCount } from "@/features/v2/projects/commit-count"
-import { TransitionSettled } from "@/features/v2/projects/transition"
-import { buildTransitionName } from "@/features/v2/projects/transition-name"
-import { Block, NotesFrame, rise } from "@/features/v2/projects/page-block"
-import { LinkCard } from "@/features/v2/projects/link-card"
-import { TechStack } from "@/features/v2/tech/tech-stack"
+import { monthLabel, weekLabel } from "@/features/builds/keys"
+import { stackOf } from "@/features/builds/format"
+import { BuildGallery } from "@/features/builds/build-gallery"
+import { BuildFaces, BuildPeople } from "@/features/builds/build-people"
+import { PageChrome } from "@/features/site/page-chrome"
+import { BackLink } from "@/features/site/back-link"
+import { ProjectProse } from "@/features/projects/prose"
+import { CommitCount } from "@/features/site/commit-count"
+import { TransitionSettled } from "@/features/site/transition"
+import { buildTransitionName } from "@/features/site/transition-name"
+import { Block, NotesFrame, rise } from "@/features/site/page-block"
+import { LinkCard } from "@/features/site/link-card"
+import { TechStack } from "@/features/tech/tech-stack"
 import { SectionTexture } from "@/components/ui/texture"
-import { MascotSlot } from "@/features/v2/mascot/mascot-slot"
+import { MascotSlot } from "@/features/mascot/mascot-slot"
 
 export const dynamic = "force-dynamic"
 
@@ -153,13 +153,13 @@ export default async function BuildPage({
   }
 
   return (
-    <ProjectsPageChrome>
+    <PageChrome>
       <TransitionSettled />
       <article className="relative">
         <SectionTexture />
         <div className="relative mx-auto max-w-5xl px-4 pb-28 pt-36 sm:px-6 lg:px-8">
           <div className="project-rise" style={rise(0)}>
-            <ProjectsBackLink href="/builds">All builds</ProjectsBackLink>
+            <BackLink href="/builds">All builds</BackLink>
           </div>
 
           <header className="mt-4 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
@@ -229,6 +229,6 @@ export default async function BuildPage({
           </div>
         </div>
       </article>
-    </ProjectsPageChrome>
+    </PageChrome>
   )
 }

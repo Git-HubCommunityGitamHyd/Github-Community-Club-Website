@@ -5,8 +5,8 @@ import {
   PROPOSAL_STATUS_KEYS,
   labelOf,
   proposalStatus,
-} from "@/features/v2/proposals/keys"
-import { studentYear } from "@/features/v2/forms/student"
+} from "@/features/proposals/keys"
+import { studentYear } from "@/features/forms/student"
 import { Button } from "@/components/ui/button"
 import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"

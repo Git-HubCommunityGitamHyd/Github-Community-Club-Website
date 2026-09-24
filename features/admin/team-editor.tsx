@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { ArrowDown, ArrowUp, Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { PROJECT_ROLES, PROJECT_ROLE_KEYS } from "@/features/v2/projects/roles"
+import { PROJECT_ROLES, PROJECT_ROLE_KEYS } from "@/features/projects/roles"
 import type { Member } from "@/lib/db/members"
 
 const inputClass =

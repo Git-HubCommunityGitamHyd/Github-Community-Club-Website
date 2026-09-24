@@ -1,3 +1,4 @@
+import { isCloudinaryImage } from "@/lib/validation/image"
 import {
   BUILD_IMAGES_MAX,
   BUILD_ROLES,
@@ -6,7 +7,7 @@ import {
   type Credit,
   BUILD_UPLOAD_FOLDER,
   mondayOf,
-} from "@/features/v2/builds/keys"
+} from "@/features/builds/keys"
 import type { BuildReview, BuildSubmission } from "@/lib/db/builds"
 import { validateStudent } from "./student"
 
@@ -104,15 +105,7 @@ function url(
  * upload signature is restricted to.
  */
 export function isAllowedImage(raw: string, publicUpload: boolean): boolean {
-  try {
-    const parsed = new URL(raw)
-    if (parsed.protocol !== "https:") return false
-    if (parsed.hostname !== "res.cloudinary.com") return false
-    if (!parsed.pathname.includes("/image/upload/")) return false
-    return !publicUpload || parsed.pathname.includes(`/${BUILD_UPLOAD_FOLDER}/`)
-  } catch {
-    return false
-  }
+  return isCloudinaryImage(raw, publicUpload ? BUILD_UPLOAD_FOLDER : undefined)
 }
 
 function images(

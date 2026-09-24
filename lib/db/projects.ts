@@ -1,6 +1,6 @@
 import { getDb } from "./client"
 import type { Member } from "./members"
-import { projectRole } from "@/features/v2/projects/roles"
+import { projectRole } from "@/features/projects/roles"
 
 /**
  * `tags` is stored as JSON-encoded TEXT because SQLite has no array type. The

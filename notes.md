@@ -1822,3 +1822,72 @@ in the homepage marquee, rather than brand colours, which would put a dozen
 accents on one page. Aliases were checked for collisions, and one was
 removed on purpose: D1 had been aliased to SQLite, which would have
 relabelled the club's own "D1" on the page.
+
+
+## Phase 31 - one homepage
+
+The redesign was built beside the original at `/v2` so `/` never went dark
+mid-rebuild. With the design finished that scaffolding became the problem:
+two homepages, a `features/v2` tree beside a `features/home` tree whose
+footer and nav constants v2 still borrowed, and inner pages that were never
+under `/v2` and so never got its Geist font. Promoting v2 meant deleting v1
+rather than keeping it behind a flag, so nothing is named after a version any
+more.
+
+The import graph drove the deletion: every file reachable only from the old
+`app/page.tsx` and `app/loading.tsx` went. The v1 skeleton loader went with
+it rather than being redrawn, since a skeleton shaped like the wrong page is
+worse than none.
+
+Structure is one folder per domain, plus `features/site` for what every page
+shares (chrome, nav, smooth scroll, dialogs, transitions). The pieces the
+project page lent to build pages (block, link card, commit count, back link,
+transitions) moved to `site` because they were never project-specific.
+
+The link audit found the footer's section links were bare `#about`, which
+only work on the homepage; on inner pages they did nothing. `/#about` works
+from both, as a hash change on the homepage and a navigation elsewhere. Same
+fix for the wordmark. `#top` is the HTML spec's name for the top of the
+document, so "Back to top" needs no element to exist.
+
+`/v2` redirects permanently because preview links were shared.
+
+
+## Phase 32 - board photos in the CMS
+
+The board already had a full CMS; what it lacked was photo handling worth
+the name. The photo shows in two very different crops (a near-square tile in
+black and white on the homepage, a circle inside a ring in the profile), so
+the form previews both instead of a 56px thumbnail. Uploads fail for reasons
+an admin can act on (uploads not configured, file too big), so the field
+reports the reason rather than "Upload failed".
+
+Photos of people should not ship in the repository: they live in the CMS
+now, the bundled files are deleted, and a migration clears rows that pointed
+at them so the page falls back to initials rather than broken images. Image
+URLs for board and members are restricted to Cloudinary because next/image
+400s on any host not in next.config.js; the restriction turns that into a
+form error. Events and projects keep accepting seed URLs because their seed
+rows still use them.
+
+Admin uploads go into one Cloudinary folder per kind so the media library is
+browsable and a folder can be cleaned up alone. This is backward compatible:
+a Worker older than the folder support signs only the timestamp, and the
+upload still succeeds without a folder.
+
+
+## Phase 33 - event photos, and where media lives
+
+The user settled it: Cloudinary holds all media, Cloudflare hosts the site
+and D1. So event photos follow the board's path: bundled files deleted,
+validation restricted to Cloudinary, and a migration that removes only the
+dead `/images/events/` entries from each JSON list (via json_each, keeping
+order), so an event that already has uploaded photos keeps them.
+
+The photo editor makes the cover explicit, because the first photo was
+already the cover on the card and in the popup, but nothing in the form said
+so; reordering was only possible by deleting and re-uploading. Batch upload
+checks every file before sending any, so one oversized file does not leave
+half a batch uploaded, and the form appends with a functional update because
+the upload calls back once per file.
+

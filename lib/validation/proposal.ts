@@ -3,7 +3,7 @@ import {
   PROPOSAL_FORMATS,
   PROPOSAL_HELP,
   PROPOSAL_STATUSES,
-} from "@/features/v2/proposals/keys"
+} from "@/features/proposals/keys"
 import type { ProposalInput, ProposalReview } from "@/lib/db/proposals"
 import { firstName, validateStudent } from "./student"
 

@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // The redesign was previewed at /v2 before it replaced the homepage. Links
+  // to it were shared, so they land on / instead of a 404.
+  async redirects() {
+    return [{ source: "/v2", destination: "/", permanent: true }]
+  },
   images: {
     formats: ["image/webp", "image/avif"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -11,18 +16,6 @@ const nextConfig = {
     unoptimized: false,
     qualities: [75, 95],
     remotePatterns: [
-      {
-        protocol: "http",
-        hostname: "localhost",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "localhost",
-        port: "",
-        pathname: "/**",
-      },
       {
         protocol: "https",
         hostname: "res.cloudinary.com",

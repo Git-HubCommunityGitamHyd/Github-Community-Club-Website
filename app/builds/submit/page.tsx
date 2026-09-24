@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
-import { FormPage } from "@/features/v2/forms/form-page"
-import { BuildForm } from "@/features/v2/builds/build-form"
+import { FormPage } from "@/features/forms/form-page"
+import { BuildForm } from "@/features/builds/build-form"
 
 export const metadata: Metadata = {
   title: "Submit a build | GitHub Community GITAM",

@@ -7,14 +7,14 @@ import { cn } from "@/lib/utils"
 
 /**
  * The 21st.dev infinite slider, kept as the generic primitive it is — the
- * marquee that uses it lives in features/v2/about/tool-marquee.tsx.
+ * marquee that uses it lives in features/about/tool-marquee.tsx.
  *
  * Two changes from the snippet.
  *
  * It imports from `framer-motion` rather than `motion/react`. Those are the
  * same library under two package names, and installing both would put two
  * animation runtimes in the bundle with separate contexts — the
- * `MotionConfig reducedMotion="user"` that wraps the v2 tree would not reach
+ * `MotionConfig reducedMotion="user"` that wraps every page would not reach
  * anything rendered through the other one, silently undoing the reduced-motion
  * work. The API is identical, so this is an import path and nothing else.
  *

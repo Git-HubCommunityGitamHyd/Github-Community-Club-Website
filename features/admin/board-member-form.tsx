@@ -3,13 +3,11 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 import { ImageUploadField } from "@/features/admin/image-upload-field"
+import { MemberAvatar } from "@/features/people/member-avatar"
 import type { BoardMember } from "@/lib/db/board-members"
-import {
-  BOARD_ACCENTS,
-  BOARD_ACCENT_KEYS,
-  boardAccent,
-} from "@/features/v2/board/accents"
+import { BOARD_ACCENTS, BOARD_ACCENT_KEYS } from "@/features/board/accents"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -118,11 +116,77 @@ export function BoardMemberForm({ initial }: { initial?: BoardMember }) {
         )}
       </div>
 
-      <ImageUploadField
-        label="Photo"
-        value={form.imageUrl}
-        onChange={(url) => set("imageUrl", url)}
-      />
+      {/* Photo and ring together, with previews of both places the photo
+          appears: the homepage tile (black and white until hovered, cropped
+          near-square) and the profile popup (a circle inside the ring). A
+          photo that works in one can be cropped badly in the other. */}
+      <fieldset className="rounded-lg border border-gh-border p-4">
+        <legend className="px-1 text-sm font-medium text-gh-muted">
+          Photo and profile ring
+        </legend>
+        <div className="mb-5 flex flex-wrap items-end gap-5">
+          <BoardTilePreview
+            name={form.name}
+            src={form.imageUrl}
+            grey
+            caption="Homepage"
+          />
+          <BoardTilePreview
+            name={form.name}
+            src={form.imageUrl}
+            caption="On hover"
+          />
+          <div className="flex flex-col items-center gap-2">
+            <MemberAvatar
+              person={{
+                name: form.name || "?",
+                image_url: form.imageUrl,
+                accent: form.accent,
+              }}
+              size={96}
+              spin="always"
+            />
+            <span className="text-xs text-gh-muted">Profile</span>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <ImageUploadField
+            label="Photo"
+            folder="board"
+            preview={false}
+            value={form.imageUrl}
+            onChange={(url) => set("imageUrl", url)}
+            hint="Square, at least 600 × 600 px, face in the middle. Without one, the homepage shows their initials and the profile an identicon."
+          />
+          {errors.imageUrl && (
+            <p className="text-sm text-red-500">{errors.imageUrl}</p>
+          )}
+          <div>
+            <label className={labelClass} htmlFor="accent">
+              Profile ring
+            </label>
+            {/* A dropdown of known keys, not a colour picker: the ring is
+                stored as a key so the page owns what each one renders as. A
+                free hex field would put a colour that belongs to no palette
+                on the site, permanently, the first time anybody used it. */}
+            <select
+              id="accent"
+              className={inputClass}
+              value={form.accent}
+              onChange={(e) => set("accent", e.target.value)}
+            >
+              {BOARD_ACCENT_KEYS.map((key) => (
+                <option key={key} value={key}>
+                  {BOARD_ACCENTS[key].label}
+                </option>
+              ))}
+            </select>
+            {errors.accent && (
+              <p className="mt-1 text-sm text-red-500">{errors.accent}</p>
+            )}
+          </div>
+        </div>
+      </fieldset>
 
       <div>
         <label className={labelClass} htmlFor="description">
@@ -198,45 +262,6 @@ export function BoardMemberForm({ initial }: { initial?: BoardMember }) {
         </div>
       </div>
 
-      <div>
-        <label className={labelClass} htmlFor="accent">
-          Photo ring
-        </label>
-        <div className="flex items-center gap-3">
-          {/* A live swatch of the actual gradient, because the names alone
-              ("Aurora", "Ember") do not tell you what you are choosing. */}
-          <span
-            aria-hidden="true"
-            className="size-10 shrink-0 rounded-full"
-            style={{
-              background: `conic-gradient(from 0deg, ${boardAccent(form.accent).stops.join(", ")})`,
-            }}
-          />
-          {/* A dropdown of known keys, not a colour picker: the ring is stored
-              as a key so the page owns what each one renders as. A free hex
-              field would put a colour that belongs to no palette on the site,
-              permanently, the first time anybody used it. */}
-          <select
-            id="accent"
-            className={inputClass}
-            value={form.accent}
-            onChange={(e) => set("accent", e.target.value)}
-          >
-            {BOARD_ACCENT_KEYS.map((key) => (
-              <option key={key} value={key}>
-                {BOARD_ACCENTS[key].label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <p className="mt-1 text-sm text-gh-muted">
-          Shown around their photo when someone opens their profile.
-        </p>
-        {errors.accent && (
-          <p className="mt-1 text-sm text-red-500">{errors.accent}</p>
-        )}
-      </div>
-
       {serverError && <p className="text-sm text-red-500">{serverError}</p>}
 
       <div className="flex gap-3">
@@ -252,5 +277,50 @@ export function BoardMemberForm({ initial }: { initial?: BoardMember }) {
         </Button>
       </div>
     </form>
+  )
+}
+
+/** The homepage board tile, at a fixed small size, as it will crop the photo. */
+function BoardTilePreview({
+  name,
+  src,
+  grey = false,
+  caption,
+}: {
+  name: string
+  src: string | null
+  grey?: boolean
+  caption: string
+}) {
+  const initials = name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0] ?? "")
+    .join("")
+    .toUpperCase()
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div
+        className="relative w-[104px] overflow-hidden rounded-xl bg-gh-elevated"
+        style={{ aspectRatio: "13 / 14" }}
+      >
+        {src ? (
+          <Image
+            src={src}
+            alt=""
+            fill
+            sizes="104px"
+            className={
+              grey ? "object-cover brightness-[0.78] grayscale" : "object-cover"
+            }
+          />
+        ) : (
+          <span className="flex h-full w-full items-center justify-center font-mono text-lg font-bold text-gh-muted">
+            {initials || "?"}
+          </span>
+        )}
+      </div>
+      <span className="text-xs text-gh-muted">{caption}</span>
+    </div>
   )
 }

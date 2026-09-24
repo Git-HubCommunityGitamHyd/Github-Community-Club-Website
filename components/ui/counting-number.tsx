@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils"
  * It imports from `framer-motion` rather than `motion/react` — the same
  * library under two package names. Installing both would put two animation
  * runtimes in the bundle with separate contexts, so the
- * `MotionConfig reducedMotion="user"` wrapping the v2 tree would not reach
+ * `MotionConfig reducedMotion="user"` wrapping every page would not reach
  * anything rendered through the other one.
  *
  * `autoStart` defaults to false rather than true. Starting on mount means a

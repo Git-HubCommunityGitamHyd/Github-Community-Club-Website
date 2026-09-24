@@ -9,7 +9,7 @@ import {
   PROPOSAL_FORMATS,
   PROPOSAL_STATUS_KEYS,
   proposalStatus,
-} from "@/features/v2/proposals/keys"
+} from "@/features/proposals/keys"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"

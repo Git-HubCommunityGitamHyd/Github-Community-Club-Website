@@ -1283,8 +1283,146 @@ optimisation.
       DB resolves to a logo; browser check of both pages
 
 
-- [ ] Promote `/v2` to `/` — the font rides along with it
+## Phase 31 - retire v1, promote v2 to `/`, restructure for production - DONE
+
+- [x] v1 homepage deleted outright: `app/page.tsx` (old), `app/loading.tsx`
+      and its skeleton, `features/home` v1 sections and nav, `features/board`
+      and `features/events` flip cards, the v1 join form, `components/motion/*`,
+      `components/mascot/gh-mascot-dock.tsx` and `mascot-glow.tsx`,
+      `components/ui/badge.tsx`, the unused `status-pill.tsx`, and the v1-only
+      CSS (flip cards, gallery scrollbars, skeleton, popup z-index) and the
+      `infinite-scroll` Tailwind animation
+- [x] `/v2` is now `/`: `app/v2/page.tsx` → `app/page.tsx`, Geist moved from
+      `app/v2/layout.tsx` to the root layout (so inner pages and the admin get
+      it too; before, they fell back to the system font). `/v2` 308s to `/`
+      (`next.config.js`) for links that were shared
+- [x] `features/v2/*` moved to one folder per domain; shared chrome in
+      `features/site/` (navbar, footer, nav.ts, page-chrome, smooth-scroll,
+      dialog-shell, transitions, back-link, page-block, link-card,
+      commit-count); homepage in `features/home/` (`home-page.tsx`,
+      `sections/*`); mascot pieces from `components/mascot` and
+      `features/v2/mascot` merged into `features/mascot/`
+- [x] Names without version prefixes: `V2Page` → `HomePage`, `V2Navbar` →
+      `SiteNavbar`, `V2*Section` → `*Section`, `V2Mascot` → `HomeMascot`,
+      `V2JoinForm` → `JoinForm`, `ProjectsPageChrome` → `PageChrome`,
+      `ProjectsBackLink` → `BackLink`, `QRPopupCard` → `QrDialog`,
+      `FooterSection` → `SiteFooter`, `Team2Card` → `MemberCard`
+      (`components/ui/member-card.tsx`), `V2_NAV_OFFSET` → `NAV_OFFSET`
+- [x] Cloudflare untouched: `wrangler.jsonc`, `open-next.config.ts`,
+      `cloudflare-env.d.ts`, `workers/cloudinary-sign`, D1 scripts
+- [x] Links that only worked on the homepage fixed: the footer's section
+      links were bare `#about` (dead on every inner page), now `/#about` via
+      `next/link`; "Back to top" was `#hero`, now `#top`; the navbar wordmark
+      was `#hero` everywhere, now `/` on inner pages. Footer gains a Pages
+      column (Members, Projects, Proposals, Builds), which are not in the nav
+- [x] Nav items in one place (`features/site/nav.ts`) instead of three copies
+- [x] Easter egg removed (user request, mid-phase). It had also been dead
+      since the redesign: its selector wanted a `.z-50` wrapper the mascot no
+      longer had
+- [x] Unused `shadcn-ui` devDependency (the deprecated CLI) removed
+- [x] README rewritten (it described the v1 page, Next 14 and files that no
+      longer exist); CLAUDE.md layout, content and palette sections rewritten
+
+### Checks
+- [x] tsc, eslint, `next build` all clean (every route compiles)
+- [x] Crawled every public page from `/` (18 pages): all 200; every internal
+      link and every `/#id` anchor resolves; `/v2` → 308 `/`; 404 for unknown
+- [x] Public GET APIs 200; `/admin` and `/admin/builds` still 307 to login
+      logged out; admin POST 401
+- [x] Browser: fresh homepage load has no errors, all ten sections, Geist;
+      footer `/#board` from `/builds` lands on the homepage board; navbar
+      "Join →" from `/projects` lands on `/#join`; QR dialog opens
+- [ ] Smooth-scroll and dialog exit animations not observable (the browser
+      pane was hidden, 0 frames per second); the code for them is unchanged
+
+### Follow-ups
+- [ ] `wrangler.jsonc`: the Worker is named `github-community-website` but
+      `WORKER_SELF_REFERENCE` points at service `github-community-portfolio`.
+      Confirm which name is deployed before the next deploy; left as is
+- [ ] Root metadata description still says "building the future of open
+      source", which oversells (club facts). Part of the security and
+      optimisation pass, with og tags
+
+## Phase 32 - cleanup, board photos managed in the CMS - DONE
+
+- [x] Removed what nothing used: `github-octocat/` (the raw model download;
+      the site loads `public/models/github-octocat.glb`), `.cursor/` (a stale
+      plan), `tsconfig.tsbuildinfo`, and the `localhost` image hosts in
+      `next.config.js`. No unreachable source files and no unused exports
+      remain (checked by import graph)
+- [x] What existed: `/admin/board` already had add/edit/delete for name,
+      role, photo, description, GitHub, LinkedIn, email, sort order and ring.
+      Missing: real photo management, and the photos themselves shipped in
+      `public/images/board/`
+- [x] Board form: a "Photo and profile ring" block with live previews of
+      both places the photo shows (homepage tile in black and white and on
+      hover, and the profile circle inside the chosen ring)
+- [x] Upload field (every CMS form): drag and drop, JPG/PNG/WebP up to 8 MB
+      checked before uploading, the real error shown (uploads not configured,
+      signing service unreachable, Cloudinary's own reason), replace/remove
+- [x] Admin uploads go into per-kind Cloudinary folders (board, members,
+      projects, events, builds); `/api/admin/upload-sign` refuses unknown
+      folders and also signs the allowed formats
+- [x] Board and member image URLs must be Cloudinary URLs
+      (`lib/validation/image.ts`, shared with the build validator)
+- [x] Admin board list shows each photo and how many are missing
+- [x] `public/images/board/` deleted; migration
+      `2026-09-board-photos-to-cms.sql` clears rows pointing at it (board and
+      members), applied locally
+
+### Checks
+- [x] tsc, eslint, next build clean
+- [x] Homepage board renders initials for all five, no broken images;
+      `/`, `/members` no longer reference `/images/board`
+- [x] `/admin/board` 307 logged out; upload-sign 401 logged out
+- [ ] Admin screens not clicked (needs the password); upload not tried
+      end to end (needs the Worker and Cloudinary credentials)
+
+### Follow-ups
+- [ ] Upload the real board photos through `/admin/board` (the old files are
+      in git history: `git show HEAD:public/images/board/<file>`)
+- [ ] Run `2026-09-board-photos-to-cms.sql` on production at deploy time,
+      after the photos are uploaded there, or the live board shows initials
+- [x] Event photos moved to the CMS too (Phase 33)
+- [ ] Redeploy `workers/cloudinary-sign` so admin folders take effect (an
+      older Worker ignores them and uploads still work, into the root)
+
+## Phase 33 - event photos in the CMS - DONE
+
+- [x] Decided (user): Cloudinary stays for all media; Cloudflare is for
+      hosting and D1. R2 is not used
+- [x] Event form photos: an ordered list, first is the cover (badged), move
+      earlier/later, make cover, remove; several files per upload (checked
+      as a batch before any is sent); 12 at most
+- [x] Upload field gains `multiple` (one onChange per finished file)
+- [x] Event image URLs must be Cloudinary, max 12 (`lib/validation/event.ts`)
+- [x] Admin events list shows the cover and photo count, and how many events
+      have none
+- [x] `public/images/events/` deleted; `public/` now holds site assets only.
+      Migration `2026-09-event-photos-to-cms.sql` drops `/images/events/`
+      entries from each list and keeps any Cloudinary URLs in order (tested
+      on sample rows), applied locally
+
+### Checks
+- [x] tsc, eslint, prettier, next build clean
+- [x] Homepage events: five cards, category glyph covers, no broken images
+- [ ] Admin form not clicked (password); upload not tried end to end
+
+### Follow-ups
+- [ ] Upload the real event photos through `/admin/events` (old files:
+      `git show HEAD:public/images/events/<file>`), then run the migration on
+      production
+
+## Open items
+
+- [x] Promote `/v2` to `/` (Phase 31)
 - [ ] Replace the seeded board and event rows with the real ones through
       `/admin/board` and `/admin/events`
 - [ ] Mobile responsiveness pass (still deferred by request)
 - [x] Members page (Phase 24)
+- [ ] Security and optimisation pass (next, per the user): rate limiting and
+      Turnstile on `/api/proposals`, `/api/builds`, `/api/builds/upload-sign`;
+      upload size cap; purge images of declined builds
+- [ ] Deploy: site (carries the admin leak fix), `workers/cloudinary-sign`,
+      and remote migrations in order: project-team, teams, member-tagline,
+      proposals-builds, tracking-links, build-pages

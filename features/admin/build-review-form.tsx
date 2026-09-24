@@ -16,7 +16,7 @@ import {
   BUILD_STATUS_KEYS,
   weekLabel,
   type Credit,
-} from "@/features/v2/builds/keys"
+} from "@/features/builds/keys"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -463,6 +463,7 @@ export function BuildReviewForm({
         </div>
         {form.images.length < BUILD_IMAGES_MAX && (
           <ImageUploadField
+            folder="builds"
             label="Add an image"
             value={null}
             onChange={(url) => url && set("images", [...form.images, url])}

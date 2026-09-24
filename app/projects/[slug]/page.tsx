@@ -5,23 +5,23 @@ import type { ReactNode } from "react"
 import { Github, Globe } from "lucide-react"
 import { getProjectBySlug, listProjectTeam } from "@/lib/db/projects"
 import { parseRepo, refreshStaleCommitCounts } from "@/lib/github/commits"
-import { ProjectsPageChrome } from "@/features/v2/projects/page-chrome"
-import { ProjectsBackLink } from "@/features/v2/projects/back-link"
-import { ProjectStatusBadge } from "@/features/v2/projects/status-badge"
-import { ProjectProse } from "@/features/v2/projects/prose"
-import { CommitCount } from "@/features/v2/projects/commit-count"
+import { PageChrome } from "@/features/site/page-chrome"
+import { BackLink } from "@/features/site/back-link"
+import { ProjectStatusBadge } from "@/features/projects/status-badge"
+import { ProjectProse } from "@/features/projects/prose"
+import { CommitCount } from "@/features/site/commit-count"
 import {
   ProjectAvatars,
   ProjectPeople,
   ProjectTeamList,
-} from "@/features/v2/projects/people"
-import { TransitionSettled } from "@/features/v2/projects/transition"
-import { transitionName } from "@/features/v2/projects/transition-name"
-import { Block, NotesFrame, rise } from "@/features/v2/projects/page-block"
-import { LinkCard } from "@/features/v2/projects/link-card"
-import { TechStack } from "@/features/v2/tech/tech-stack"
+} from "@/features/projects/people"
+import { TransitionSettled } from "@/features/site/transition"
+import { transitionName } from "@/features/site/transition-name"
+import { Block, NotesFrame, rise } from "@/features/site/page-block"
+import { LinkCard } from "@/features/site/link-card"
+import { TechStack } from "@/features/tech/tech-stack"
 import { SectionTexture } from "@/components/ui/texture"
-import { MascotSlot } from "@/features/v2/mascot/mascot-slot"
+import { MascotSlot } from "@/features/mascot/mascot-slot"
 
 export const dynamic = "force-dynamic"
 
@@ -150,14 +150,14 @@ export default async function ProjectPage({
   }
 
   return (
-    <ProjectsPageChrome>
+    <PageChrome>
       <TransitionSettled />
       <ProjectPeople team={team} projectName={project.name}>
         <article className="relative">
           <SectionTexture />
           <div className="relative mx-auto max-w-5xl px-4 pb-28 pt-36 sm:px-6 lg:px-8">
             <div className="project-rise" style={rise(0)}>
-              <ProjectsBackLink href="/projects">All projects</ProjectsBackLink>
+              <BackLink href="/projects">All projects</BackLink>
             </div>
 
             <header className="mt-4 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
@@ -212,6 +212,6 @@ export default async function ProjectPage({
           </div>
         </article>
       </ProjectPeople>
-    </ProjectsPageChrome>
+    </PageChrome>
   )
 }

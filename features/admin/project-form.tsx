@@ -5,10 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { StackPreview } from "@/features/admin/stack-preview"
 import { ImageUploadField } from "@/features/admin/image-upload-field"
-import {
-  PROJECT_STATUSES,
-  projectStatus,
-} from "@/features/v2/projects/statuses"
+import { PROJECT_STATUSES, projectStatus } from "@/features/projects/statuses"
 import { slugify } from "@/lib/validation/project"
 import type { Project, TeamMember } from "@/lib/db/projects"
 import type { Member } from "@/lib/db/members"
@@ -324,6 +321,7 @@ export function ProjectForm({
         </div>
 
         <ImageUploadField
+          folder="projects"
           label="Cover image"
           value={form.coverImage}
           onChange={(url) => set("coverImage", url ?? "")}
@@ -416,6 +414,7 @@ export function ProjectForm({
         </div>
 
         <ImageUploadField
+          folder="projects"
           label="Preview image"
           value={form.previewImage}
           onChange={(url) => set("previewImage", url ?? "")}

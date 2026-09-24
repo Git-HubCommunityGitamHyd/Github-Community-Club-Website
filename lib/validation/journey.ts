@@ -1,4 +1,4 @@
-import { JOURNEY_ICONS } from "@/features/v2/journey/icons"
+import { JOURNEY_ICONS } from "@/features/journey/icons"
 
 export type JourneyFormInput = {
   entryDate: string

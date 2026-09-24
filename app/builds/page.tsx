@@ -2,12 +2,12 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Upload } from "lucide-react"
 import { listPublicBuilds } from "@/lib/db/builds"
-import { mondayOf } from "@/features/v2/builds/keys"
-import { ProjectsPageChrome } from "@/features/v2/projects/page-chrome"
-import { ProjectsBackLink } from "@/features/v2/projects/back-link"
-import { MascotSlot } from "@/features/v2/mascot/mascot-slot"
+import { mondayOf } from "@/features/builds/keys"
+import { PageChrome } from "@/features/site/page-chrome"
+import { BackLink } from "@/features/site/back-link"
+import { MascotSlot } from "@/features/mascot/mascot-slot"
 import { SectionTexture } from "@/components/ui/texture"
-import { BuildsShowcase } from "@/features/v2/builds/builds-showcase"
+import { BuildsShowcase } from "@/features/builds/builds-showcase"
 
 // Reads D1 per request; see CLAUDE.md.
 export const dynamic = "force-dynamic"
@@ -22,7 +22,7 @@ export default async function BuildsPage() {
   const builds = await listPublicBuilds()
 
   return (
-    <ProjectsPageChrome>
+    <PageChrome>
       <section className="relative">
         <SectionTexture />
         <div
@@ -34,7 +34,7 @@ export default async function BuildsPage() {
           }}
         />
         <div className="relative mx-auto max-w-6xl px-4 pb-28 pt-40 sm:px-6 lg:px-8">
-          <ProjectsBackLink href="/#builds">Home</ProjectsBackLink>
+          <BackLink href="/#builds">Home</BackLink>
 
           <div className="mb-16 mt-8 flex items-end justify-between gap-10">
             <div>
@@ -81,6 +81,6 @@ export default async function BuildsPage() {
           )}
         </div>
       </section>
-    </ProjectsPageChrome>
+    </PageChrome>
   )
 }

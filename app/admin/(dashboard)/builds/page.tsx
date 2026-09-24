@@ -7,8 +7,8 @@ import {
   mondayOf,
   monthLabel,
   weekLabel,
-} from "@/features/v2/builds/keys"
-import { studentYear } from "@/features/v2/forms/student"
+} from "@/features/builds/keys"
+import { studentYear } from "@/features/forms/student"
 import { Button } from "@/components/ui/button"
 import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"

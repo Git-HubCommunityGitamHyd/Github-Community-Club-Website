@@ -1,15 +1,15 @@
 import type { Metadata } from "next"
 import { listMembersWithProjects } from "@/lib/db/members"
 import { listTeams } from "@/lib/db/teams"
-import { ProjectsPageChrome } from "@/features/v2/projects/page-chrome"
-import { ProjectsBackLink } from "@/features/v2/projects/back-link"
+import { PageChrome } from "@/features/site/page-chrome"
+import { BackLink } from "@/features/site/back-link"
 import {
   MembersDirectory,
   type MemberGroup,
-} from "@/features/v2/members/members-directory"
-import { MascotSlot } from "@/features/v2/mascot/mascot-slot"
+} from "@/features/members/members-directory"
+import { MascotSlot } from "@/features/mascot/mascot-slot"
 import { SectionTexture } from "@/components/ui/texture"
-import { IdenticonWall } from "@/features/v2/members/identicon-wall"
+import { IdenticonWall } from "@/features/members/identicon-wall"
 
 // Same reason as the homepage: without this Next freezes whatever D1 returned
 // during `next build`. See CLAUDE.md.
@@ -63,7 +63,7 @@ export default async function MembersPage() {
         }. Select anyone to see their team, what they have built and where to find them.`
 
   return (
-    <ProjectsPageChrome activeSection="board">
+    <PageChrome activeSection="board">
       <section className="relative">
         <SectionTexture />
         <IdenticonWall people={members} />
@@ -78,7 +78,7 @@ export default async function MembersPage() {
         />
         <div className="relative mx-auto max-w-6xl px-4 pb-28 pt-40 sm:px-6 lg:px-8">
           {/* Back to the board section, where the link to this page lives. */}
-          <ProjectsBackLink href="/#board">Home</ProjectsBackLink>
+          <BackLink href="/#board">Home</BackLink>
 
           <div className="mb-12 mt-8 flex items-end justify-between gap-10">
             <div>
@@ -104,6 +104,6 @@ export default async function MembersPage() {
           )}
         </div>
       </section>
-    </ProjectsPageChrome>
+    </PageChrome>
   )
 }

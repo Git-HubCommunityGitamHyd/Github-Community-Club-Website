@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Single-page Next.js 16 (App Router) site for the GitHub Community club at GITAM Hyderabad, plus a join-the-club onboarding form and a small in-house CMS (board members, events), all backed by Cloudflare D1 (SQLite) behind a password-protected admin portal.
+Next.js 16 (App Router) site for the GitHub Community club at GITAM Hyderabad: a long homepage, inner pages (members, projects, proposals, builds, private tracking pages), a join form, and an in-house CMS for all of it, backed by Cloudflare D1 (SQLite) behind a password-protected admin portal.
 
 The app itself is deployed as a Cloudflare Worker via `@opennextjs/cloudflare` (OpenNext) — not Vercel. `wrangler.jsonc` is the Worker config (bindings for `DB`/`ASSETS`/`IMAGES`), `package.json`'s `deploy`/`preview`/`upload` scripts all go through `opennextjs-cloudflare`, and `next.config.js` calls `initOpenNextCloudflareForDev()` unconditionally so plain `next dev` also gets Cloudflare bindings (via wrangler's local Miniflare emulation) and reads `.dev.vars`.
 
@@ -11,35 +11,43 @@ There is no `src/` directory. Path alias `@/*` maps to the repo **root**. Do not
 ## Layout
 
 ```
-app/                 # routes only
-  page.tsx           # composes <HomePage />
+app/                   # routes only
+  page.tsx             # homepage: Promise.all over lib/db, renders <HomePage />
+  layout.tsx           # Geist fonts on <html>, metadata
+  members/ projects/ proposals/ builds/   # inner pages (server components)
   admin/
     login/
-    (dashboard)/     # URL unchanged; auth in layout.tsx
+    (dashboard)/       # CMS screens; every page calls requireAdminPage()
   api/
-features/            # domain UI (home, board, events, join, admin)
-components/
-  ui/                # shadcn primitives
-  mascot/            # 3D octocat, glow, easter egg, marquee
-  motion/            # scroll-stack, timeline, popups, particle text
-  theme/             # provider + toggle
+features/              # domain UI
+  home/                # home-page.tsx + sections/<id>.tsx, one per homepage section
+  site/                # shared chrome: navbar, footer, nav.ts, page-chrome (inner
+                       #   pages), smooth-scroll (Lenis), dialog-shell, transitions
+  mascot/              # 3D octocat, home-mascot (docks), page-mascot (inner pages)
+  about/ benefits/ board/ builds/ events/ forms/ join/ journey/ members/
+  people/ projects/ proposals/ tech/ tracking/ admin/
+components/ui/         # generic primitives (shadcn button/card, navbar shell, texture)
 lib/
-  db/                # one file per table
-  auth/              # session cookie + require-admin helpers
-  validation/        # one file per form
-workers/             # cloudinary-sign Worker (separate deploy)
-db/schema.sql
+  db/                  # one file per table
+  validation/          # one file per form
+  auth/                # session cookie + require-admin helpers
+workers/               # cloudinary-sign Worker (separate deploy)
+db/schema.sql          # plus db/migrations/ for ALTERs
 ```
 
-## Content: board members & events are DB-backed, not hardcoded
+There used to be two homepages: the original at `/` and a redesign built alongside it at `/v2`. The redesign replaced the original, everything only the original used was deleted, and `next.config.js` redirects `/v2` to `/`. Nothing should be named `v1`/`v2` any more.
 
-[`app/page.tsx`](app/page.tsx) is a Server Component: it loads `board_members` and `events` in parallel via `lib/db` (`Promise.all`) and passes them into the client [`HomePage`](features/home/home-page.tsx). It is `export const dynamic = "force-dynamic"` so the D1 query is not frozen at `next build`. [`app/loading.tsx`](app/loading.tsx) shows [`PageSkeleton`](features/home/page-skeleton.tsx) while that query runs. Public `GET /api/board-members` and `GET /api/events` stay for other clients. Homepage copy (`NAV_ITEMS`, stats, pillars, benefits, journey timeline) lives in [`features/home/content.ts`](features/home/content.ts). Each `id="hero"|about|…` block is a file under [`features/home/sections/`](features/home/sections/). Adding a homepage section means a new file there plus a line in `home-page.tsx` — do not grow `app/page.tsx` beyond composing `<HomePage />` and fetching.
+## Content is DB-backed, not hardcoded
 
-Manage CMS through `/admin/board`, `/admin/events` and `/admin/journey` (same shared-password auth as `/admin`). List/add/edit/delete pages live under `app/admin/(dashboard)/` and call `lib/db/board-members.ts` / `lib/db/events.ts` / `lib/db/journey.ts`. Validation lives in `lib/validation/board-member.ts` / `lib/validation/event.ts` / `lib/validation/journey.ts` / `lib/validation/application.ts` (plain function, `Record<string, string>` errors).
+[`app/page.tsx`](app/page.tsx) is a Server Component: it loads board members, events, journey entries, projects, members, public proposals and public builds in parallel via `lib/db` and passes them into the client [`HomePage`](features/home/home-page.tsx). Each homepage `<section id>` is a file under [`features/home/sections/`](features/home/sections/). Adding a homepage section means a new file there plus a line in `home-page.tsx`; do not grow `app/page.tsx` beyond fetching and composing. Nav items and the footer's page links live in [`features/site/nav.ts`](features/site/nav.ts).
 
-**Anything a CMS row selects from a fixed set is stored as a key, never as markup or a colour.** `events.category` → `categoryGlyph()`, `journey_entries.icon` → `JOURNEY_ICONS`, `board_members.accent` → `BOARD_ACCENTS`. The admin form offers the known keys as a `<select>`, validation rejects unknown ones, and the render path falls back rather than throwing. A free-text field here means a typo silently renders the default glyph, and a free hex field means a colour that belongs to no palette ends up on the site permanently.
+Inner pages wrap themselves in [`PageChrome`](features/site/page-chrome.tsx) (same navbar, footer and mascot). Links from inner pages to homepage sections are `/#<id>`, never bare `#<id>`, which would do nothing off the homepage.
 
-**`app/page.tsx`, `app/v2/page.tsx`, `app/api/board-members/route.ts`, `app/api/events/route.ts` and `app/api/journey/route.ts` are `export const dynamic = "force-dynamic"`.** Without that, Next.js statically prerenders them at _build_ time — which would freeze whatever the DB returned during `next build` instead of querying fresh per request. Hit this for real; don't drop the export.
+CMS screens live under `app/admin/(dashboard)/` (board, events, journey, projects, members, teams, proposals, builds) and call `lib/db/*`. Validation lives in `lib/validation/*` (plain functions, `Record<string, string>` errors).
+
+**Anything a CMS row selects from a fixed set is stored as a key, never as markup or a colour.** `events.category` → `categoryGlyph()`, `journey_entries.icon` → `JOURNEY_ICONS`, `board_members.accent` → `BOARD_ACCENTS`, project/proposal/build statuses and roles likewise. The admin form offers the known keys as a `<select>`, validation rejects unknown ones, and the render path falls back rather than throwing. Public queries select named columns, never `*`, so private fields (phone, reg no) cannot leak.
+
+**Every route that reads D1 is `export const dynamic = "force-dynamic"`** (`app/page.tsx`, the inner pages, the public `GET` API routes). Without that, Next.js statically prerenders them at _build_ time and freezes whatever the DB returned during `next build`. Hit this for real; don't drop the export.
 
 ### Adding another CMS type
 
@@ -59,26 +67,27 @@ Photos go to Cloudinary, not `public/images/`. The upload flow is deliberately i
 3. The Worker computes a Cloudinary signed-upload signature (SHA-1 via `crypto.subtle`, since Workers isn't a Node runtime) and returns it.
 4. The browser uploads the file directly to Cloudinary using that signature; the resulting `secure_url` is what gets stored in `image_url`/`images`.
 
+The public build form uses the same Worker through `POST /api/builds/upload-sign`, which needs no session, so its signature is restricted: the Worker signs a fixed `folder` (`build-submissions`) and `allowed_formats`, and `lib/validation/build.ts` only accepts image URLs inside that folder.
+
 `next.config.js` `remotePatterns` includes `res.cloudinary.com` for this reason — **any remote image host has to be added there or `next/image` 400s on it.**
 
-Images already in `public/images/{board,events}/` predate this and are the pre-CMS seed data; new content goes through Cloudinary instead.
+Admin uploads are signed into a per-kind folder (`board`, `members`, `projects`, `events`, `builds`; `lib/cloudinary/folders.ts`), and `/api/admin/upload-sign` refuses any other. Board, member and event image URLs must be Cloudinary URLs (`lib/validation/image.ts`). All media (board and member photos, event photos, project and build images) lives in Cloudinary and is managed through the CMS; `public/` holds only site assets (the Octocat model, logo, WhatsApp QR, doodle tile). Cloudflare is for hosting and D1, not media storage. Event photos are an ordered list whose first entry is the cover.
 
-## Dark theme: two parallel palettes
+## Palette: two parallel encodings
 
-The theme is hand-rolled (`components/theme/theme-provider.tsx` — React context + `localStorage` + `classList.toggle("dark")` via `useSyncExternalStore`), not `next-themes`. An inline anti-FOUC script in `app/layout.tsx` sets the class before paint.
+The site is dark only. The GitHub palette is encoded twice, and changing one does not change the other:
 
-Two systems encode the GitHub palette independently, and changing one does not change the other:
+- shadcn HSL CSS variables on `:root` in `app/globals.css` (used by `components/ui` primitives and the admin)
+- literal `gh.*` Tailwind colours (`bg-gh-surface`, `text-gh-muted`) from `tailwind.config.js` (used everywhere else)
 
-- shadcn HSL CSS variables under `.dark` in `app/globals.css`
-- literal `gh.*` Tailwind utilities (`dark:bg-gh-surface`, `dark:text-gh-muted`) from `tailwind.config.js`
-
-A color change usually needs both.
+A colour change usually needs both.
 
 ## Conventions
 
 - Path alias `@/*` maps to the repo **root**, not `./src` — there is no `src/`.
-- Components use **named** exports (`export function EnhancedTimeline`). Default exports only in `app/page.tsx`, `app/layout.tsx`, and route `page.tsx` files (plus a couple of vendored motion files that already default-export).
-- `app/page.tsx` is a Server Component (D1 fetch). Interactive chrome lives in `"use client"` `features/home/home-page.tsx`. Admin dashboard pages under `app/admin/(dashboard)/` are server components — they read D1 after the layout checks the session.
+- Components use **named** exports. Default exports only in `app/**/page.tsx` and `layout.tsx` (plus a vendored component or two that also default-export).
+- Helpers a Server Component calls must live in a plain module, not a `"use client"` file: calling an export of a client module from the server throws at runtime (`features/builds/format.ts` exists for this reason).
+- framer-motion is imported as `framer-motion`, never `motion/react`: two package names means two runtimes, and the `MotionConfig reducedMotion="user"` around every page would not reach the second one.
 - Prettier (`.prettierrc`) enforces no semicolons and double quotes. Run `npm run format`.
 
 ## Database (Cloudflare D1)
@@ -103,7 +112,7 @@ Page auth lives in `app/admin/(dashboard)/layout.tsx` via `requireAdminPage()` �
 
 ## Gotchas
 
-- **`overflow-x-hidden` silently breaks `position: sticky` inside it.** Setting `overflow` to `hidden` on one axis forces the other to `auto`, which makes the element a scroll container; every sticky descendant then resolves against a scrollport that never moves. `features/v2/v2-page.tsx` uses `overflow-x-clip`, which clips identically without establishing one. If something sticky in the v2 tree stops sticking, check this first.
+- **`overflow-x-hidden` silently breaks `position: sticky` inside it.** Setting `overflow` to `hidden` on one axis forces the other to `auto`, which makes the element a scroll container; every sticky descendant then resolves against a scrollport that never moves. `features/home/home-page.tsx` uses `overflow-x-clip`, which clips identically without establishing one. If something sticky stops sticking, check this first.
 - `tailwind.config.js` `content` must include `./features/**` (and `./app/**`, `./components/**`). Tailwind only emits classes it finds in those globs — after the homepage moved out of `app/page.tsx`, missing `features/` stripped the hero/stat/grid utilities and collapsed the layout.
 - `npm run lint` runs ESLint 9 via `eslint.config.mjs` (`eslint-config-next`). `next lint` was removed in Next.js 16.
 - The public `applications` table has a `UNIQUE` constraint on `email` — `app/api/applications/route.ts` catches D1's thrown error (message includes `"UNIQUE constraint failed"`, no `.code` field like Postgres had) and returns 409, don't let it bubble as a 500.

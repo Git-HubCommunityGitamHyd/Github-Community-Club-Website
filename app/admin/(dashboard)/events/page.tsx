@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { listEvents } from "@/lib/db/events"
 import { Button } from "@/components/ui/button"
 import { DeleteButton } from "@/features/admin/delete-button"
@@ -12,6 +13,9 @@ export default async function AdminEventsPage() {
   await requireAdminPage()
 
   const events = await listEvents()
+  const withoutPhotos = events.filter(
+    (event) => event.images.length === 0,
+  ).length
 
   return (
     <main className="min-h-screen bg-gh-bg px-4 py-10 text-gh-text">
@@ -26,10 +30,20 @@ export default async function AdminEventsPage() {
           </Link>
         </div>
 
+        {withoutPhotos > 0 && (
+          <p className="mb-4 rounded-md border border-gh-border bg-gh-surface px-4 py-3 text-sm text-gh-muted">
+            {withoutPhotos === 1
+              ? "1 event has no photos yet"
+              : `${withoutPhotos} events have no photos yet`}
+            . Their cards show the category glyph until one is uploaded.
+          </p>
+        )}
+
         <div className="overflow-x-auto rounded-lg border border-gh-border">
           <table className="w-full min-w-[700px] text-left text-sm">
             <thead className="bg-gh-surface">
               <tr>
+                <th className="w-24 px-4 py-3 font-medium">Photos</th>
                 <th className="px-4 py-3 font-medium">Title</th>
                 <th className="px-4 py-3 font-medium">Date</th>
                 <th className="px-4 py-3 font-medium">Category</th>
@@ -40,6 +54,26 @@ export default async function AdminEventsPage() {
             <tbody>
               {events.map((event) => (
                 <tr key={event.id} className="border-t border-gh-border">
+                  <td className="px-4 py-2">
+                    {event.images[0] ? (
+                      <div className="flex items-center gap-2">
+                        <Image
+                          src={event.images[0]}
+                          alt=""
+                          width={48}
+                          height={36}
+                          className="h-9 w-12 rounded-md object-cover"
+                        />
+                        <span className="text-xs text-gh-muted">
+                          {event.images.length}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="flex h-9 w-12 items-center justify-center rounded-md border border-dashed border-gh-border text-[10px] text-gh-muted">
+                        None
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{event.title}</td>
                   <td className="px-4 py-3">{event.event_date}</td>
                   <td className="px-4 py-3">{event.category}</td>
@@ -62,7 +96,7 @@ export default async function AdminEventsPage() {
               {events.length === 0 && (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-4 py-8 text-center text-gh-muted"
                   >
                     No events yet.

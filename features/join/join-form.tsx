@@ -1,18 +1,21 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { useRef, useState } from "react"
+import { FaRegCircleCheck } from "react-icons/fa6"
 import {
   validateApplication,
   type ApplicationFormInput,
 } from "@/lib/validation/application"
+import { cn } from "@/lib/utils"
 
-// text-base below sm: iOS Safari zooms the viewport on focus for anything under 16px
-const inputClass =
-  "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
-
-const labelClass = "mb-1 block text-sm font-medium text-gh-muted"
+// text-base below sm: iOS Safari zooms the viewport on focus for anything
+// under 16px.
+const FIELD =
+  "w-full rounded-xl border bg-gh-elevated px-4 py-3 text-base text-gh-text transition-colors placeholder:text-gh-muted focus:outline-none focus:ring-2 focus:ring-offset-0 sm:text-sm"
+const FIELD_OK =
+  "border-gh-border focus:border-gh-accent focus:ring-gh-accent/30"
+const FIELD_BAD = "border-red-500/70 focus:border-red-500 focus:ring-red-500/30"
+const LABEL = "mb-1.5 block text-sm font-medium text-gh-muted"
 
 const EMPTY: ApplicationFormInput = {
   fullName: "",
@@ -24,6 +27,14 @@ const EMPTY: ApplicationFormInput = {
   whyJoin: "",
 }
 
+const WHY_JOIN_LIMIT = 1000
+
+function omit(errors: Record<string, string>, key: string) {
+  const next = { ...errors }
+  delete next[key]
+  return next
+}
+
 export function JoinForm() {
   const [form, setForm] = useState<ApplicationFormInput>(EMPTY)
   const [company, setCompany] = useState("")
@@ -32,210 +43,265 @@ export function JoinForm() {
     "idle",
   )
   const [serverError, setServerError] = useState<string | null>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
   function set<K extends keyof ApplicationFormInput>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }))
+    // Clear as soon as the field stops being wrong, rather than making the
+    // person submit again to find out. Errors only ever appear after a blur or
+    // a submit, so this never yells at someone mid-typing.
+    if (errors[key]) {
+      const next = validateApplication({ ...form, [key]: value })
+      if (next.ok || !next.errors[key]) {
+        setErrors((prev) => omit(prev, key))
+      }
+    }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  // Validating one field by running the whole validator and reading one key
+  // keeps lib/validation/application.ts the single source of truth — a second,
+  // per-field copy of these rules is how the client and the server drift apart.
+  function validateField(key: keyof ApplicationFormInput) {
+    const result = validateApplication(form)
+    const message = result.ok ? undefined : result.errors[key]
+    setErrors((prev) =>
+      message ? { ...prev, [key]: message } : omit(prev, key),
+    )
+  }
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault()
     setServerError(null)
 
     const result = validateApplication(form)
     if (!result.ok) {
       setErrors(result.errors)
+      // Send focus to the first thing that is wrong, otherwise a long form just
+      // appears to do nothing when the offending field is off-screen.
+      const first = Object.keys(result.errors)[0]
+      formRef.current?.querySelector<HTMLElement>(`[name="${first}"]`)?.focus()
       return
     }
+
     setErrors({})
     setStatus("submitting")
 
     try {
-      const res = await fetch("/api/applications", {
+      const response = await fetch("/api/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, company }),
       })
-      const body = await res.json().catch(() => ({}))
+      const body = await response.json().catch(() => ({}))
 
-      if (res.ok) {
+      if (response.ok) {
         setStatus("success")
         setForm(EMPTY)
         return
       }
 
-      if (res.status === 409 || res.status === 400) {
+      if (response.status === 409 || response.status === 400) {
         setErrors(body.errors ?? {})
       } else {
-        setServerError("Something went wrong. Please try again.")
+        setServerError("We couldn't send your application. Please try again.")
       }
       setStatus("idle")
     } catch {
-      setServerError("Something went wrong. Please try again.")
+      setServerError("We couldn't reach the server. Please try again.")
       setStatus("idle")
     }
   }
 
   if (status === "success") {
     return (
-      <Card className="mx-auto max-w-2xl border-gh-border bg-gh-surface">
-        <CardContent className="p-8 text-center">
-          <h3 className="mb-2 text-2xl font-semibold">Application received!</h3>
-          <p className="text-gh-muted">
-            Thanks for applying. We&apos;ll be in touch soon.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="rounded-3xl border border-gh-border bg-gh-surface p-10">
+        <FaRegCircleCheck
+          aria-hidden="true"
+          className="h-10 w-10 text-gh-accent"
+        />
+        <h3 className="mt-6 text-2xl font-bold tracking-[-0.01em]">
+          Your application is in
+        </h3>
+        <p className="mt-3 text-pretty leading-relaxed text-gh-muted">
+          We read every one. Expect a reply on email within a week, and an
+          invite to the next workshop either way.
+        </p>
+      </div>
     )
   }
 
+  const fieldProps = (key: keyof ApplicationFormInput) => ({
+    id: key,
+    name: key,
+    value: form[key],
+    onBlur: () => validateField(key),
+    "aria-invalid": Boolean(errors[key]),
+    "aria-describedby": errors[key] ? `${key}-error` : undefined,
+    className: cn(FIELD, errors[key] ? FIELD_BAD : FIELD_OK),
+  })
+
   return (
-    <Card className="mx-auto max-w-2xl border-gh-border bg-gh-surface">
-      <CardContent className="p-6 sm:p-8">
-        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-          {/* Honeypot — hidden from real users, bots fill every field */}
-          <div className="hidden" aria-hidden="true">
-            <label htmlFor="company">Company</label>
-            <input
-              id="company"
-              name="company"
-              type="text"
-              tabIndex={-1}
-              autoComplete="off"
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-            />
-          </div>
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      noValidate
+      className="rounded-3xl border border-gh-border bg-gh-surface p-6 sm:p-8"
+    >
+      {/* Honeypot — hidden from real users, bots fill every field */}
+      <div className="hidden" aria-hidden="true">
+        <label htmlFor="company">Company</label>
+        <input
+          id="company"
+          name="company"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={company}
+          onChange={(event) => setCompany(event.target.value)}
+        />
+      </div>
 
-          <div>
-            <label className={labelClass} htmlFor="fullName">
-              Full name
-            </label>
-            <input
-              id="fullName"
-              className={inputClass}
-              value={form.fullName}
-              onChange={(e) => set("fullName", e.target.value)}
-            />
-            {errors.fullName && (
-              <p className="mt-1 text-sm text-red-500">{errors.fullName}</p>
-            )}
-          </div>
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="sm:col-span-2">
+          <label className={LABEL} htmlFor="fullName">
+            Full name
+          </label>
+          <input
+            {...fieldProps("fullName")}
+            autoComplete="name"
+            onChange={(event) => set("fullName", event.target.value)}
+          />
+          <FieldError name="fullName" message={errors.fullName} />
+        </div>
 
-          <div>
-            <label className={labelClass} htmlFor="email">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              className={inputClass}
-              value={form.email}
-              onChange={(e) => set("email", e.target.value)}
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-            )}
-          </div>
+        <div>
+          <label className={LABEL} htmlFor="email">
+            Email
+          </label>
+          <input
+            {...fieldProps("email")}
+            type="email"
+            autoComplete="email"
+            onChange={(event) => set("email", event.target.value)}
+          />
+          <FieldError name="email" message={errors.email} />
+        </div>
 
-          <div>
-            <label className={labelClass} htmlFor="phone">
-              Phone number
-            </label>
-            <input
-              id="phone"
-              type="tel"
-              className={inputClass}
-              value={form.phone}
-              onChange={(e) => set("phone", e.target.value)}
-            />
-            {errors.phone && (
-              <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
-            )}
-          </div>
+        <div>
+          <label className={LABEL} htmlFor="phone">
+            Phone
+          </label>
+          <input
+            {...fieldProps("phone")}
+            type="tel"
+            autoComplete="tel"
+            onChange={(event) => set("phone", event.target.value)}
+          />
+          <FieldError name="phone" message={errors.phone} />
+        </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className={labelClass} htmlFor="branch">
-                Branch
-              </label>
-              <input
-                id="branch"
-                className={inputClass}
-                placeholder="e.g. CSE"
-                value={form.branch}
-                onChange={(e) => set("branch", e.target.value)}
-              />
-              {errors.branch && (
-                <p className="mt-1 text-sm text-red-500">{errors.branch}</p>
-              )}
-            </div>
+        <div>
+          <label className={LABEL} htmlFor="branch">
+            Branch
+          </label>
+          <input
+            {...fieldProps("branch")}
+            placeholder="e.g. CSE"
+            onChange={(event) => set("branch", event.target.value)}
+          />
+          <FieldError name="branch" message={errors.branch} />
+        </div>
 
-            <div>
-              <label className={labelClass} htmlFor="year">
-                Year of study
-              </label>
-              <select
-                id="year"
-                className={inputClass}
-                value={form.year}
-                onChange={(e) => set("year", e.target.value)}
-              >
-                <option value="">Select</option>
-                <option value="1">1st year</option>
-                <option value="2">2nd year</option>
-                <option value="3">3rd year</option>
-                <option value="4">4th year</option>
-              </select>
-              {errors.year && (
-                <p className="mt-1 text-sm text-red-500">{errors.year}</p>
-              )}
-            </div>
-          </div>
+        <div>
+          <label className={LABEL} htmlFor="year">
+            Year of study
+          </label>
+          <select
+            {...fieldProps("year")}
+            onChange={(event) => set("year", event.target.value)}
+          >
+            <option value="">Select</option>
+            <option value="1">1st year</option>
+            <option value="2">2nd year</option>
+            <option value="3">3rd year</option>
+            <option value="4">4th year</option>
+          </select>
+          <FieldError name="year" message={errors.year} />
+        </div>
 
-          <div>
-            <label className={labelClass} htmlFor="githubUsername">
-              GitHub username (optional)
-            </label>
-            <input
-              id="githubUsername"
-              className={inputClass}
-              value={form.githubUsername}
-              onChange={(e) => set("githubUsername", e.target.value)}
-            />
-            {errors.githubUsername && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.githubUsername}
-              </p>
-            )}
-          </div>
+        <div className="sm:col-span-2">
+          <label className={LABEL} htmlFor="githubUsername">
+            GitHub username{" "}
+            <span className="font-normal text-gh-muted">(optional)</span>
+          </label>
+          <input
+            {...fieldProps("githubUsername")}
+            placeholder="octocat"
+            autoComplete="off"
+            onChange={(event) => set("githubUsername", event.target.value)}
+          />
+          <FieldError name="githubUsername" message={errors.githubUsername} />
+        </div>
 
-          <div>
-            <label className={labelClass} htmlFor="whyJoin">
+        <div className="sm:col-span-2">
+          <div className="flex items-baseline justify-between gap-4">
+            <label className={LABEL} htmlFor="whyJoin">
               Why do you want to join?
             </label>
-            <textarea
-              id="whyJoin"
-              rows={4}
-              className={inputClass}
-              value={form.whyJoin}
-              onChange={(e) => set("whyJoin", e.target.value)}
-            />
-            {errors.whyJoin && (
-              <p className="mt-1 text-sm text-red-500">{errors.whyJoin}</p>
-            )}
+            <span
+              className={cn(
+                "font-mono text-xs tabular-nums",
+                form.whyJoin.length > WHY_JOIN_LIMIT
+                  ? "text-red-500"
+                  : "text-gh-muted",
+              )}
+            >
+              {form.whyJoin.length}/{WHY_JOIN_LIMIT}
+            </span>
           </div>
+          <textarea
+            {...fieldProps("whyJoin")}
+            rows={4}
+            placeholder="A sentence or two is plenty."
+            onChange={(event) => set("whyJoin", event.target.value)}
+          />
+          <FieldError name="whyJoin" message={errors.whyJoin} />
+        </div>
+      </div>
 
-          {serverError && <p className="text-sm text-red-500">{serverError}</p>}
+      {serverError && (
+        <p
+          role="alert"
+          className="mt-5 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+        >
+          {serverError}
+        </p>
+      )}
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={status === "submitting"}
-          >
-            {status === "submitting" ? "Submitting..." : "Submit application"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      <button
+        type="submit"
+        disabled={status === "submitting"}
+        className="mt-7 w-full rounded-full bg-gh-accent px-6 py-3.5 text-sm font-semibold text-gh-deep transition-colors hover:bg-[#56d364] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-surface disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {status === "submitting" ? "Sending…" : "Send application"}
+      </button>
+
+      <p className="mt-4 text-center text-xs text-gh-muted">
+        We only use this to get back to you about the club.
+      </p>
+    </form>
+  )
+}
+
+function FieldError({ name, message }: { name: string; message?: string }) {
+  if (!message) return null
+  return (
+    <p
+      id={`${name}-error`}
+      role="alert"
+      className="mt-1.5 text-sm text-red-400"
+    >
+      {message}
+    </p>
   )
 }

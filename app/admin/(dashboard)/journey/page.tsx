@@ -3,7 +3,7 @@ import { listJourneyEntries } from "@/lib/db/journey"
 import { Button } from "@/components/ui/button"
 import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"
-import { JOURNEY_ICONS } from "@/features/v2/journey/icons"
+import { JOURNEY_ICONS } from "@/features/journey/icons"
 import { requireAdminPage } from "@/lib/auth/require-admin"
 
 export default async function AdminJourneyPage() {

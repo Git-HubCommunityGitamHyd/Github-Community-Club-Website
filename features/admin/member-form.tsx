@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { ImageUploadField } from "@/features/admin/image-upload-field"
 import type { Member } from "@/lib/db/members"
 import type { Team } from "@/lib/db/teams"
-import { BOARD_ACCENTS, BOARD_ACCENT_KEYS } from "@/features/v2/board/accents"
-import { MemberAvatar } from "@/features/v2/people/member-avatar"
+import { BOARD_ACCENTS, BOARD_ACCENT_KEYS } from "@/features/board/accents"
+import { MemberAvatar } from "@/features/people/member-avatar"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -235,10 +235,14 @@ export function MemberForm({
           </div>
           <div className="min-w-0 flex-1 space-y-4">
             <ImageUploadField
+              folder="members"
               label="Avatar"
               value={form.imageUrl}
               onChange={(url) => set("imageUrl", url)}
             />
+            {errors.imageUrl && (
+              <p className="-mt-2 text-sm text-red-500">{errors.imageUrl}</p>
+            )}
             <p className="-mt-2 text-sm text-gh-muted">
               A generated avatar, not a photo: members asked not to show their
               faces. Send them the prompt in{" "}

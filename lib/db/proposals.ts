@@ -1,5 +1,5 @@
 import { getDb } from "./client"
-import { PUBLIC_PROPOSAL_STATUSES } from "@/features/v2/proposals/keys"
+import { PUBLIC_PROPOSAL_STATUSES } from "@/features/proposals/keys"
 
 /** A whole row, private fields included. Only admin screens get this. */
 export type Proposal = {

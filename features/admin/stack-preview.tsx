@@ -1,5 +1,5 @@
-import { TechStack } from "@/features/v2/tech/tech-stack"
-import { resolveTech } from "@/features/v2/tech/tech-icons"
+import { TechStack } from "@/features/tech/tech-stack"
+import { resolveTech } from "@/features/tech/tech-icons"
 
 /**
  * The tech stack as the page will show it, under the CMS field, so a typo
@@ -21,7 +21,7 @@ export function StackPreview({ value }: { value: string }) {
           No logo for {unknown.join(", ")}, so{" "}
           {unknown.length === 1 ? "it shows" : "they show"} as initials (dashed
           border). Check the spelling, or leave it if the tool is just not in
-          the list (features/v2/tech/tech-icons.ts).
+          the list (features/tech/tech-icons.ts).
         </p>
       )}
     </div>

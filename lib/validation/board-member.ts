@@ -1,4 +1,5 @@
-import { BOARD_ACCENTS } from "@/features/v2/board/accents"
+import { BOARD_ACCENTS } from "@/features/board/accents"
+import { isCloudinaryImage } from "@/lib/validation/image"
 
 export type BoardMemberFormInput = {
   name: string
@@ -31,6 +32,11 @@ export function validateBoardMember(
   if (!role) errors.role = "Role is required"
 
   const imageUrl = String(input.imageUrl ?? "").trim()
+  // Uploaded through the CMS, so always a Cloudinary URL. A link pasted from
+  // anywhere else would 400 in next/image on the public page.
+  if (imageUrl && !isCloudinaryImage(imageUrl)) {
+    errors.imageUrl = "Upload the image here rather than linking to one"
+  }
 
   const description = String(input.description ?? "").trim()
   if (!description) errors.description = "Description is required"

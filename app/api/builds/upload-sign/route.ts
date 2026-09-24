@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import {
   BUILD_UPLOAD_FOLDER,
   BUILD_UPLOAD_FORMATS,
-} from "@/features/v2/builds/keys"
+} from "@/features/builds/keys"
 
 export const runtime = "nodejs"
 

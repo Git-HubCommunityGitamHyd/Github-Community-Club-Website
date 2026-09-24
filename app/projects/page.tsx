@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
 import { listProjects, listTeamsByProject } from "@/lib/db/projects"
 import { refreshStaleCommitCounts } from "@/lib/github/commits"
-import { ProjectsPageChrome } from "@/features/v2/projects/page-chrome"
-import { ProjectsBackLink } from "@/features/v2/projects/back-link"
-import { ProjectsGrid } from "@/features/v2/projects/projects-grid"
+import { PageChrome } from "@/features/site/page-chrome"
+import { BackLink } from "@/features/site/back-link"
+import { ProjectsGrid } from "@/features/projects/projects-grid"
 import { SectionTexture } from "@/components/ui/texture"
-import { MascotSlot } from "@/features/v2/mascot/mascot-slot"
+import { MascotSlot } from "@/features/mascot/mascot-slot"
 
 // Same reason as the homepage: without this Next freezes whatever D1 returned
 // during `next build`. See CLAUDE.md.
@@ -25,14 +25,14 @@ export default async function ProjectsPage() {
   refreshStaleCommitCounts(projects)
 
   return (
-    <ProjectsPageChrome>
+    <PageChrome>
       <section className="relative">
         <SectionTexture />
         <div className="relative mx-auto max-w-6xl px-4 pb-24 pt-40 sm:px-6 lg:px-8">
           {/* Back to the section this page was reached from, not to "/". The
               visitor arrived from the homepage's projects list, and dropping
               them at the top of a very long page would lose their place. */}
-          <ProjectsBackLink href="/#projects">Home</ProjectsBackLink>
+          <BackLink href="/#projects">Home</BackLink>
 
           <div className="mb-14 mt-8 flex items-end justify-between gap-10">
             <div>
@@ -64,6 +64,6 @@ export default async function ProjectsPage() {
           )}
         </div>
       </section>
-    </ProjectsPageChrome>
+    </PageChrome>
   )
 }

@@ -1,5 +1,6 @@
-import { BOARD_ACCENTS } from "@/features/v2/board/accents"
+import { BOARD_ACCENTS } from "@/features/board/accents"
 import type { MemberInput } from "@/lib/db/members"
+import { isCloudinaryImage } from "@/lib/validation/image"
 
 export type MemberFormInput = {
   name: string
@@ -43,6 +44,11 @@ export function validateMember(
   const role = String(input.role ?? "").trim()
   const description = String(input.description ?? "").trim()
   const imageUrl = String(input.imageUrl ?? "").trim()
+  // Uploaded through the CMS, so always a Cloudinary URL. A link pasted from
+  // anywhere else would 400 in next/image on the public page.
+  if (imageUrl && !isCloudinaryImage(imageUrl)) {
+    errors.imageUrl = "Upload the image here rather than linking to one"
+  }
 
   // A pasted profile URL is the common mistake; take the username out of it
   // rather than rejecting it.

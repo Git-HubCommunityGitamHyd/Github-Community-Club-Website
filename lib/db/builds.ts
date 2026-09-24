@@ -1,5 +1,5 @@
 import { getDb } from "./client"
-import { RESERVED_BUILD_SLUGS, type Credit } from "@/features/v2/builds/keys"
+import { RESERVED_BUILD_SLUGS, type Credit } from "@/features/builds/keys"
 
 /** A whole row, private fields included. Only admin screens get this. */
 export type Build = {

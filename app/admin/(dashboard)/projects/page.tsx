@@ -3,7 +3,7 @@ import { listProjects } from "@/lib/db/projects"
 import { Button } from "@/components/ui/button"
 import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"
-import { projectStatus } from "@/features/v2/projects/statuses"
+import { projectStatus } from "@/features/projects/statuses"
 import { requireAdminPage } from "@/lib/auth/require-admin"
 
 export default async function AdminProjectsPage() {

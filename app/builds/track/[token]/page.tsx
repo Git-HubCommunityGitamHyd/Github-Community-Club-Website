@@ -2,12 +2,12 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { getBuildByTrackHash } from "@/lib/db/builds"
 import { hashTrackToken, isTrackToken } from "@/lib/tracking"
-import { monthLabel, weekLabel } from "@/features/v2/builds/keys"
+import { monthLabel, weekLabel } from "@/features/builds/keys"
 import {
   TrackPage,
   formatWhen,
   type Stage,
-} from "@/features/v2/tracking/track-page"
+} from "@/features/tracking/track-page"
 
 export const dynamic = "force-dynamic"
 

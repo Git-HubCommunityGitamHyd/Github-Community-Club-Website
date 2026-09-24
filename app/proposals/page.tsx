@@ -2,11 +2,11 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Lightbulb } from "lucide-react"
 import { listPublicProposals } from "@/lib/db/proposals"
-import { ProjectsPageChrome } from "@/features/v2/projects/page-chrome"
-import { ProjectsBackLink } from "@/features/v2/projects/back-link"
-import { MascotSlot } from "@/features/v2/mascot/mascot-slot"
+import { PageChrome } from "@/features/site/page-chrome"
+import { BackLink } from "@/features/site/back-link"
+import { MascotSlot } from "@/features/mascot/mascot-slot"
 import { SectionTexture } from "@/components/ui/texture"
-import { ProposalBoard } from "@/features/v2/proposals/proposal-board"
+import { ProposalBoard } from "@/features/proposals/proposal-board"
 
 // Reads D1 per request; see CLAUDE.md.
 export const dynamic = "force-dynamic"
@@ -21,7 +21,7 @@ export default async function ProposalsPage() {
   const proposals = await listPublicProposals()
 
   return (
-    <ProjectsPageChrome>
+    <PageChrome>
       <section className="relative">
         <SectionTexture />
         <div
@@ -33,7 +33,7 @@ export default async function ProposalsPage() {
           }}
         />
         <div className="relative mx-auto max-w-5xl px-4 pb-28 pt-40 sm:px-6 lg:px-8">
-          <ProjectsBackLink href="/#ideas">Home</ProjectsBackLink>
+          <BackLink href="/#ideas">Home</BackLink>
 
           <div className="mb-12 mt-8 flex items-end justify-between gap-10">
             <div>
@@ -79,6 +79,6 @@ export default async function ProposalsPage() {
           )}
         </div>
       </section>
-    </ProjectsPageChrome>
+    </PageChrome>
   )
 }

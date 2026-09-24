@@ -1,4 +1,4 @@
-import { STUDENT_YEAR_KEYS } from "@/features/v2/forms/student"
+import { STUDENT_YEAR_KEYS } from "@/features/forms/student"
 
 export type StudentDetails = {
   name: string
