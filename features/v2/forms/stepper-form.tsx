@@ -101,8 +101,7 @@ export type Step = TextStep | ChoiceStep | FieldsStep | CustomStep
 
 /** `track` is the private link token the API hands back, for the thank-you. */
 export type SubmitResult =
-  | { ok: true; track?: string }
-  | { ok: false; errors: Record<string, string> }
+  { ok: true; track?: string } | { ok: false; errors: Record<string, string> }
 
 const LETTERS = "ABCDEFGHIJ"
 

@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 import Image from "next/image"
 import { notFound } from "next/navigation"
-import type { CSSProperties, ReactNode } from "react"
-import { ArrowUpRight, Github, Globe } from "lucide-react"
+import type { ReactNode } from "react"
+import { Github, Globe } from "lucide-react"
 import { getProjectBySlug, listProjectTeam } from "@/lib/db/projects"
 import { parseRepo, refreshStaleCommitCounts } from "@/lib/github/commits"
 import { ProjectsPageChrome } from "@/features/v2/projects/page-chrome"
@@ -17,7 +17,9 @@ import {
 } from "@/features/v2/projects/people"
 import { TransitionSettled } from "@/features/v2/projects/transition"
 import { transitionName } from "@/features/v2/projects/transition-name"
-import { SectionLabel } from "@/features/v2/section-label"
+import { Block, NotesFrame, rise } from "@/features/v2/projects/page-block"
+import { LinkCard } from "@/features/v2/projects/link-card"
+import { TechStack } from "@/features/v2/tech/tech-stack"
 import { SectionTexture } from "@/components/ui/texture"
 import { MascotSlot } from "@/features/v2/mascot/mascot-slot"
 
@@ -37,44 +39,6 @@ export async function generateMetadata({
       ? { images: [{ url: project.cover_image }] }
       : undefined,
   }
-}
-
-/** Place in the staggered arrival (globals.css `.project-rise`). */
-function rise(i: number): CSSProperties {
-  return { "--i": String(i) } as CSSProperties
-}
-
-/**
- * One block of the page below the header. The label sits in its own column on
- * wide screens so every block starts its content on the same vertical line,
- * which is what makes six differently shaped sections read as one document.
- */
-function Block({
-  index,
-  label,
-  id,
-  order,
-  children,
-}: {
-  index: number
-  label: string
-  id?: string
-  order: number
-  children: ReactNode
-}) {
-  return (
-    <section
-      id={id}
-      data-mascot-dock
-      style={rise(order)}
-      className="project-rise grid scroll-mt-32 gap-6 border-t border-gh-border pt-10 lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-10"
-    >
-      <SectionLabel index={String(index).padStart(2, "0")} className="h-fit">
-        {label}
-      </SectionLabel>
-      <div className="min-w-0">{children}</div>
-    </section>
-  )
 }
 
 /**
@@ -139,18 +103,7 @@ export default async function ProjectPage({
   if (project.tags.length > 0) {
     blocks.push({
       label: "Tech stack",
-      body: (
-        <ul className="flex flex-wrap gap-2.5">
-          {project.tags.map((tag) => (
-            <li
-              key={tag}
-              className="rounded-lg border border-gh-border bg-gh-surface/70 px-3.5 py-2 font-mono text-sm text-gh-text"
-            >
-              {tag}
-            </li>
-          ))}
-        </ul>
-      ),
+      body: <TechStack items={project.tags} />,
     })
   }
 
@@ -158,21 +111,9 @@ export default async function ProjectPage({
     blocks.push({
       label: "Dev notes",
       body: (
-        // Framed like a file in a repository, because that is where notes
-        // like these usually live, and so the section reads as a different
-        // voice from the brief above it.
-        <div className="overflow-hidden rounded-2xl border border-gh-border bg-gh-surface/70">
-          <div className="flex items-center gap-2 border-b border-gh-border px-5 py-3 font-mono text-xs text-gh-muted">
-            <span
-              aria-hidden="true"
-              className="size-2 rounded-full bg-gh-accent"
-            />
-            NOTES.md
-          </div>
-          <div className="px-5 py-6 sm:px-7">
-            <ProjectProse body={project.dev_notes} />
-          </div>
-        </div>
+        <NotesFrame>
+          <ProjectProse body={project.dev_notes} />
+        </NotesFrame>
       ),
     })
   }
@@ -272,54 +213,5 @@ export default async function ProjectPage({
         </article>
       </ProjectPeople>
     </ProjectsPageChrome>
-  )
-}
-
-function LinkCard({
-  href,
-  icon,
-  kicker,
-  title,
-  accent = false,
-}: {
-  href: string
-  icon: ReactNode
-  kicker: string
-  title: string
-  accent?: boolean
-}) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`group flex items-center gap-4 rounded-2xl border p-5 transition-[border-color,background-color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-bg active:scale-[0.99] ${
-        accent
-          ? "border-gh-accent/40 bg-gh-accent/[0.07] hover:border-gh-accent/70 hover:bg-gh-accent/[0.12]"
-          : "border-gh-border bg-gh-surface/70 hover:border-gh-muted/60 hover:bg-gh-elevated"
-      }`}
-    >
-      <span
-        className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${
-          accent
-            ? "bg-gh-accent text-gh-deep"
-            : "bg-gh-elevated text-gh-text ring-1 ring-inset ring-gh-border"
-        }`}
-      >
-        {icon}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-gh-muted">
-          {kicker}
-        </span>
-        <span className="mt-1 block truncate font-semibold text-gh-text">
-          {title}
-        </span>
-      </span>
-      <ArrowUpRight
-        aria-hidden="true"
-        className="h-5 w-5 shrink-0 text-gh-muted transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-gh-text"
-      />
-    </a>
   )
 }

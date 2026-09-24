@@ -60,13 +60,14 @@ export default async function TrackBuildPage({
             : "Picked for the showcase",
           body: (
             <>
-              It’s on the{" "}
+              It has{" "}
               <Link
-                href="/builds"
+                href={`/builds/${build.slug}`}
                 className="text-gh-text underline decoration-gh-accent/60 underline-offset-4"
               >
-                builds page
-              </Link>
+                its own page
+              </Link>{" "}
+              on the site
               {build.week_of
                 ? `, and it’s one of the picks for the week of ${weekLabel(build.week_of)}.`
                 : "."}

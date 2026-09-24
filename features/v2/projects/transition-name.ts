@@ -9,3 +9,9 @@
 export function transitionName(slug: string, part: "cover" | "title") {
   return `project-${slug}-${part}`
 }
+
+/** The same, for a build card and its page. Its own prefix, so a build and a
+ *  project that share a slug can never share a name. */
+export function buildTransitionName(slug: string, part: "cover" | "title") {
+  return `build-${slug}-${part}`
+}

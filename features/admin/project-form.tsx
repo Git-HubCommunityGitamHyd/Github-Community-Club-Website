@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { StackPreview } from "@/features/admin/stack-preview"
 import { ImageUploadField } from "@/features/admin/image-upload-field"
 import {
   PROJECT_STATUSES,
@@ -348,6 +349,7 @@ export function ProjectForm({
           <p className="mt-1 text-sm text-gh-muted">
             Comma separated, in the order you want them shown.
           </p>
+          <StackPreview value={form.tags} />
         </div>
       </Section>
 

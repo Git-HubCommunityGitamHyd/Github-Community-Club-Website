@@ -130,6 +130,12 @@ export function DialogShell({
         >
           <motion.div
             ref={panelRef}
+            // Lenis is stopped while a dialog is open, and a stopped Lenis
+            // cancels every wheel event on the page, including the ones meant
+            // for this panel's own overflow scroll, so a popup taller than the
+            // window could not be scrolled at all. This attribute tells Lenis
+            // to leave wheel and touch events inside the panel alone.
+            data-lenis-prevent
             role="dialog"
             aria-modal="true"
             aria-labelledby={labelledBy}

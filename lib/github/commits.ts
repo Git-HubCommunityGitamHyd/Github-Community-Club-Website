@@ -1,5 +1,6 @@
 import { after } from "next/server"
 import { setCommitCount, type Project } from "@/lib/db/projects"
+import { setBuildCommitCount, type PublicBuild } from "@/lib/db/builds"
 
 /** How old a cached count may get before a page view refreshes it. */
 const STALE_MS = 24 * 60 * 60 * 1000
@@ -61,6 +62,14 @@ export async function fetchCommitCount(repoUrl: string | null) {
   }
 }
 
+/** Anything with a repository and a cached count: a project or a build. */
+type Countable = Pick<Project, "id" | "repo_url" | "commits_synced_at">
+type Save = (
+  id: number,
+  count: number | null,
+  options: { keepOnFailure: boolean },
+) => Promise<void>
+
 /** Fetches and stores the count now. Used when the CMS saves a project. */
 export async function syncCommitCount(project: Project) {
   const count = await fetchCommitCount(project.repo_url)
@@ -68,10 +77,19 @@ export async function syncCommitCount(project: Project) {
   return count
 }
 
-function isStale(project: Project, now: number) {
-  if (!parseRepo(project.repo_url)) return false
-  if (!project.commits_synced_at) return true
-  return now - Date.parse(project.commits_synced_at) > STALE_MS
+/** Same, for a build saved in the CMS. */
+export async function syncBuildCommitCount(
+  build: Pick<PublicBuild, "id" | "repo_url">,
+) {
+  const count = await fetchCommitCount(build.repo_url)
+  await setBuildCommitCount(build.id, count, { keepOnFailure: false })
+  return count
+}
+
+function isStale(item: Countable, now: number) {
+  if (!parseRepo(item.repo_url)) return false
+  if (!item.commits_synced_at) return true
+  return now - Date.parse(item.commits_synced_at) > STALE_MS
 }
 
 /**
@@ -80,14 +98,22 @@ function isStale(project: Project, now: number) {
  * shows the fresh one. A failed refresh keeps the old number and still
  * stamps the time, so an unreachable repo is retried daily, not per view.
  */
-export function refreshStaleCommitCounts(projects: Project[]) {
+function refreshStale(items: Countable[], save: Save) {
   const now = Date.now()
-  const stale = projects.filter((project) => isStale(project, now))
+  const stale = items.filter((item) => isStale(item, now))
   if (stale.length === 0) return
   after(async () => {
-    for (const project of stale) {
-      const count = await fetchCommitCount(project.repo_url)
-      await setCommitCount(project.id, count, { keepOnFailure: true })
+    for (const item of stale) {
+      const count = await fetchCommitCount(item.repo_url)
+      await save(item.id, count, { keepOnFailure: true })
     }
   })
+}
+
+export function refreshStaleCommitCounts(projects: Project[]) {
+  refreshStale(projects, setCommitCount)
+}
+
+export function refreshStaleBuildCommitCounts(builds: PublicBuild[]) {
+  refreshStale(builds, setBuildCommitCount)
 }

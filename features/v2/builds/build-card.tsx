@@ -1,49 +1,37 @@
 "use client"
 
 import Image from "next/image"
+import type { CSSProperties } from "react"
 import type { PublicBuild } from "@/lib/db/builds"
+import { creditLine, stackOf } from "@/features/v2/builds/format"
+import { TransitionLink } from "@/features/v2/projects/transition"
+import { buildTransitionName } from "@/features/v2/projects/transition-name"
 import { cn } from "@/lib/utils"
 
-export function creditLine(build: PublicBuild): string {
-  const mates = build.teammates
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean)
-  if (mates.length === 0) return build.name
-  if (mates.length === 1) return `${build.name} and ${mates[0]}`
-  return `${build.name}, ${mates.slice(0, -1).join(", ")} and ${mates.at(-1)}`
-}
-
-export function stackOf(build: PublicBuild): string[] {
-  return build.built_with
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean)
-}
-
 /**
- * A build in a grid. The whole card is one button that opens the build; the
- * cover zooms a touch on hover, inside its frame, so the card itself stays
- * put and the grid does not shuffle.
+ * A build in a grid, linking to its page. Like a project card: the title is a
+ * stretched link over the whole card, and the cover and title carry view
+ * transition names so they travel into the page rather than cutting to it.
  */
 export function BuildCard({
   build,
-  onOpen,
   size = "regular",
 }: {
   build: PublicBuild
-  onOpen: () => void
   size?: "feature" | "regular"
 }) {
   const cover = build.images[0]
   const stack = stackOf(build)
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="group flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gh-border bg-gh-surface/80 text-left transition-[border-color,transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-gh-muted/50 hover:shadow-[0_18px_40px_-18px_rgba(1,4,9,0.9)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-bg active:translate-y-0 active:scale-[0.99]"
-    >
+    <article className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gh-border bg-gh-surface/80 transition-[border-color,transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-gh-muted/50 hover:shadow-[0_18px_40px_-18px_rgba(1,4,9,0.9)] has-[a:active]:translate-y-0 has-[a:active]:scale-[0.99] has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-gh-accent has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-gh-bg">
       <div
+        style={
+          cover
+            ? ({
+                viewTransitionName: buildTransitionName(build.slug, "cover"),
+              } as CSSProperties)
+            : undefined
+        }
         className={cn(
           "relative w-full overflow-hidden border-b border-gh-border bg-gh-elevated",
           size === "feature" ? "aspect-[16/9]" : "aspect-[16/10]",
@@ -75,7 +63,19 @@ export function BuildCard({
             size === "feature" ? "text-2xl" : "text-lg",
           )}
         >
-          {build.title}
+          <span
+            className="inline-block"
+            style={{
+              viewTransitionName: buildTransitionName(build.slug, "title"),
+            }}
+          >
+            <TransitionLink
+              href={`/builds/${build.slug}`}
+              className="after:absolute after:inset-0 focus-visible:outline-none"
+            >
+              {build.title}
+            </TransitionLink>
+          </span>
         </h3>
         <p className="mt-1.5 text-pretty text-[15px] leading-relaxed text-gh-muted">
           {build.tagline}
@@ -96,6 +96,6 @@ export function BuildCard({
           <p className="text-sm text-gh-text/85">by {creditLine(build)}</p>
         </div>
       </div>
-    </button>
+    </article>
   )
 }

@@ -187,12 +187,19 @@ CREATE UNIQUE INDEX IF NOT EXISTS proposals_track_hash ON proposals(track_hash);
 CREATE TABLE IF NOT EXISTS builds (
   id             INTEGER PRIMARY KEY AUTOINCREMENT,
   title          TEXT NOT NULL,
+  -- URL segment of /builds/<slug>. Set on submission, editable in the CMS.
+  slug           TEXT,
   tagline        TEXT NOT NULL,
   description    TEXT NOT NULL,
   built_with     TEXT NOT NULL DEFAULT '',
   live_url       TEXT,
   repo_url       TEXT,
   images         TEXT NOT NULL DEFAULT '[]',
+  dev_notes      TEXT NOT NULL DEFAULT '',
+  -- JSON [{name, role, contribution}], role a key of BUILD_ROLES.
+  credits        TEXT NOT NULL DEFAULT '[]',
+  commit_count   INTEGER,
+  commits_synced_at TEXT,
   name           TEXT NOT NULL,
   teammates      TEXT NOT NULL DEFAULT '',
   year           TEXT NOT NULL,
@@ -210,3 +217,4 @@ CREATE TABLE IF NOT EXISTS builds (
 );
 CREATE INDEX IF NOT EXISTS builds_status ON builds(status);
 CREATE UNIQUE INDEX IF NOT EXISTS builds_track_hash ON builds(track_hash);
+CREATE UNIQUE INDEX IF NOT EXISTS builds_slug ON builds(slug);

@@ -3,24 +3,72 @@
 import { useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { ArrowDown, ArrowUp, X } from "lucide-react"
+import { ArrowDown, ArrowUp, Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { StackPreview } from "@/features/admin/stack-preview"
 import type { Build } from "@/lib/db/builds"
 import { ImageUploadField } from "@/features/admin/image-upload-field"
 import {
   BUILD_IMAGES_MAX,
+  BUILD_ROLES,
+  BUILD_ROLE_KEYS,
   BUILD_STATUSES,
   BUILD_STATUS_KEYS,
   weekLabel,
+  type Credit,
 } from "@/features/v2/builds/keys"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
 const labelClass = "mb-1 block text-sm font-medium text-gh-muted"
 const iconButton =
-  "flex size-7 items-center justify-center rounded-md border border-gh-border bg-gh-bg/80 text-gh-muted transition hover:text-gh-text disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent"
+  "flex size-8 items-center justify-center rounded-md border border-gh-border bg-gh-bg/80 text-gh-muted transition hover:border-gh-muted hover:text-gh-text disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent"
+
+/** Same block as the project form's, so the two CMS screens read alike. */
+function Section({
+  step,
+  title,
+  hint,
+  children,
+}: {
+  step: number
+  title: string
+  hint?: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="space-y-5 border-t border-gh-border pt-6">
+      <header>
+        <h2 className="flex items-baseline gap-3 text-base font-semibold text-gh-text">
+          <span className="font-mono text-xs text-gh-muted">
+            {String(step).padStart(2, "0")}
+          </span>
+          {title}
+        </h2>
+        {hint && <p className="mt-1 text-sm text-gh-muted">{hint}</p>}
+      </header>
+      {children}
+    </section>
+  )
+}
+
+function syncedLabel(build: Build) {
+  if (!build.repo_url) return "Add a GitHub repository link to show commits."
+  if (build.commit_count === null) {
+    return "Could not read the commit count from GitHub. It is hidden on the page until it can."
+  }
+  const when = build.commits_synced_at
+    ? new Date(build.commits_synced_at).toLocaleString()
+    : "never"
+  return `${build.commit_count.toLocaleString()} commits on the default branch, read from GitHub ${when}. Saving reads it again.`
+}
+
+type CreditRow = Credit & { key: string }
+
+let nextKey = 0
 
 type FormState = {
+  slug: string
   title: string
   tagline: string
   description: string
@@ -28,8 +76,8 @@ type FormState = {
   liveUrl: string
   repoUrl: string
   images: string[]
-  name: string
-  teammates: string
+  devNotes: string
+  credits: CreditRow[]
   status: string
   month: string
   weekOf: string
@@ -37,6 +85,12 @@ type FormState = {
   adminNote: string
 }
 
+/**
+ * The CMS screen for a submitted build. Laid out like the project form, in
+ * the order of the build's own page (name, brief, screenshots, stack, dev
+ * notes, links, people), with the showcase controls first because deciding
+ * whether it goes in at all is the first thing anyone does here.
+ */
 export function BuildReviewForm({
   build,
   thisMonth,
@@ -49,6 +103,7 @@ export function BuildReviewForm({
 }) {
   const router = useRouter()
   const [form, setForm] = useState<FormState>({
+    slug: build.slug,
     title: build.title,
     tagline: build.tagline,
     description: build.description,
@@ -56,8 +111,8 @@ export function BuildReviewForm({
     liveUrl: build.live_url ?? "",
     repoUrl: build.repo_url ?? "",
     images: build.images,
-    name: build.name,
-    teammates: build.teammates,
+    devNotes: build.dev_notes,
+    credits: build.credits.map((c) => ({ ...c, key: `c-${nextKey++}` })),
     status: build.status,
     month: build.month ?? "",
     weekOf: build.week_of ?? "",
@@ -72,24 +127,38 @@ export function BuildReviewForm({
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
-  function moveImage(index: number, by: number) {
-    const next = [...form.images]
-    const [src] = next.splice(index, 1)
-    next.splice(index + by, 0, src)
-    set("images", next)
+  function move<T>(list: T[], index: number, by: number): T[] {
+    const next = [...list]
+    const [item] = next.splice(index, 1)
+    next.splice(index + by, 0, item)
+    return next
+  }
+
+  function updateCredit(index: number, patch: Partial<Credit>) {
+    set(
+      "credits",
+      form.credits.map((c, i) => (i === index ? { ...c, ...patch } : c)),
+    )
   }
 
   async function save(overrides: Partial<FormState> = {}) {
     setServerError(null)
     setSubmitting(true)
     const payload = { ...form, ...overrides }
-    // Declining clears the week, which only accepted builds can have.
+    // Only accepted builds can be a week's pick.
     if (payload.status !== "accepted") payload.weekOf = ""
     try {
       const res = await fetch(`/api/admin/builds/${build.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          ...payload,
+          credits: payload.credits.map(({ name, role, contribution }) => ({
+            name,
+            role,
+            contribution,
+          })),
+        }),
       })
       const body = await res.json().catch(() => ({}))
       if (res.ok) {
@@ -119,7 +188,7 @@ export function BuildReviewForm({
         e.preventDefault()
         void save()
       }}
-      className="space-y-6"
+      className="max-w-2xl space-y-8"
     >
       {build.status === "pending" && (
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-gh-accent/40 bg-gh-accent/5 p-4">
@@ -158,101 +227,186 @@ export function BuildReviewForm({
         </div>
       )}
 
-      <fieldset className="grid gap-5 rounded-lg border border-gh-border p-5 sm:grid-cols-2">
-        <legend className="px-2 text-sm font-semibold">Showcase</legend>
-        <div>
-          <label className={labelClass} htmlFor="status">
-            Status
-          </label>
-          <select
-            id="status"
-            className={inputClass}
-            value={form.status}
-            onChange={(e) => set("status", e.target.value)}
-          >
-            {BUILD_STATUS_KEYS.map((key) => (
-              <option key={key} value={key}>
-                {BUILD_STATUSES[key]}
-              </option>
-            ))}
-          </select>
-          {error("status")}
-        </div>
-        <div>
-          <label className={labelClass} htmlFor="month">
-            Month
-          </label>
-          <input
-            id="month"
-            type="month"
-            className={inputClass}
-            value={form.month}
-            onChange={(e) => set("month", e.target.value)}
-          />
-          {error("month")}
-        </div>
-        <div>
-          <label className={labelClass} htmlFor="weekOf">
-            One of the week&apos;s picks
-          </label>
-          <div className="flex gap-2">
-            <input
-              id="weekOf"
-              type="date"
+      <Section
+        step={1}
+        title="Showcase"
+        hint="Accepted builds get a page and a place in their month on /builds."
+      >
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label className={labelClass} htmlFor="status">
+              Status
+            </label>
+            <select
+              id="status"
               className={inputClass}
-              value={form.weekOf}
-              onChange={(e) => set("weekOf", e.target.value)}
-              disabled={form.status !== "accepted"}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-auto"
-              disabled={form.status !== "accepted"}
-              onClick={() => set("weekOf", thisWeek)}
+              value={form.status}
+              onChange={(e) => set("status", e.target.value)}
             >
-              This week
-            </Button>
-            {form.weekOf && (
+              {BUILD_STATUS_KEYS.map((key) => (
+                <option key={key} value={key}>
+                  {BUILD_STATUSES[key]}
+                </option>
+              ))}
+            </select>
+            {error("status")}
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="month">
+              Month
+            </label>
+            <input
+              id="month"
+              type="month"
+              className={inputClass}
+              value={form.month}
+              onChange={(e) => set("month", e.target.value)}
+            />
+            {error("month")}
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="weekOf">
+              One of the week&apos;s picks
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="weekOf"
+                type="date"
+                className={inputClass}
+                value={form.weekOf}
+                onChange={(e) => set("weekOf", e.target.value)}
+                disabled={form.status !== "accepted"}
+              />
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 className="h-auto"
-                onClick={() => set("weekOf", "")}
+                disabled={form.status !== "accepted"}
+                onClick={() => set("weekOf", thisWeek)}
               >
-                Clear
+                This week
               </Button>
-            )}
+              {form.weekOf && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-auto"
+                  onClick={() => set("weekOf", "")}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-gh-muted">
+              {form.weekOf
+                ? `Saved as the week starting Monday ${weekLabel(form.weekOf)} (any day in the week works).`
+                : "Optional. Accepted builds only."}
+            </p>
+            {error("weekOf")}
           </div>
-          <p className="mt-1 text-sm text-gh-muted">
-            {form.weekOf
-              ? `Saved as the week starting Monday ${weekLabel(form.weekOf)} (any day in the week works).`
-              : "Optional. Accepted builds only."}
-          </p>
-          {error("weekOf")}
+          <div>
+            <label className={labelClass} htmlFor="sortOrder">
+              Order within the month
+            </label>
+            <input
+              id="sortOrder"
+              type="number"
+              className={inputClass}
+              value={form.sortOrder}
+              onChange={(e) => set("sortOrder", e.target.value)}
+            />
+            {error("sortOrder")}
+          </div>
         </div>
+      </Section>
+
+      <Section
+        step={2}
+        title="Name"
+        hint="The top of the page: the name, with the commit count beside it."
+      >
         <div>
-          <label className={labelClass} htmlFor="sortOrder">
-            Order within the month
+          <label className={labelClass} htmlFor="title">
+            Name
           </label>
           <input
-            id="sortOrder"
-            type="number"
+            id="title"
+            maxLength={60}
             className={inputClass}
-            value={form.sortOrder}
-            onChange={(e) => set("sortOrder", e.target.value)}
+            value={form.title}
+            onChange={(e) => set("title", e.target.value)}
           />
-          {error("sortOrder")}
+          {error("title")}
         </div>
-      </fieldset>
+        <div>
+          <label className={labelClass} htmlFor="slug">
+            Slug
+          </label>
+          <div className="flex items-center rounded-md border border-gh-border bg-gh-elevated focus-within:border-gh-accent focus-within:ring-1 focus-within:ring-gh-accent">
+            <span className="pl-3 font-mono text-sm text-gh-muted">
+              /builds/
+            </span>
+            <input
+              id="slug"
+              className="w-full bg-transparent px-1 py-2 font-mono text-base text-gh-text focus:outline-none sm:text-sm"
+              value={form.slug}
+              onChange={(e) => set("slug", e.target.value)}
+            />
+          </div>
+          <p className="mt-1 text-sm text-gh-muted">
+            The page&apos;s address. Changing it after the build is public
+            breaks links people have shared.
+          </p>
+          {error("slug")}
+        </div>
+        <p className="text-sm text-gh-muted">{syncedLabel(build)}</p>
+      </Section>
 
-      <div>
-        <p className={labelClass}>
-          Images ({form.images.length}/{BUILD_IMAGES_MAX}). The first is the
-          cover.
-        </p>
+      <Section step={3} title="Brief">
+        <div>
+          <label className={labelClass} htmlFor="tagline">
+            One line
+          </label>
+          <input
+            id="tagline"
+            maxLength={100}
+            className={inputClass}
+            value={form.tagline}
+            onChange={(e) => set("tagline", e.target.value)}
+          />
+          <p className="mt-1 text-sm text-gh-muted">
+            On the card, and large at the top of the page.
+          </p>
+          {error("tagline")}
+        </div>
+        <div>
+          <label className={labelClass} htmlFor="description">
+            Description
+          </label>
+          <textarea
+            id="description"
+            rows={8}
+            maxLength={1500}
+            className={inputClass}
+            value={form.description}
+            onChange={(e) => set("description", e.target.value)}
+          />
+          <p className="mt-1 text-sm text-gh-muted">
+            Blank lines separate paragraphs, a line starting with{" "}
+            <code>## </code> is a heading, lines starting with <code>- </code>{" "}
+            are a list.
+          </p>
+          {error("description")}
+        </div>
+      </Section>
+
+      <Section
+        step={4}
+        title="Screenshots"
+        hint={`Up to ${BUILD_IMAGES_MAX}. The first is the cover (on the card and in the brief); the rest form the Screenshots section.`}
+      >
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {form.images.map((src, i) => (
             <div
@@ -272,7 +426,7 @@ export function BuildReviewForm({
                   className={iconButton}
                   aria-label="Move earlier"
                   disabled={i === 0}
-                  onClick={() => moveImage(i, -1)}
+                  onClick={() => set("images", move(form.images, i, -1))}
                 >
                   <ArrowUp className="size-3.5" />
                 </button>
@@ -281,7 +435,7 @@ export function BuildReviewForm({
                   className={iconButton}
                   aria-label="Move later"
                   disabled={i === form.images.length - 1}
-                  onClick={() => moveImage(i, 1)}
+                  onClick={() => set("images", move(form.images, i, 1))}
                 >
                   <ArrowDown className="size-3.5" />
                 </button>
@@ -308,89 +462,19 @@ export function BuildReviewForm({
           ))}
         </div>
         {form.images.length < BUILD_IMAGES_MAX && (
-          <div className="mt-3">
-            <ImageUploadField
-              label="Add an image"
-              value={null}
-              onChange={(url) => url && set("images", [...form.images, url])}
-            />
-          </div>
+          <ImageUploadField
+            label="Add an image"
+            value={null}
+            onChange={(url) => url && set("images", [...form.images, url])}
+          />
         )}
         {error("images")}
-      </div>
+      </Section>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label className={labelClass} htmlFor="title">
-            Title
-          </label>
-          <input
-            id="title"
-            maxLength={60}
-            className={inputClass}
-            value={form.title}
-            onChange={(e) => set("title", e.target.value)}
-          />
-          {error("title")}
-        </div>
-        <div>
-          <label className={labelClass} htmlFor="tagline">
-            One line
-          </label>
-          <input
-            id="tagline"
-            maxLength={100}
-            className={inputClass}
-            value={form.tagline}
-            onChange={(e) => set("tagline", e.target.value)}
-          />
-          {error("tagline")}
-        </div>
-      </div>
-
-      <div>
-        <label className={labelClass} htmlFor="description">
-          About it
-        </label>
-        <textarea
-          id="description"
-          rows={7}
-          maxLength={1500}
-          className={inputClass}
-          value={form.description}
-          onChange={(e) => set("description", e.target.value)}
-        />
-        {error("description")}
-      </div>
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label className={labelClass} htmlFor="liveUrl">
-            Live link
-          </label>
-          <input
-            id="liveUrl"
-            className={inputClass}
-            value={form.liveUrl}
-            onChange={(e) => set("liveUrl", e.target.value)}
-          />
-          {error("liveUrl")}
-        </div>
-        <div>
-          <label className={labelClass} htmlFor="repoUrl">
-            Code
-          </label>
-          <input
-            id="repoUrl"
-            className={inputClass}
-            value={form.repoUrl}
-            onChange={(e) => set("repoUrl", e.target.value)}
-          />
-          {error("repoUrl")}
-        </div>
+      <Section step={5} title="Tech stack">
         <div>
           <label className={labelClass} htmlFor="builtWith">
-            Built with (comma separated)
+            Tech stack
           </label>
           <input
             id="builtWith"
@@ -398,51 +482,194 @@ export function BuildReviewForm({
             className={inputClass}
             value={form.builtWith}
             onChange={(e) => set("builtWith", e.target.value)}
+            placeholder="Flutter, Firebase"
           />
+          <p className="mt-1 text-sm text-gh-muted">
+            Comma separated, in the order you want them shown.
+          </p>
+          <StackPreview value={form.builtWith} />
           {error("builtWith")}
         </div>
-        <div>
-          <label className={labelClass} htmlFor="name">
-            Credited to
-          </label>
-          <input
-            id="name"
-            maxLength={80}
-            className={inputClass}
-            value={form.name}
-            onChange={(e) => set("name", e.target.value)}
-          />
-          {error("name")}
-        </div>
-        <div className="sm:col-span-2">
-          <label className={labelClass} htmlFor="teammates">
-            Teammates (comma separated)
-          </label>
-          <input
-            id="teammates"
-            maxLength={200}
-            className={inputClass}
-            value={form.teammates}
-            onChange={(e) => set("teammates", e.target.value)}
-          />
-          {error("teammates")}
-        </div>
-      </div>
+      </Section>
 
-      <div>
-        <label className={labelClass} htmlFor="adminNote">
-          Admin note
-        </label>
+      <Section
+        step={6}
+        title="Dev notes"
+        hint="Anything worth telling another developer: how it works, what was hard, what is next."
+      >
+        <div>
+          <label className={labelClass} htmlFor="devNotes">
+            Notes
+          </label>
+          <textarea
+            id="devNotes"
+            rows={6}
+            maxLength={3000}
+            className={inputClass}
+            value={form.devNotes}
+            onChange={(e) => set("devNotes", e.target.value)}
+          />
+          <p className="mt-1 text-sm text-gh-muted">
+            Optional; the section is left out when empty. Same formatting as the
+            description.
+          </p>
+          {error("devNotes")}
+        </div>
+      </Section>
+
+      <Section step={7} title="Links">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className={labelClass} htmlFor="liveUrl">
+              Live link
+            </label>
+            <input
+              id="liveUrl"
+              className={inputClass}
+              value={form.liveUrl}
+              onChange={(e) => set("liveUrl", e.target.value)}
+              placeholder="https://"
+            />
+            {error("liveUrl")}
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="repoUrl">
+              GitHub repository
+            </label>
+            <input
+              id="repoUrl"
+              className={inputClass}
+              value={form.repoUrl}
+              onChange={(e) => set("repoUrl", e.target.value)}
+              placeholder="https://github.com/owner/repo"
+            />
+            {error("repoUrl")}
+          </div>
+        </div>
+      </Section>
+
+      <Section
+        step={8}
+        title="People"
+        hint="Who made it and what each person did. The page lists the lead first, then teammates, in the order below."
+      >
+        <div className="space-y-3">
+          {form.credits.map((credit, index) => (
+            <div
+              key={credit.key}
+              className="space-y-3 rounded-lg border border-gh-border bg-gh-surface p-4"
+            >
+              <div className="flex gap-3">
+                <input
+                  aria-label="Name"
+                  maxLength={80}
+                  className={inputClass}
+                  value={credit.name}
+                  onChange={(e) =>
+                    updateCredit(index, { name: e.target.value })
+                  }
+                  placeholder="Name"
+                />
+                <select
+                  aria-label="Role"
+                  className={`${inputClass} max-w-[9rem]`}
+                  value={credit.role}
+                  onChange={(e) =>
+                    updateCredit(index, { role: e.target.value })
+                  }
+                >
+                  {BUILD_ROLE_KEYS.map((key) => (
+                    <option key={key} value={key}>
+                      {BUILD_ROLES[key].label}
+                    </option>
+                  ))}
+                </select>
+                <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    type="button"
+                    className={iconButton}
+                    aria-label="Move up"
+                    disabled={index === 0}
+                    onClick={() =>
+                      set("credits", move(form.credits, index, -1))
+                    }
+                  >
+                    <ArrowUp className="size-4" />
+                  </button>
+                  <button
+                    type="button"
+                    className={iconButton}
+                    aria-label="Move down"
+                    disabled={index === form.credits.length - 1}
+                    onClick={() => set("credits", move(form.credits, index, 1))}
+                  >
+                    <ArrowDown className="size-4" />
+                  </button>
+                  <button
+                    type="button"
+                    className={iconButton}
+                    aria-label="Remove person"
+                    onClick={() =>
+                      set(
+                        "credits",
+                        form.credits.filter((_, i) => i !== index),
+                      )
+                    }
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+              </div>
+              <textarea
+                aria-label="Contribution"
+                rows={2}
+                maxLength={400}
+                className={inputClass}
+                value={credit.contribution}
+                onChange={(e) =>
+                  updateCredit(index, { contribution: e.target.value })
+                }
+                placeholder="What they did, in a sentence or two. Optional."
+              />
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() =>
+              set("credits", [
+                ...form.credits,
+                {
+                  key: `c-${nextKey++}`,
+                  name: "",
+                  role: form.credits.length === 0 ? "lead" : "member",
+                  contribution: "",
+                },
+              ])
+            }
+          >
+            <Plus className="size-4" />
+            Add person
+          </Button>
+          {error("credits")}
+          <p className="text-sm text-gh-muted">
+            As submitted: {build.name}
+            {build.teammates ? `, with ${build.teammates}` : ""}.
+          </p>
+        </div>
+      </Section>
+
+      <Section step={9} title="Admin note" hint="Private. Never shown.">
         <textarea
           id="adminNote"
+          aria-label="Admin note"
           rows={3}
           maxLength={1000}
           className={inputClass}
           value={form.adminNote}
           onChange={(e) => set("adminNote", e.target.value)}
-          placeholder="Private."
         />
-      </div>
+      </Section>
 
       {serverError && <p className="text-sm text-red-500">{serverError}</p>}
 

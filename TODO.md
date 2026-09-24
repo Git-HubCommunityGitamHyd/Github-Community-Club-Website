@@ -1218,11 +1218,69 @@ optimisation.
 - [ ] Optional later: a "message to the submitter" field the status page
       shows (e.g. why it was declined). Not built; admin_note stays private
 
-### Pending decision (asked: "would a custom cursor like this be nice?")
-- My answer: not site-wide; yes as a scoped hover label on a few "play"
-  surfaces (build cards, the builds fan, maybe member cards), themed and with
-  quirky labels. The snippet needs fixes before use (listeners never removed,
-  sets body cursor globally, tracks the whole document). Waiting on the user
+### Decided: no custom cursor
+- Asked for an opinion; the user said "no need, let it be". Not building it
+
+
+## Phase 29 - builds get project-style pages, popup scroll - DONE
+
+- [x] Popups could not be scrolled: Lenis, stopped while a dialog is open,
+      cancels every wheel event, including the panel's own. `data-lenis-prevent`
+      on the DialogShell panel fixes every popup (members, events, gallery)
+- [x] Builds get `/builds/[slug]`, laid out like a project page: month and
+      week badges, title (view-transition morph from the card), commit count
+      from GitHub, the makers' faces, then Brief, Screenshots (grid + viewer),
+      Tech stack, Dev notes (NOTES.md frame), Links, People. Only accepted
+      builds; anything else 404s. Build popup removed
+- [x] Data: `slug` (from the title on submission; duplicates get the id;
+      `submit` and `track` reserved), `dev_notes`, `credits` (JSON name / role
+      / contribution, roles as keys: lead, teammate), `commit_count` and
+      `commits_synced_at`. Migration `2026-09-build-pages.sql` (applied
+      locally)
+- [x] Submission form: optional dev notes question; name + teammates become
+      the initial credits
+- [x] CMS: build screen rebuilt in the project form's numbered sections, in
+      the page's order: Showcase, Name (+slug, commit sync status),
+      Brief, Screenshots, Tech stack, Dev notes, Links, People (credits editor
+      with roles, contributions, reorder), Admin note. Save reads the commit
+      count; slug clash is a 409 on the field. "View page" link once accepted
+- [x] Project page's Block, NotesFrame, StackList and LinkCard moved to shared
+      files; project page unchanged
+- [x] Private status link for a picked build points to its page
+
+### Checks
+- [x] tsc, eslint, prettier; 36/36 validation checks (slug, reserved slug,
+      credits rules, dev notes length)
+- [x] Duplicate-title submission got `timetable-buddy-7` and credits from
+      the form; pending and unknown slugs return the 404 page, no content
+- [x] Browser: build page top to bottom at 1440, member popup scrolls with a
+      real wheel at 1280x520 while the page stays still
+
+### Follow-ups
+- [ ] Remote: `npm run db:patch:remote -- db/migrations/2026-09-build-pages.sql`
+      (after proposals-builds and tracking-links)
+- [ ] Build CMS screen not clicked through (needs the admin password)
+
+
+## Phase 30 - tech stack logos on project and build pages - DONE
+
+- [x] Tech stack on `/projects/[slug]` and `/builds/[slug]` shows logo tiles
+      (mark + name, like the homepage marquee) instead of text chips
+- [x] Registry `features/v2/tech/tech-icons.ts`: ~140 tools with aliases
+      ("nextjs", "next", "Next.js"); matching ignores case, spaces, dots,
+      hyphens. A match shows the proper name ("tailwind" as Tailwind CSS)
+- [x] Missing logo (the user asked "what do we do?"): a monogram tile the same
+      size (e.g. "Hi" for Hive, dashed border), never a gap. Both CMS forms
+      show a live preview under the field and name the tools with no logo,
+      so a typo is caught before saving. Adding a logo is one line
+- [x] Simple Icons dropped some marks over trademark policy: Java, OpenAI,
+      VS Code, Windows come from other react-icons packs, AWS is the site's
+      own inlined mark. Cloudflare D1 / KV / Durable Objects / R2 use the
+      Cloudflare mark under their own names (D1 is not relabelled SQLite)
+
+### Checks
+- [x] tsc, eslint; no alias maps to two logos; every stack currently in the
+      DB resolves to a logo; browser check of both pages
 
 
 - [ ] Promote `/v2` to `/` — the font rides along with it

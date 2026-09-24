@@ -1,10 +1,9 @@
 "use client"
 
-import { useState } from "react"
 import { Tag } from "lucide-react"
 import type { PublicBuild } from "@/lib/db/builds"
 import { BuildCard } from "@/features/v2/builds/build-card"
-import { BuildDialog } from "@/features/v2/builds/build-dialog"
+import { TransitionSettled } from "@/features/v2/projects/transition"
 import { monthLabel, weekLabel } from "@/features/v2/builds/keys"
 import { cn } from "@/lib/utils"
 
@@ -27,8 +26,6 @@ export function BuildsShowcase({
   builds: PublicBuild[]
   currentWeek: string
 }) {
-  const [open, setOpen] = useState<PublicBuild | null>(null)
-
   const latestWeek = builds
     .map((b) => b.week_of)
     .filter((w): w is string => Boolean(w))
@@ -48,6 +45,8 @@ export function BuildsShowcase({
 
   return (
     <>
+      {/* Lets a build page's back link play the card morph in reverse. */}
+      <TransitionSettled />
       {weekly.length > 0 && latestWeek && (
         <section
           data-mascot-dock
@@ -89,7 +88,6 @@ export function BuildsShowcase({
                 <BuildCard
                   build={build}
                   size={i === 0 ? "feature" : "regular"}
-                  onOpen={() => setOpen(build)}
                 />
               </div>
             ))}
@@ -128,18 +126,12 @@ export function BuildsShowcase({
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
               {group.builds.map((build) => (
-                <BuildCard
-                  key={build.id}
-                  build={build}
-                  onOpen={() => setOpen(build)}
-                />
+                <BuildCard key={build.id} build={build} />
               ))}
             </div>
           </section>
         ))}
       </div>
-
-      <BuildDialog build={open} onClose={() => setOpen(null)} />
     </>
   )
 }

@@ -29,7 +29,7 @@ export function ProjectsBackLink({
     <TransitionLink
       href={href}
       // Only between pages that take part; the homepage does not.
-      transition={href.startsWith("/projects")}
+      transition={href.startsWith("/projects") || href.startsWith("/builds")}
       aria-label={`Back to ${children.toLowerCase()}`}
       className="group inline-flex items-center gap-3 rounded-full border border-gh-border bg-gh-surface/80 py-1.5 pl-1.5 pr-5 text-gh-text shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] backdrop-blur-sm transition-[border-color,background-color,transform] duration-200 hover:border-gh-muted/60 hover:bg-gh-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-bg active:scale-[0.98]"
     >

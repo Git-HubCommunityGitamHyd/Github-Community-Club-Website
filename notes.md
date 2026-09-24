@@ -1770,3 +1770,55 @@ pointer; loses the native cursor's meaning (text caret, hand on links);
 lags behind the hand with a spring; ignores users with enlarged system
 cursors; does nothing on touch. A scoped label that appears only over a few
 clickable surfaces avoids all of that.
+
+
+## Phase 29 - build pages
+
+### Popups would not scroll
+Lenis is stopped while a dialog is open so the page behind stays still. A
+stopped Lenis still listens to wheel events and cancels them, including the
+ones inside the dialog, so any popup taller than the window was stuck. Lenis
+honours `data-lenis-prevent` on an element and leaves events inside it alone,
+so the attribute on the DialogShell panel fixes every popup at once.
+
+### Why a page rather than a better popup
+The user wanted builds as detailed as projects. A project page has room for
+the brief, a gallery, stack, dev notes, links and people, and gives each
+build a URL a student can share, which is half the point of being picked. The
+card-to-page morph is the same view transition the projects use.
+
+### Credits are names, not members
+Most builders are not club members, so the People section cannot use member
+profiles the way a project does. Credits are JSON rows (name, role key,
+contribution), seeded from the form's name and teammates and edited in the
+CMS. Roles are keys like every other fixed choice. The submitter's own name
+and teammates stay in their columns as sent, shown in the CMS for reference.
+
+### Slugs
+Made from the title on submission so the submitter never sees a slug error;
+a duplicate gets the row id appended. `submit` and `track` are reserved,
+because `/builds/submit` and `/builds/track` are pages and would shadow a
+build with that slug. Editable in the CMS, with a warning that changing a
+public build's slug breaks shared links.
+
+### Shared page parts
+Block, NotesFrame, StackList and LinkCard left the project page for shared
+files, and the commit-count refresh became one function over any table with
+a repo and a cached count, so the two page types cannot drift apart. The
+format helpers (credit line, stack split) live outside the client card
+module because the server page calls them (same trap as transition names).
+
+
+## Phase 30 - tech stack logos
+
+The stack stays free text in the CMS rather than a fixed key set: tools are
+open-ended, and making admins pick from a list would block any tool not on
+it. Matching is forgiving (aliases, case, punctuation) and the fallback is
+visible rather than silent: an unknown tool renders as a monogram tile the
+same size as a logo, with a dashed border, and the CMS preview lists which
+names found no logo. That keeps the page even and turns typos into something
+the admin sees while editing. Marks are single colour in the text colour, as
+in the homepage marquee, rather than brand colours, which would put a dozen
+accents on one page. Aliases were checked for collisions, and one was
+removed on purpose: D1 had been aliased to SQLite, which would have
+relabelled the club's own "D1" on the page.

@@ -1,6 +1,9 @@
 import {
   BUILD_IMAGES_MAX,
+  BUILD_ROLES,
+  RESERVED_BUILD_SLUGS,
   BUILD_STATUSES,
+  type Credit,
   BUILD_UPLOAD_FOLDER,
   mondayOf,
 } from "@/features/v2/builds/keys"
@@ -14,6 +17,46 @@ export const BUILD_DESCRIPTION_MAX = 1500
 const BUILT_WITH_MAX = 200
 const TEAMMATES_MAX = 200
 const NOTE_MAX = 1000
+export const DEV_NOTES_MAX = 3000
+const CREDITS_MAX = 12
+const CONTRIBUTION_MAX = 400
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+/**
+ * Who made it, for the People section. At least one person; roles are keys;
+ * the same name twice is almost certainly a slip.
+ */
+function validateCredits(
+  raw: unknown,
+  errors: Record<string, string>,
+): Credit[] {
+  const list = Array.isArray(raw) ? raw : []
+  const credits: Credit[] = list.map((entry) => {
+    const item = (entry ?? {}) as Record<string, unknown>
+    return {
+      name: String(item.name ?? "")
+        .trim()
+        .replace(/\s+/g, " "),
+      role: String(item.role ?? ""),
+      contribution: String(item.contribution ?? "").trim(),
+    }
+  })
+  if (credits.length === 0) errors.credits = "Credit at least one person"
+  else if (credits.length > CREDITS_MAX) {
+    errors.credits = `Up to ${CREDITS_MAX} people`
+  } else if (credits.some((c) => !c.name || c.name.length > 80)) {
+    errors.credits = "Every person needs a name (under 80 characters)"
+  } else if (credits.some((c) => !(c.role in BUILD_ROLES))) {
+    errors.credits = "Pick a role for everyone"
+  } else if (credits.some((c) => c.contribution.length > CONTRIBUTION_MAX)) {
+    errors.credits = `Keep each contribution under ${CONTRIBUTION_MAX} characters`
+  } else if (
+    new Set(credits.map((c) => c.name.toLowerCase())).size !== credits.length
+  ) {
+    errors.credits = "Someone is listed twice"
+  }
+  return credits
+}
 
 type Result<T> =
   { ok: true; data: T } | { ok: false; errors: Record<string, string> }
@@ -110,7 +153,7 @@ function buildFields(
     liveUrl: url(input, "liveUrl", errors),
     repoUrl: url(input, "repoUrl", errors),
     images: images(input, errors, publicUpload),
-    teammates: text(input, "teammates", errors, { max: TEAMMATES_MAX }),
+    devNotes: text(input, "devNotes", errors, { max: DEV_NOTES_MAX }),
   }
 }
 
@@ -120,9 +163,10 @@ export function validateBuildSubmission(
 ): Result<BuildSubmission> {
   const errors: Record<string, string> = {}
   const fields = buildFields(input, errors, true)
+  const teammates = text(input, "teammates", errors, { max: TEAMMATES_MAX })
   const student = validateStudent(input, errors)
   if (Object.keys(errors).length > 0) return { ok: false, errors }
-  return { ok: true, data: { ...fields, ...student } }
+  return { ok: true, data: { ...fields, teammates, ...student } }
 }
 
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/
@@ -135,10 +179,15 @@ export function validateBuildReview(
   const errors: Record<string, string> = {}
   const fields = buildFields(input, errors, false)
 
-  const name = text(input, "name", errors, {
-    max: 80,
-    required: "Who gets the credit?",
-  })
+  const slug = String(input.slug ?? "").trim()
+  if (!slug) errors.slug = "Needed for the page's address"
+  else if (!SLUG_PATTERN.test(slug) || slug.length > 80) {
+    errors.slug = "Lowercase letters, numbers and single hyphens"
+  } else if (RESERVED_BUILD_SLUGS.includes(slug)) {
+    errors.slug = "That address is taken by another page"
+  }
+
+  const credits = validateCredits(input.credits, errors)
 
   const status = String(input.status ?? "")
   if (!(status in BUILD_STATUSES)) errors.status = "Pick a status"
@@ -175,6 +224,15 @@ export function validateBuildReview(
   if (Object.keys(errors).length > 0) return { ok: false, errors }
   return {
     ok: true,
-    data: { ...fields, name, status, month, weekOf, sortOrder, adminNote },
+    data: {
+      ...fields,
+      slug,
+      credits,
+      status,
+      month,
+      weekOf,
+      sortOrder,
+      adminNote,
+    },
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { deleteBuild, updateBuild } from "@/lib/db/builds"
 import { validateBuildReview } from "@/lib/validation/build"
 import { requireAdminApi } from "@/lib/auth/require-admin"
+import { syncBuildCommitCount } from "@/lib/github/commits"
 
 export const runtime = "nodejs"
 
@@ -30,11 +31,25 @@ export async function PATCH(
     return NextResponse.json({ errors: result.errors }, { status: 400 })
   }
 
-  const build = await updateBuild(id, result.data)
-  if (!build) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  try {
+    const build = await updateBuild(id, result.data)
+    if (!build) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 })
+    }
+    // Read the commit count now, as a project save does, so the page shows
+    // it straight away rather than after the first daily refresh.
+    await syncBuildCommitCount(build)
+    return NextResponse.json(build)
+  } catch (error) {
+    // `slug` is UNIQUE; D1 reports it in the message, not a `.code`.
+    if (String(error).includes("UNIQUE constraint failed")) {
+      return NextResponse.json(
+        { errors: { slug: "Another build already uses this address" } },
+        { status: 409 },
+      )
+    }
+    throw error
   }
-  return NextResponse.json(build)
 }
 
 export async function DELETE(

@@ -3,6 +3,7 @@ import { insertBuild } from "@/lib/db/builds"
 import { validateBuildSubmission } from "@/lib/validation/build"
 
 import { hashTrackToken, newTrackToken } from "@/lib/tracking"
+import { slugify } from "@/lib/validation/project"
 
 export const runtime = "nodejs"
 
@@ -29,6 +30,10 @@ export async function POST(request: NextRequest) {
 
   // Shown once on the thank-you screen; only its hash is kept.
   const track = newTrackToken()
-  await insertBuild(result.data, await hashTrackToken(track))
+  await insertBuild(
+    result.data,
+    await hashTrackToken(track),
+    slugify(result.data.title),
+  )
   return NextResponse.json({ ok: true, track }, { status: 201 })
 }

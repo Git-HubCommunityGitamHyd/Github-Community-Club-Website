@@ -7,7 +7,7 @@ import { ArrowRight, ImagePlus } from "lucide-react"
 import type { PublicBuild } from "@/lib/db/builds"
 import { SectionLabel } from "@/features/v2/section-label"
 import { SectionTexture } from "@/components/ui/texture"
-import { creditLine } from "@/features/v2/builds/build-card"
+import { creditLine } from "@/features/v2/builds/format"
 
 /** Rotation and offset for each card in the spread, back to front. */
 const FAN = [
@@ -64,7 +64,7 @@ export function V2BuildsSection({ builds }: { builds: PublicBuild[] }) {
               >
                 {build ? (
                   <Link
-                    href="/builds"
+                    href={`/builds/${build.slug}`}
                     className="block overflow-hidden rounded-xl border border-gh-border bg-gh-surface p-2 shadow-[0_24px_50px_-20px_rgba(1,4,9,0.95)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent"
                   >
                     <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gh-elevated">

@@ -51,3 +51,24 @@ export function weekLabel(weekOf: string): string {
 export function monthOf(date: Date): string {
   return date.toISOString().slice(0, 7)
 }
+
+/**
+ * Someone's part in a build, as a key like every other fixed choice. Two,
+ * because a student build is rarely bigger than a few friends: whoever led
+ * it, and everyone who built it with them.
+ */
+export const BUILD_ROLES: Record<string, { label: string; rank: number }> = {
+  lead: { label: "Lead", rank: 0 },
+  member: { label: "Teammate", rank: 1 },
+}
+
+export const BUILD_ROLE_KEYS = Object.keys(BUILD_ROLES)
+
+export function buildRole(key: string) {
+  return BUILD_ROLES[key] ?? BUILD_ROLES.member
+}
+
+export type Credit = { name: string; role: string; contribution: string }
+
+/** Paths under /builds that are pages of their own, so never a build's slug. */
+export const RESERVED_BUILD_SLUGS = ["submit", "track"]

@@ -107,6 +107,17 @@ const STEPS: Step[] = [
   },
   {
     kind: "text",
+    summary: "Dev notes",
+    field: "devNotes",
+    question: "Anything another developer would want to know?",
+    hint: "Optional. How it works, what was hard, what you'd do next. It goes in a Dev notes section on its page.",
+    placeholder: "It scrapes the timetable page every 10 minutes because...",
+    maxLength: 3000,
+    multiline: true,
+    optional: true,
+  },
+  {
+    kind: "text",
     summary: "Teammates",
     field: "teammates",
     question: "Did anyone build it with you?",

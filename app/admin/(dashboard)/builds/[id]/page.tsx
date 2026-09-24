@@ -32,8 +32,19 @@ export default async function ReviewBuildPage({
         >
           Back to builds
         </Link>
-        <h1 className="mb-1 mt-3 text-2xl font-semibold">{build.title}</h1>
-        <p className="mb-8 text-sm text-gh-muted">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-semibold">{build.title}</h1>
+          {build.status === "accepted" && build.month && (
+            <Link
+              href={`/builds/${build.slug}`}
+              target="_blank"
+              className="text-sm text-gh-accent hover:underline"
+            >
+              View page
+            </Link>
+          )}
+        </div>
+        <p className="mb-8 mt-1 text-sm text-gh-muted">
           Received{" "}
           {new Date(build.created_at).toLocaleString("en-IN", {
             dateStyle: "medium",
