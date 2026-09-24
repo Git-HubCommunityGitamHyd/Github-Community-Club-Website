@@ -1543,3 +1543,230 @@ rather than URLs (for names and initials), faces as buttons, an overflow
 count computed from what was hidden (the original rendered "+undefined"
 without `numPeople`, and `href=""` reloaded the page), a ring in the page
 background colour, and next/image.
+
+
+## Phase 24 - members page, teams, avatars, inner-page mascot
+
+### Avatars, not photos
+
+Members asked not to show their faces, so member images are avatars they
+generate. Two consequences. The GitHub profile picture fallback from Phase
+23 went, because for many people that picture is a photo of them. And the
+prompt (`docs/member-avatar-prompt.md`) fixes everything about the image
+except the person: square, head and shoulders, facing forward, head in the
+middle 60%, flat #161B22 background, no text. A grid of avatars only looks
+like a set if they are framed the same, and the site crops them all to a
+circle. Pixel art is the default because it sits naturally beside the
+identicon fallback and the contribution-graph look of the site; the cartoon
+variant exists but mixing the two on one page reads as inconsistent.
+
+The fallback is a GitHub-style identicon (5x5, mirrored, FNV-1a of the
+name) in the first stop of their border colour. It is what GitHub shows for
+an account with no picture, it is deterministic, and it reads as pixel art.
+
+### Teams are a table, not a key set
+
+The CMS rule is that anything picked from a fixed set is stored as a key
+defined in code. Teams are not that: the club names and renames its teams,
+so they are content. A `teams` table with its own admin screen, and
+`members.team_id`. Deleting a team nulls the members' team explicitly
+rather than relying on ON DELETE SET NULL, for the same reason the other
+deletes are explicit (foreign keys may be off on the connection).
+
+### One avatar component
+
+`MemberAvatar` draws the avatar inside the conic profile border for the
+members grid, the popup and the CMS preview, so the border an admin picks is
+the one the page draws. The ring spins always in the popup, only on hover in
+grids (a page of spinning rings is noise and a compositor animation each),
+never at small sizes.
+
+### Team2, adapted
+
+Kept: the avatar floating half out of the card on a raised plate, the
+two-rate lift on hover, the ruled-off figure. Changed: one card per call
+rather than a hardcoded list; the avatar is a slot; the card opens the
+profile through a stretched button on the name (a button wrapping headings
+is invalid HTML), stretched up over the avatar too; the original's
+`render`/`nativeButton` props are Base UI's API, which this project's shadcn
+button does not have, and there are no phone numbers to link anyway. The
+figure is how many projects they are tagged on, which is real data.
+
+### The mascot on inner pages
+
+`V2Mascot` was written for the homepage: a ref to the hero slot and a fixed
+list of section ids. Inner pages are server components, which cannot hold a
+ref, and their sections come from the CMS (one per team on `/members`). So
+the rig now also takes a slot id and `docks="auto"`, which docks beside
+every `data-mascot-dock` element in document order. `PageMascot` mounts it
+from the shared page chrome; a page opts in with `<MascotSlot />` in its
+header and the attribute on its sections. `PAGE_MASCOT_SLOT` lives in the
+slot file because a string exported from a "use client" module reaches a
+server component as a client reference, not as the string.
+
+### Sitting on a popup
+
+A popup is a perch like the project preview, with two differences carried
+on the perch itself: a height (the popup is bigger than a preview card) and
+`aboveDialogs`. The popup overlay is z-60, the mascot's own layer, and the
+portal comes later in the DOM, so a mascot asked onto a popup landed behind
+the dimmed backdrop. While going to, sitting on or returning from such a
+perch its layer is raised to 70, written straight to the element's style
+from the rAF loop so nothing re-renders. `DialogShell` publishes the perch
+every frame while open, because the panel springs in and a position read
+at mount is where it started, not where it lands.
+
+
+## Phase 25 - members page fixes
+
+### The scroll from the bottom was the global smooth-scroll rule
+
+`html { scroll-behavior: smooth }` in globals.css is there for in-page
+anchors. It also applies to the scroll reset Next performs on every route
+change, so navigating from far down the homepage animated the new page from
+that offset up to the top. Next 16 only neutralises this when `<html>`
+carries `data-scroll-behavior="smooth"`
+(`disableSmoothScrollDuringRouteTransition`): it sets `auto` around its own
+navigation scroll and restores it, and leaves hash-only changes smooth.
+Verified by listening for scroll events across the click: one event, at 0.
+
+### Handle is its own field
+
+The card's handle is not simply the GitHub username. The user asked for it
+to be manageable in the CMS, and a member's public handle can differ from
+their GitHub account (or they may have none), so it is a separate column
+that falls back to `github` when blank (`displayHandle()` in
+features/v2/people/profile.ts).
+
+
+## Phase 26 - avatar style
+
+8-bit was dropped at the user's call. The reasoning for the replacement
+default: avatars are shown at about 100px in the grid and 36px in the
+AvatarCircles row, and a flat cartoon with bold outlines and large features
+survives that reduction where any pixel style loses the face first. 16-bit
+stays as the alternative because it has enough resolution for a face to be
+recognisably someone's, which 8-bit does not. The fixed framing is unchanged
+so a mix of the two still crops identically, though one style per club is
+recommended.
+
+## Phase 27 - members polish, proposals, builds
+
+### Members page: why it felt empty, and the hover glow
+The doodle texture is uniform, so the page had no focal point. The header now
+has a faint wall of the members' own identicons (content, not decoration),
+and each team section an outlined watermark of its name plus a glow that
+alternates sides, which gives the long page rhythm. The hover glow is inside
+the card, as asked: a radial pool of the member's ring colour falling from
+where the avatar sits, and a hairline border in the same colour, faded in on
+opacity only. It uses the ring's first stop so card and ring read as one
+object.
+
+### One stepper form for both
+Both forms are aimed at students who have never talked to the club, many not
+technical. A long form reads as paperwork; one question per screen with a
+line under it saying why it is asked reads as a conversation. Details that
+matter:
+- Enter moves on, Ctrl/Cmd+Enter in text boxes, letter keys for choices;
+  choosing auto-advances after 320ms so the selection is seen landing.
+- The review screen's edit buttons return straight to the review
+  (`returnToReview`), rather than walking forward through every later step.
+- Drafts live in sessionStorage, not localStorage, because the forms hold a
+  phone number and lab computers are shared.
+- Focus is moved on the enter animation's completion. With AnimatePresence
+  "wait" the new step does not exist until the old one has left, so focusing
+  on the index change focused the outgoing step and lost focus to <body>.
+- Later questions use earlier answers ("Nice to meet you, Asha").
+- Questions avoid technical words. "How do you picture people using it?"
+  with "Not sure, you decide" replaces a platform question.
+
+### Privacy model
+Reg no and phone are collected (the user asked for them) but never leave the
+admin screens. Public queries select named columns (`PUBLIC_COLUMNS`) rather
+than `*` and trimming, so a future private column cannot leak by default.
+Proposals show a first name only (the form says so; admins can edit
+`public_name`). Builds credit the full name, because credit is the point of a
+showcase, and the form says that too. Declined proposals stay private so no
+student's idea is shown publicly with a "no" on it.
+
+### Status as keys, again
+Proposal status, audience, format, help, year and build status are all keys
+in code, as with every other fixed choice in the CMS. Only `built` is green,
+same rule as project statuses: green means "you can use this".
+
+### Public uploads
+The admin sign route is behind the session; a public one cannot be. So the
+Worker now signs optional `folder` and `allowed_formats` sent by the Next.js
+app (never the browser), and Cloudinary rejects an upload whose parameters
+differ from what was signed. `/api/builds/upload-sign` always asks for
+folder `build-submissions` and refuses to hand out a signature if the Worker
+did not sign that folder (an old deployment ignores the body). The build API
+then only accepts `https://res.cloudinary.com/.../image/upload/...` URLs in
+that folder, so a submission cannot put an arbitrary image from anywhere on
+the site. Still open for the security pass: rate limiting, Turnstile, a size
+cap.
+
+### "This week" is the latest picked week
+Builds carry `week_of` (the Monday, whatever date the admin picks). The page
+leads with the most recent week that has any picks, headed "This week's
+builds" only if that Monday is this week and "Picked the week of X"
+otherwise. Keying the section strictly to the current calendar week would
+empty it every Monday morning until someone remembered to pick.
+
+### Why the page designs
+- `/proposals` is a repository issue list (status tabs with counts, #id,
+  "proposed by"). A proposal is literally a request someone filed that the
+  maintainers took on, and the audience reads that shape fluently.
+- `/builds` lays months out as GitHub releases (tag, month, count, Latest),
+  because the page is a changelog of what students shipped.
+- Homepage `#ideas` is a `git log` ending in an uncommitted, dashed node that
+  links to the form; `#builds` fans the week's picks like prints, mirrored
+  left/right from `#ideas` so the pair do not read as one block twice. Each
+  has an honest empty state that doubles as the invitation.
+
+### The admin leak
+Found while checking that private fields stay private: logged out, `curl`
+on any `/admin` page returned its data, redirect and all. Next renders
+layouts and pages in parallel; `redirect()` in the layout only decides what
+the browser does, not what the page already queried and streamed. Every
+dashboard page now checks the session itself before reading. Middleware
+(Next 16 `proxy`) would be the central fix, but it defaults to the Node
+runtime and OpenNext's support for that on Cloudflare needs checking before
+relying on it, so per-page checks for now. Worth revisiting in the security
+pass. CLAUDE.md records the rule.
+
+### Perch at scroll 0
+The perch was blended into the dock position, and the dock is itself
+interpolated from the header slot by scroll progress `p`. At the top of an
+inner page `p` is 0, so a popup opened there left the mascot in its slot,
+merely shrunk. It is now blended over the final target instead; with `p` = 1
+this is algebraically the old behaviour, so the homepage project preview is
+unchanged. Dialogs that perch it also reserve 7rem of headroom, since a tall
+panel otherwise starts 7.5vh from the top and the mascot's head is cut off.
+
+
+## Phase 28 - form pages and tracking links
+
+### Form pages
+The page heading and lede sat above a form whose intro screen said the same
+thing again, which cost a screen of height and hid Start below the fold at
+900px. The intro is the page's h1 now. The mascot's slot moved from the
+header into the rail, above "After you send it", where the column was empty.
+
+### Status without accounts
+Options considered: look up by reg no + phone (classmates know both, so it
+exposes the status of anyone's submission, and invites guessing); email a
+link (we collect no email and there is no mail service); a private link. The
+link wins: a 192-bit random token, shown once with a copy button, stored only
+as SHA-256 so no admin screen or backup holds a working link. Tokens are
+shape-checked before hashing. The pages are noindex and no-referrer so the
+token does not travel to other sites. A lost link is handled by people: the
+not-found page says to ask an admin on the community group. Declined
+submissions get plain, kind wording and stay private.
+
+### Custom cursor (opinion given, not built)
+Replacing the cursor site-wide fights the octocat, which already watches the
+pointer; loses the native cursor's meaning (text caret, hand on links);
+lags behind the hand with a spring; ignores users with enlarged system
+cursors; does nothing on touch. A scoped label that appears only over a few
+clickable surfaces avoids all of that.

@@ -11,14 +11,6 @@ const nextConfig = {
     unoptimized: false,
     qualities: [75, 95],
     remotePatterns: [
-      // GitHub avatars: the fallback photo for anyone on a project who has
-      // not uploaded one (features/v2/people/profile.ts).
-      {
-        protocol: "https",
-        hostname: "avatars.githubusercontent.com",
-        port: "",
-        pathname: "/**",
-      },
       {
         protocol: "http",
         hostname: "localhost",

@@ -23,7 +23,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // No `suppressHydrationWarning` and no anti-FOUC script: both existed to
     // cover a theme class written to <html> before hydration. There is one
     // theme now, so the server and client markup already agree.
-    <html lang="en">
+    // data-scroll-behavior: globals.css makes <html> scroll smoothly, which
+    // is right for in-page anchors but also animated every route change: Next
+    // resets the scroll to the top on navigation, and a smooth reset from far
+    // down the homepage played as the new page scrolling up from the bottom.
+    // With this attribute Next switches it to `auto` for its own navigation
+    // scroll and back afterwards.
+    <html lang="en" data-scroll-behavior="smooth">
       <body>
         {/* The easter egg stays global: it is one click listener and does
             nothing until the mascot is clicked. The glow that used to sit

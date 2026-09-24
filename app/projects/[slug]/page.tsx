@@ -19,6 +19,7 @@ import { TransitionSettled } from "@/features/v2/projects/transition"
 import { transitionName } from "@/features/v2/projects/transition-name"
 import { SectionLabel } from "@/features/v2/section-label"
 import { SectionTexture } from "@/components/ui/texture"
+import { MascotSlot } from "@/features/v2/mascot/mascot-slot"
 
 export const dynamic = "force-dynamic"
 
@@ -64,6 +65,7 @@ function Block({
   return (
     <section
       id={id}
+      data-mascot-dock
       style={rise(order)}
       className="project-rise grid scroll-mt-32 gap-6 border-t border-gh-border pt-10 lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-10"
     >
@@ -217,7 +219,7 @@ export default async function ProjectPage({
               <ProjectsBackLink href="/projects">All projects</ProjectsBackLink>
             </div>
 
-            <header className="mt-12 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+            <header className="mt-4 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
                 <div className="project-rise" style={rise(1)}>
                   <ProjectStatusBadge status={project.status} />
@@ -236,14 +238,17 @@ export default async function ProjectPage({
                   </span>
                 </h1>
               </div>
-              {project.commit_count !== null && project.repo_url && (
-                <div className="project-rise" style={rise(2)}>
-                  <CommitCount
-                    count={project.commit_count}
-                    repoUrl={project.repo_url}
-                  />
-                </div>
-              )}
+              <div className="flex shrink-0 flex-col items-start gap-4 sm:items-end">
+                <MascotSlot />
+                {project.commit_count !== null && project.repo_url && (
+                  <div className="project-rise" style={rise(2)}>
+                    <CommitCount
+                      count={project.commit_count}
+                      repoUrl={project.repo_url}
+                    />
+                  </div>
+                )}
+              </div>
             </header>
 
             <div className="project-rise mt-7" style={rise(3)}>

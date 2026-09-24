@@ -1,7 +1,13 @@
 import { listApplications } from "@/lib/db/applications"
 import { AdminNav } from "@/features/admin/admin-nav"
+import { requireAdminPage } from "@/lib/auth/require-admin"
 
 export default async function AdminPage() {
+  // Here as well as in the layout: Next renders a layout and its page in
+  // parallel, so the layout's redirect alone does not stop this page from
+  // reading the database and streaming the result to a logged-out visitor.
+  await requireAdminPage()
+
   const applications = await listApplications()
 
   return (

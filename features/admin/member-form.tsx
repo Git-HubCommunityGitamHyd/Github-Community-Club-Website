@@ -5,11 +5,9 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ImageUploadField } from "@/features/admin/image-upload-field"
 import type { Member } from "@/lib/db/members"
-import {
-  BOARD_ACCENTS,
-  BOARD_ACCENT_KEYS,
-  boardAccent,
-} from "@/features/v2/board/accents"
+import type { Team } from "@/lib/db/teams"
+import { BOARD_ACCENTS, BOARD_ACCENT_KEYS } from "@/features/v2/board/accents"
+import { MemberAvatar } from "@/features/v2/people/member-avatar"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -25,6 +23,9 @@ type FormState = {
   linkedin: string
   email: string
   accent: string
+  tagline: string
+  handle: string
+  teamId: string
   sortOrder: string
 }
 
@@ -38,11 +39,20 @@ function toFormState(member?: Member): FormState {
     linkedin: member?.linkedin ?? "",
     email: member?.email ?? "",
     accent: member?.accent ?? "green",
+    tagline: member?.tagline ?? "",
+    handle: member?.handle ?? "",
+    teamId: member?.team_id ? String(member.team_id) : "",
     sortOrder: member ? String(member.sort_order) : "0",
   }
 }
 
-export function MemberForm({ initial }: { initial?: Member }) {
+export function MemberForm({
+  initial,
+  teams,
+}: {
+  initial?: Member
+  teams: Team[]
+}) {
   const router = useRouter()
   const [form, setForm] = useState<FormState>(toFormState(initial))
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -121,11 +131,147 @@ export function MemberForm({ initial }: { initial?: Member }) {
         )}
       </div>
 
-      <ImageUploadField
-        label="Photo"
-        value={form.imageUrl}
-        onChange={(url) => set("imageUrl", url)}
-      />
+      <div>
+        <label className={labelClass} htmlFor="tagline">
+          Tagline
+        </label>
+        <input
+          id="tagline"
+          maxLength={80}
+          className={inputClass}
+          value={form.tagline}
+          onChange={(e) => set("tagline", e.target.value)}
+          placeholder="e.g. Breaks the build so you do not have to"
+        />
+        <p className="mt-1 text-sm text-gh-muted">
+          Optional, in their own words. One line at the bottom of their card on
+          the members page, and at the top of their profile.{" "}
+          {form.tagline.length}/80
+        </p>
+        {errors.tagline && (
+          <p className="mt-1 text-sm text-red-500">{errors.tagline}</p>
+        )}
+      </div>
+
+      <div>
+        <label className={labelClass} htmlFor="handle">
+          Handle
+        </label>
+        <div className="flex items-center rounded-md border border-gh-border bg-gh-elevated focus-within:border-gh-accent focus-within:ring-1 focus-within:ring-gh-accent">
+          <span className="pl-3 font-mono text-sm text-gh-muted">@</span>
+          <input
+            id="handle"
+            className="w-full bg-transparent px-1 py-2 font-mono text-base text-gh-text placeholder:text-gh-muted focus:outline-none sm:text-sm"
+            value={form.handle}
+            onChange={(e) => set("handle", e.target.value)}
+            placeholder={form.github || "handle"}
+          />
+        </div>
+        <p className="mt-1 text-sm text-gh-muted">
+          Shown under the tagline. Leave blank to use their GitHub username.
+        </p>
+        {errors.handle && (
+          <p className="mt-1 text-sm text-red-500">{errors.handle}</p>
+        )}
+      </div>
+
+      <div>
+        <label className={labelClass} htmlFor="teamId">
+          Team
+        </label>
+        <select
+          id="teamId"
+          className={inputClass}
+          value={form.teamId}
+          onChange={(e) => set("teamId", e.target.value)}
+        >
+          <option value="">No team</option>
+          {teams.map((team) => (
+            <option key={team.id} value={team.id}>
+              {team.name}
+            </option>
+          ))}
+        </select>
+        <p className="mt-1 text-sm text-gh-muted">
+          {teams.length === 0 ? (
+            <>
+              No teams yet.{" "}
+              <a
+                href="/admin/teams/new"
+                className="text-gh-accent underline-offset-4 hover:underline"
+              >
+                Add one
+              </a>
+              ; members without a team are listed together.
+            </>
+          ) : (
+            "Groups them on the members page and shows on their profile."
+          )}
+        </p>
+        {errors.teamId && (
+          <p className="mt-1 text-sm text-red-500">{errors.teamId}</p>
+        )}
+      </div>
+
+      {/* Avatar and border together, with a live preview: the two are one
+          picture on the site, and choosing a border without seeing it
+          around the avatar is guessing. */}
+      <fieldset className="rounded-lg border border-gh-border p-4">
+        <legend className="px-1 text-sm font-medium text-gh-muted">
+          Avatar and profile border
+        </legend>
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+          <div className="flex flex-col items-center gap-2">
+            <MemberAvatar
+              person={{
+                name: form.name || "?",
+                image_url: form.imageUrl,
+                accent: form.accent,
+              }}
+              size={112}
+              spin="always"
+            />
+            <span className="text-xs text-gh-muted">Preview</span>
+          </div>
+          <div className="min-w-0 flex-1 space-y-4">
+            <ImageUploadField
+              label="Avatar"
+              value={form.imageUrl}
+              onChange={(url) => set("imageUrl", url)}
+            />
+            <p className="-mt-2 text-sm text-gh-muted">
+              A generated avatar, not a photo: members asked not to show their
+              faces. Send them the prompt in{" "}
+              <code>docs/member-avatar-prompt.md</code>. Square, at least 512px.
+              Without one, the site draws an identicon from their name.
+            </p>
+            <div>
+              <label className={labelClass} htmlFor="accent">
+                Profile border
+              </label>
+              {/* Known keys, not a colour picker: the border is stored as a
+                  key so the page owns what each one renders as. A free hex
+                  field would put a colour that belongs to no palette on the
+                  site, permanently, the first time anybody used it. */}
+              <select
+                id="accent"
+                className={inputClass}
+                value={form.accent}
+                onChange={(e) => set("accent", e.target.value)}
+              >
+                {BOARD_ACCENT_KEYS.map((key) => (
+                  <option key={key} value={key}>
+                    {BOARD_ACCENTS[key].label}
+                  </option>
+                ))}
+              </select>
+              {errors.accent && (
+                <p className="mt-1 text-sm text-red-500">{errors.accent}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </fieldset>
 
       <div>
         <label className={labelClass} htmlFor="description">
@@ -203,45 +349,6 @@ export function MemberForm({ initial }: { initial?: Member }) {
             onChange={(e) => set("sortOrder", e.target.value)}
           />
         </div>
-      </div>
-
-      <div>
-        <label className={labelClass} htmlFor="accent">
-          Photo ring
-        </label>
-        <div className="flex items-center gap-3">
-          {/* A live swatch of the actual gradient, because the names alone
-              ("Aurora", "Ember") do not tell you what you are choosing. */}
-          <span
-            aria-hidden="true"
-            className="size-10 shrink-0 rounded-full"
-            style={{
-              background: `conic-gradient(from 0deg, ${boardAccent(form.accent).stops.join(", ")})`,
-            }}
-          />
-          {/* A dropdown of known keys, not a colour picker: the ring is stored
-              as a key so the page owns what each one renders as. A free hex
-              field would put a colour that belongs to no palette on the site,
-              permanently, the first time anybody used it. */}
-          <select
-            id="accent"
-            className={inputClass}
-            value={form.accent}
-            onChange={(e) => set("accent", e.target.value)}
-          >
-            {BOARD_ACCENT_KEYS.map((key) => (
-              <option key={key} value={key}>
-                {BOARD_ACCENTS[key].label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <p className="mt-1 text-sm text-gh-muted">
-          Shown around their photo when someone opens their profile.
-        </p>
-        {errors.accent && (
-          <p className="mt-1 text-sm text-red-500">{errors.accent}</p>
-        )}
       </div>
 
       {serverError && <p className="text-sm text-red-500">{serverError}</p>}

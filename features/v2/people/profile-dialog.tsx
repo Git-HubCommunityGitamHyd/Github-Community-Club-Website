@@ -1,13 +1,13 @@
 "use client"
 
-import Image from "next/image"
 import { FaGithub, FaLinkedinIn, FaRegEnvelope } from "react-icons/fa6"
 import type { IconType } from "react-icons"
 import type { ReactNode } from "react"
 import { DialogShell } from "@/features/v2/dialog-shell"
 import { boardAccent } from "@/features/v2/board/accents"
 import { initialsOf } from "@/components/ui/avatar-circles"
-import { profilePhoto, type Profile } from "@/features/v2/people/profile"
+import { MemberAvatar } from "@/features/v2/people/member-avatar"
+import { displayHandle, type Profile } from "@/features/v2/people/profile"
 
 /**
  * A person's profile: a board member from the board section, or someone
@@ -41,12 +41,18 @@ export function ProfileDialog({
   member,
   onClose,
   children,
+  after,
+  perchMascot = false,
 }: {
   member: Profile | null
   onClose: () => void
+  /** Above the bio: context from where it was opened. */
   children?: ReactNode
+  /** Below the bio, above the links. */
+  after?: ReactNode
+  /** Calls the page's octocat over to sit on the popup while it is open. */
+  perchMascot?: boolean
 }) {
-  const photo = member && profilePhoto(member)
   const accent = boardAccent(member?.accent)
 
   const socials = member
@@ -78,6 +84,7 @@ export function ProfileDialog({
       onClose={onClose}
       labelledBy="member-dialog-name"
       bleed
+      perchMascot={perchMascot}
     >
       {member && (
         <>
@@ -117,35 +124,7 @@ export function ProfileDialog({
             </span>
 
             <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center">
-              {/* `overflow-hidden` is load-bearing: the conic layer is inset by -45%
-                  so that rotating it never sweeps an empty corner through the ring,
-                  which means it is far larger than this box and has to be clipped
-                  to it. Without the clip the gradient spills a green wedge across
-                  the whole panel. */}
-              <span className="relative block size-32 shrink-0 overflow-hidden rounded-3xl p-[3px]">
-                <span
-                  aria-hidden="true"
-                  className="board-ring absolute inset-[-45%]"
-                  style={{
-                    background: `conic-gradient(from 0deg, ${accent.stops.join(", ")})`,
-                  }}
-                />
-                <span className="relative block h-full w-full overflow-hidden rounded-[21px] bg-gh-surface">
-                  {photo ? (
-                    <Image
-                      src={photo}
-                      alt=""
-                      fill
-                      sizes="128px"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <span className="flex h-full w-full items-center justify-center text-3xl font-extrabold text-gh-border">
-                      {initialsOf(member.name)}
-                    </span>
-                  )}
-                </span>
-              </span>
+              <MemberAvatar person={member} size={128} spin="always" />
 
               <div className="min-w-0">
                 <h3
@@ -154,14 +133,23 @@ export function ProfileDialog({
                 >
                   {member.name}
                 </h3>
-                {member.role && (
-                  <p className="mt-3 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-gh-accent">
-                    {member.role}
+                {(member.team_name || member.role) && (
+                  <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+                    {member.team_name && (
+                      <span className="rounded-full border border-gh-accent/40 bg-gh-accent/10 px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-gh-accent">
+                        {member.team_name} team
+                      </span>
+                    )}
+                    {member.role && (
+                      <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-gh-muted">
+                        {member.role}
+                      </span>
+                    )}
                   </p>
                 )}
-                {member.github && (
+                {displayHandle(member) && (
                   <p className="mt-2 font-mono text-sm text-gh-muted">
-                    @{member.github}
+                    @{displayHandle(member)}
                   </p>
                 )}
               </div>
@@ -170,11 +158,17 @@ export function ProfileDialog({
 
           <div className="border-t border-gh-border px-8 py-8 sm:px-10">
             {children}
+            {member.tagline && (
+              <p className="mb-4 text-pretty text-lg font-medium leading-snug text-gh-text">
+                {member.tagline}
+              </p>
+            )}
             {member.description && (
               <p className="max-w-[58ch] text-pretty text-base leading-relaxed text-gh-muted">
                 {member.description}
               </p>
             )}
+            {after}
 
             {socials.length > 0 && (
               <div className="mt-8 flex flex-wrap gap-3 first:mt-0">

@@ -21,7 +21,8 @@ function timingSafeEqual(a: string, b: string): boolean {
   return mismatch === 0
 }
 
-// Only ever called server-to-server from /api/admin/upload-sign, never
+// Only ever called server-to-server from /api/admin/upload-sign and
+// /api/builds/upload-sign, never
 // directly from the browser — the admin session cookie is scoped to the
 // Next.js app's own domain and wouldn't reach a Worker on a different one.
 export default {
@@ -39,10 +40,41 @@ export default {
       })
     }
 
+    // Optional restrictions, sent by the Next.js app (never the browser) for
+    // uploads that come from the public build form: a folder the upload must
+    // land in and the formats Cloudinary may accept. Signed alongside the
+    // timestamp, so the browser has to send exactly these values or the
+    // upload is rejected. Admin uploads send no body and sign only the
+    // timestamp, as before.
+    const body = (await request.json().catch(() => null)) as {
+      folder?: unknown
+      allowed_formats?: unknown
+    } | null
+    const params: Record<string, string> = {}
+    if (
+      typeof body?.folder === "string" &&
+      /^[a-z0-9-]{1,40}$/.test(body.folder)
+    ) {
+      params.folder = body.folder
+    }
+    if (
+      typeof body?.allowed_formats === "string" &&
+      /^[a-z]+(,[a-z]+)*$/.test(body.allowed_formats)
+    ) {
+      params.allowed_formats = body.allowed_formats
+    }
+
     const timestamp = Math.floor(Date.now() / 1000)
-    const signature = await sha1Hex(
-      `timestamp=${timestamp}${env.CLOUDINARY_API_SECRET}`,
-    )
+    const signed: Record<string, string> = {
+      ...params,
+      timestamp: String(timestamp),
+    }
+    // Cloudinary signs the parameters sorted by name, joined as a query string.
+    const toSign = Object.keys(signed)
+      .sort()
+      .map((key) => `${key}=${signed[key]}`)
+      .join("&")
+    const signature = await sha1Hex(`${toSign}${env.CLOUDINARY_API_SECRET}`)
 
     return new Response(
       JSON.stringify({
@@ -50,6 +82,7 @@ export default {
         timestamp,
         apiKey: env.CLOUDINARY_API_KEY,
         cloudName: env.CLOUDINARY_CLOUD_NAME,
+        params,
       }),
       { headers: { "Content-Type": "application/json" } },
     )

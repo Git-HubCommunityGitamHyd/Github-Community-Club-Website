@@ -3,33 +3,7 @@
 import { useRef, useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-
-type SignPayload = {
-  signature: string
-  timestamp: number
-  apiKey: string
-  cloudName: string
-}
-
-async function uploadToCloudinary(file: File): Promise<string> {
-  const signRes = await fetch("/api/admin/upload-sign", { method: "POST" })
-  if (!signRes.ok) throw new Error("Could not sign upload")
-  const sign: SignPayload = await signRes.json()
-
-  const formData = new FormData()
-  formData.append("file", file)
-  formData.append("api_key", sign.apiKey)
-  formData.append("timestamp", String(sign.timestamp))
-  formData.append("signature", sign.signature)
-
-  const uploadRes = await fetch(
-    `https://api.cloudinary.com/v1_1/${sign.cloudName}/image/upload`,
-    { method: "POST", body: formData },
-  )
-  if (!uploadRes.ok) throw new Error("Upload to Cloudinary failed")
-  const uploaded = await uploadRes.json()
-  return uploaded.secure_url as string
-}
+import { uploadToCloudinary } from "@/lib/cloudinary/upload"
 
 interface ImageUploadFieldProps {
   label: string

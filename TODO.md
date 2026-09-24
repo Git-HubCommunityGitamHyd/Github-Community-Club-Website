@@ -931,15 +931,302 @@ can be an iframe instead.
       slightly left of centre while the head faces forward. Barely visible;
       decoupling needs a second channel into the model
 - [ ] The members page itself (waiting on the user); it reuses
-      `ProfileDialog` and `lib/db/members.ts`. The user said the profile
-      popup's design will change with that page, so it stays as it is
-      until then. Do not restyle it before the brief arrives
+      `ProfileDialog` and `lib/db/members.ts`. Done in Phase 24 with the
+      brief: team, bio, links, profile border
 
-## Next
+## Phase 24 - members page, teams, avatars, and the mascot beyond the homepage - DONE
+
+Members do not want their faces shown. Member images are avatars they
+generate themselves (8-bit, pixel or cartoon) from a prompt the user hands
+out.
+
+### A. Avatar prompt
+
+- [x] `docs/member-avatar-prompt.md`: a copy-paste prompt (8-bit pixel art
+      default, cartoon variant), fixed framing so every avatar crops to a
+      circle the same way, fix-up replies, and an upload checklist
+- [x] GitHub profile photo fallback removed (often a real face). Fallback
+      is a GitHub-style identicon seeded by name, in their border colour
+      (`components/ui/identicon.tsx`); `avatars.githubusercontent.com`
+      dropped from `remotePatterns`
+
+### B. Data and CMS
+
+- [x] `teams` table + `members.team_id` (`db/migrations/2026-09-teams.sql`,
+      applied locally)
+- [x] `/admin/teams` list / add / edit / delete, in the admin nav; public
+      `GET /api/teams`
+- [x] Member form: team select, "Avatar and profile border" block with a
+      live preview of the avatar in the chosen border, pointer to the prompt
+- [x] Admin members list shows avatar and team
+- [x] Unknown team ids rejected (validation + existence check in the
+      route); deleting a team leaves its members, teamless
+
+### C. Homepage
+
+- [x] Under the board grid: AvatarCircles of members + "View all N
+      members", the same pill as "View all projects"
+
+### D. /members page
+
+- [x] Team2 adapted into `components/ui/team-2.tsx` (`Team2Card`): floating
+      avatar in the member's border, name, headline, @handle, projects
+      count. One section per team in CMS order, then "Across teams" for the
+      teamless
+- [x] Popup: team pill, headline, bio, "Worked on" project links, social
+      links, rotating profile border. The shared `ProfileDialog` now draws
+      every avatar as a circle in its border
+- [x] Back button to `/#board`, empty state, metadata, `force-dynamic`
+
+### E. Mascot on the inner pages
+
+- [x] `/projects`, `/projects/[slug]`, `/members` show the homepage mascot:
+      large in the page header (`<MascotSlot />`), then docking side to side
+      beside each `data-mascot-dock` section
+- [x] On `/members`, opening a profile flies the mascot onto the popup's
+      top edge, facing forward, drawn above the dimmed backdrop; closing
+      sends it back to its dock
+- [ ] ~~The mascot carries across the listing to detail transition~~ Not
+      done: the next page's mascot mounts after the transition captures it,
+      so a shared name would only fade it. It reappears in the new header
+
+### Checks
+
+- `npx tsc --noEmit`, `npx eslint app features lib components` clean
+- Fresh tab on `/projects`, `/members`, `/v2`: no console errors
+- `/members`: three team sections, cards with avatars and identicons,
+  mascot in the header then docked beside the teams. Opened two profiles:
+  the mascot sat on each popup and went back to its dock on close
+- `/v2`: faces and "View all 8 members" under the board
+- `/projects` and `/projects/campus-mess-menu`: mascot in the header, docking
+  beside the grid and the numbered blocks
+- Validation, run directly: 18/18 cases pass (team name rules, GitHub URL
+  pasted instead of a username, bad team id, unknown border key, duplicate
+  or empty team rows on a project, `javascript:` links)
+- Same SQL as the CMS functions against local D1: team join, duplicate team
+  name rejected, deleting a team leaves the member with no team, deleting a
+  member leaves no orphaned project tags
+- Every new admin route compiles and redirects to login; every new admin
+  API returns 401 without a session
+
+### Not verified
+
+- The admin forms were not clicked through in the browser (that needs the
+  admin password, which I do not type). Log in inside the browser pane and
+  I can drive every form end to end
+
+### Local test data (not real)
+
+- Teams Web, Design and Events, with the eight local members spread across
+  them. Replace through `/admin/teams` and `/admin/members`
+
+### Follow-ups
+
+- [ ] Run `db/migrations/2026-09-teams.sql` against remote D1 before deploy
+      (after `2026-09-project-team.sql`)
+- [ ] The events intro still says "Workshops, hackathons and contribution
+      drives" (`features/v2/sections/events.tsx`), which the copy facts rule
+      out. Not changed without asking
+- [ ] Board members still show photos on the homepage; say if they should
+      move to avatars too
+- [ ] Mobile: the mascot is desktop-only everywhere, and the members grid
+      is untested below md (mobile pass still deferred)
+
+## Phase 25 - members page fixes - DONE
+
+- [x] "View all members" no longer plays the new page scrolling up from the
+      bottom. `<html data-scroll-behavior="smooth">` in `app/layout.tsx`
+- [x] Card footer shows the member's tagline and handle instead of the
+      project count. Both are CMS fields (`members.tagline`, max 80;
+      `members.handle`, blank falls back to GitHub username),
+      `db/migrations/2026-09-member-tagline.sql`, applied locally. Tagline
+      also heads the profile popup; the popup's @ line uses the handle
+
+### Checks
+
+- `npx tsc --noEmit` and `npx eslint app features lib components` clean
+- Clicked "View all 8 members" from 5175px down `/v2` with a scroll
+  listener attached: exactly one scroll event, straight to 0
+- `/members` cards show tagline and handle; a member with neither shows no
+  footer rule
+- Validation: "@@meghana_r" stored as "meghana_r", blank handle stored as
+  null, a handle with a space rejected, an 81-character tagline rejected
+
+### Follow-ups
+
+- [ ] Run `db/migrations/2026-09-member-tagline.sql` on remote D1 (after
+      `2026-09-teams.sql`)
+
+### Pending decision (asked: "are these sections fully customisable in CMS?")
+
+Answer given: the content is, the page copy is not.
+
+- In the CMS: teams (add, rename, describe, reorder, delete), which team
+  each member is on and their order, and everything on a card and popup
+  (avatar, border, name, headline, tagline, handle, bio, links). "Worked
+  on" follows from tagging people on projects
+- Not in the CMS: the page heading ("Everyone in the club"), the intro
+  sentence (built from the counts), the "Across teams" heading for members
+  without a team, the homepage button label, and the list of border styles
+  (a fixed set in code on purpose)
+- Offered: a small "page text" CMS screen for headings and intros across
+  `/members`, `/projects` and the homepage sections. Waiting on the user
+
+## Phase 26 - avatar prompt style - DONE
+
+- [x] `docs/member-avatar-prompt.md`: the user said 8-bit will not suit the
+      members. Default is now a flat vector cartoon (bold outlines, flat
+      colour, large features), with 16-bit pixel art as the alternative.
+      Framing, background and the "about me" lines are unchanged, so avatars
+      made from either prompt still crop the same way
+
+
+## Phase 27 - members polish, project proposals, build showcase - DONE
+
+The user's words: two new homepage sections with their own pages, not in the
+navbar, "creative". After this: one last design change, then security and
+optimisation.
+
+### A. Members page polish
+- [x] Background felt bland: faint wall of members' identicons in the header,
+      green glow, per-team outlined watermark and alternating glow
+- [x] Hover on a card lights the inside of the card in that member's ring
+      colour (not the popup): radial pool from the avatar plus a tinted border
+
+### B. Project proposals
+- [x] `proposals` table + `db/migrations/2026-09-proposals-builds.sql`
+      (applied locally)
+- [x] `lib/db/proposals.ts`, `lib/validation/proposal.ts`,
+      `lib/validation/student.ts` (shared name/year/branch/reg no/phone),
+      keys in `features/v2/proposals/keys.ts` (status, audience, format, help)
+- [x] Public `POST /api/proposals` (honeypot; everything lands `pending`)
+- [x] Typeform-style form at `/proposals/new`
+      (`features/v2/forms/stepper-form.tsx`, shared with builds): one
+      question per screen, plain-language questions, "do you want to be part
+      of building it?", then name, year, branch, reg no, phone, a review
+      screen with edit-and-return, and a thank-you
+- [x] `/proposals`: issue-tracker list (status tabs with counts, #id, first
+      name, idea). Only accepted / being built / built are public
+- [x] `/admin/proposals` + review screen: private submitter card, one-click
+      "Accept and publish" / "Decline", editable public fields, admin note
+
+### C. Build showcase
+- [x] `builds` table (same migration)
+- [x] `lib/db/builds.ts`, `lib/validation/build.ts`, keys and date helpers in
+      `features/v2/builds/keys.ts`
+- [x] Public `POST /api/builds`; `POST /api/builds/upload-sign` asks the
+      Worker to sign folder `build-submissions` + jpg/jpeg/png/webp; the API
+      only accepts Cloudinary URLs in that folder
+- [x] `/builds/submit` form with an image step (drag and drop, cover star,
+      remove, 6 max, 8 MB each)
+- [x] `/builds`: this week's picks first (or "Picked the week of X" if the
+      latest picked week is not this one), then each month laid out as a
+      GitHub release; build popup with gallery, links, credits
+- [x] `/admin/builds` + review screen: "Accept into this month", "Accept as
+      this week's pick", "Decline", month and week fields (any date snaps to
+      its Monday), image reorder/remove/add, credits, order within month
+
+### D. Homepage and mascot
+- [x] `#ideas` (06): `git log` of the latest accepted proposals ending in a
+      dashed "your idea goes here" node; CTAs Propose an idea / View project
+      proposals
+- [x] `#builds` (07): the week's picks fanned like prints, empty dashed frames
+      when there are none; CTAs Submit your build / View all builds
+- [x] Benefits renumbered 08, Join 09. Neither new section is in the nav
+- [x] Docks for `ideas` and `builds`; all four new pages use MascotSlot +
+      `data-mascot-dock`; the build popup perches the mascot
+- [x] Admin nav links, with a pending count badge
+
+### Found and fixed on the way
+- [x] **Admin pages leaked data to logged-out visitors.** The layout's
+      redirect does not stop the page rendering in parallel; `curl /admin`
+      returned the applications list. Every dashboard page now calls
+      `requireAdminPage()` first. Predates this phase; affects the deployed
+      site until redeployed
+- [x] Mascot never reached a popup opened at the top of an inner page (the
+      perch was scaled by scroll progress). Perch now applied after the
+      hero-to-dock journey
+- [x] Tall popups cut the perched mascot's head off: dialogs that perch it
+      reserve 7rem of headroom
+- [x] Stepper focus landed on the outgoing step (AnimatePresence "wait");
+      now focuses when the new step finishes arriving
+
+### Checks
+- [x] tsc, eslint, prettier clean
+- [x] 31/31 validation checks (keys, phone/reg normalising, first name,
+      image host and folder, month/week rules, Monday snapping)
+- [x] Proposal submitted through the real form: stored pending, phone and reg
+      no normalised, draft cleared, not on `/proposals` until accepted
+- [x] Honeypot, bad input (friendly per-field errors), admin API 401,
+      public upload signing refuses (503) with the old Worker
+- [x] No phone, reg no, pending rows or admin notes in `/proposals`,
+      `/builds`, `/v2` or `/` HTML
+- [x] All 23 admin pages logged out: redirect, no record data
+- [x] Browser at 1440: both form pages, `/proposals`, `/builds` + popup with
+      perched mascot, both homepage sections, members popup at scroll 0
+
+### Not verified
+- Admin review screens clicked through (needs the admin password; log in in
+  the browser pane and I can drive them)
+- A real image upload (needs the Worker redeployed, below)
+
+### Local test data (not real)
+- Proposals #1-#4 (Asha, Rahul, Priya, Karthik), builds #1-#5 with
+  `public/images/events` photos. Delete through `/admin/proposals` and
+  `/admin/builds` or leave; local D1 only
+
+### Follow-ups
+- [ ] **Redeploy the Worker** (`cd workers/cloudinary-sign && npx wrangler
+      deploy`) so public build uploads work. Until then the image step says
+      uploads are not set up and nobody can submit a build
+- [ ] **Redeploy the site** soon: the admin data leak is live on the deployed
+      site until then
+- [ ] Remote migration: `npm run db:patch:remote --
+      db/migrations/2026-09-proposals-builds.sql` (after the earlier
+      project-team, teams and member-tagline ones)
+- [ ] Security pass: rate limit and Turnstile on `/api/proposals`,
+      `/api/builds` and `/api/builds/upload-sign` (the sign route is public
+      and unmetered), Cloudinary upload size cap (an upload preset), a way to
+      purge images of declined builds
+- [ ] Next: the user's "one last change for the designing part"
+
+
+## Phase 28 - form page space, status without accounts - DONE
+
+- [x] Wasted space on `/proposals/new` and `/builds/submit`: the page heading
+      repeated the form's intro and pushed Start below the fold at 900px.
+      Heading dropped (the intro is the h1 now), top padding cut, panel
+      540px min, mascot slot moved into the empty space above the rail
+- [x] "No sign in, so how does someone see their proposal's status?" Private
+      tracking link: each submission gets a random 192-bit token shown once
+      on the thank-you screen (copy button); only its SHA-256 is stored
+      (`track_hash`). `/proposals/track/[token]` and `/builds/track/[token]`
+      show a timeline (sent, read, accepted / being built / built, or not
+      taken on). noindex, no-referrer
+- [x] `db/migrations/2026-09-tracking-links.sql` (applied locally)
+
+### Checks
+- [x] tsc, eslint clean; submit returns a token, status page shows each
+      state (pending, building, declined), wrong or malformed token shows the
+      "doesn't match" page; DB holds a 64-char hash only
+- [x] Screenshots at 1440: both form pages fit above the fold, status page
+
+### Follow-ups
+- [ ] Remote: `npm run db:patch:remote --
+      db/migrations/2026-09-tracking-links.sql` (after proposals-builds)
+- [ ] Rows sent before the migration have no link (local test data only)
+- [ ] Optional later: a "message to the submitter" field the status page
+      shows (e.g. why it was declined). Not built; admin_note stays private
+
+### Pending decision (asked: "would a custom cursor like this be nice?")
+- My answer: not site-wide; yes as a scoped hover label on a few "play"
+  surfaces (build cards, the builds fan, maybe member cards), themed and with
+  quirky labels. The snippet needs fixes before use (listeners never removed,
+  sets body cursor globally, tracks the whole document). Waiting on the user
+
 
 - [ ] Promote `/v2` to `/` — the font rides along with it
 - [ ] Replace the seeded board and event rows with the real ones through
       `/admin/board` and `/admin/events`
 - [ ] Mobile responsiveness pass (still deferred by request)
-- [ ] Members page (the user will describe it); its profile popup is the
-      member dialog Phase 23 builds
+- [x] Members page (Phase 24)

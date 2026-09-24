@@ -182,10 +182,11 @@ export type TeamEntry = {
 type TeamRow = TeamMember & { project_id: number; team_order: number }
 
 const TEAM_SELECT = `
-  SELECT m.*, pm.project_id, pm.role AS project_role, pm.contribution,
-         pm.sort_order AS team_order
+  SELECT m.*, t.name AS team_name, pm.project_id,
+         pm.role AS project_role, pm.contribution, pm.sort_order AS team_order
   FROM project_members pm
-  JOIN members m ON m.id = pm.member_id`
+  JOIN members m ON m.id = pm.member_id
+  LEFT JOIN teams t ON t.id = m.team_id`
 
 /**
  * Maintainers, then the lead, then members; within a role, the order the CMS

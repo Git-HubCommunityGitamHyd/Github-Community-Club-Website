@@ -63,6 +63,8 @@ export const MASCOT_DOCKS: Dock[] = [
   { id: "board", from: 0.28, to: 0.66 },
   { id: "events", from: 0.32, to: 0.7 },
   { id: "projects", from: 0.3, to: 0.66 },
+  { id: "ideas", from: 0.3, to: 0.62 },
+  { id: "builds", from: 0.3, to: 0.62 },
   { id: "benefits", side: "right", from: 0.3, to: 0.62 },
   { id: "join", from: 0.36, to: 0.6 },
 ]

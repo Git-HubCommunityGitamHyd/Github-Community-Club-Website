@@ -3,8 +3,15 @@ import { listMembers } from "@/lib/db/members"
 import { Button } from "@/components/ui/button"
 import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"
+import { MemberAvatar } from "@/features/v2/people/member-avatar"
+import { requireAdminPage } from "@/lib/auth/require-admin"
 
 export default async function AdminMembersPage() {
+  // Here as well as in the layout: Next renders a layout and its page in
+  // parallel, so the layout's redirect alone does not stop this page from
+  // reading the database and streaming the result to a logged-out visitor.
+  await requireAdminPage()
+
   const members = await listMembers()
 
   return (
@@ -25,6 +32,7 @@ export default async function AdminMembersPage() {
             <thead className="bg-gh-surface">
               <tr>
                 <th className="px-4 py-3 font-medium">Name</th>
+                <th className="px-4 py-3 font-medium">Team</th>
                 <th className="px-4 py-3 font-medium">GitHub</th>
                 <th className="px-4 py-3 font-medium">Order</th>
                 <th className="px-4 py-3 font-medium">Actions</th>
@@ -33,7 +41,15 @@ export default async function AdminMembersPage() {
             <tbody>
               {members.map((member) => (
                 <tr key={member.id} className="border-t border-gh-border">
-                  <td className="px-4 py-3">{member.name}</td>
+                  <td className="px-4 py-3">
+                    <span className="flex items-center gap-3">
+                      <MemberAvatar person={member} size={36} />
+                      {member.name}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gh-muted">
+                    {member.team_name ?? "none"}
+                  </td>
                   <td className="px-4 py-3 font-mono text-gh-muted">
                     {member.github ? `@${member.github}` : "none"}
                   </td>
@@ -56,7 +72,7 @@ export default async function AdminMembersPage() {
               {members.length === 0 && (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-4 py-8 text-center text-gh-muted"
                   >
                     No members yet. Add people here, then tag them on projects.

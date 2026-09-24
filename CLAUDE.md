@@ -97,6 +97,8 @@ No auth library — one shared password (`ADMIN_PASSWORD` env var) protects ever
 
 Page auth lives in `app/admin/(dashboard)/layout.tsx` via `requireAdminPage()` — `/admin/login` is outside that group so it stays public. API auth is `requireAdminApi()` at the top of every `/api/admin/**` handler except login. `features/admin/admin-nav.tsx` is the shared nav + logout button. `cookies()`, `params`, and `searchParams` are async in Next 16 — always `await` them (see `getSessionCookie()` in `lib/auth/session.ts`).
 
+**Every page under `app/admin/(dashboard)/` calls `await requireAdminPage()` itself, first thing, not only the layout.** Next renders a layout and its page in parallel, so the layout's `redirect()` does not stop the page from querying D1 and streaming the result: logged out, `curl /admin` returned the full applications list (names, emails, phones) inside a response that also redirected to login. A new admin page without its own check leaks whatever it reads.
+
 **`COOKIE_PATH` in `lib/auth/session.ts` is `"/"`, not `"/admin"`.** It was originally `/admin`, which silently broke every `/api/admin/**` route the first time one was added — `/api/admin/*` doesn't fall under the `/admin` path prefix, so the browser never sent the cookie there and every request 401'd despite `/admin` itself working fine. If you're debugging a mysterious 401 on an admin API route, check this first.
 
 ## Gotchas

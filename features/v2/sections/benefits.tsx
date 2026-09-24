@@ -15,7 +15,7 @@ export function V2BenefitsSection() {
           symmetric padding the card ends 19px above the hatch band and reads
           as stuck to it. */}
       <div className="relative mx-auto max-w-6xl px-4 pb-48 pt-24 sm:px-6 lg:px-8">
-        <SectionLabel index="06">Benefits</SectionLabel>
+        <SectionLabel index="08">Benefits</SectionLabel>
         <h2 className="mb-4 mt-5 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-[-0.03em]">
           Why join us?
         </h2>

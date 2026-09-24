@@ -5,6 +5,7 @@ import { ProjectsPageChrome } from "@/features/v2/projects/page-chrome"
 import { ProjectsBackLink } from "@/features/v2/projects/back-link"
 import { ProjectsGrid } from "@/features/v2/projects/projects-grid"
 import { SectionTexture } from "@/components/ui/texture"
+import { MascotSlot } from "@/features/v2/mascot/mascot-slot"
 
 // Same reason as the homepage: without this Next freezes whatever D1 returned
 // during `next build`. See CLAUDE.md.
@@ -33,14 +34,19 @@ export default async function ProjectsPage() {
               them at the top of a very long page would lose their place. */}
           <ProjectsBackLink href="/#projects">Home</ProjectsBackLink>
 
-          <h1 className="mt-8 max-w-3xl text-balance text-[clamp(36px,5.5vw,68px)] font-extrabold leading-[1.02] tracking-[-0.03em]">
-            Everything we are building
-          </h1>
-          <p className="mb-14 mt-5 max-w-[56ch] text-pretty text-lg leading-relaxed text-gh-muted">
-            Club projects are public repositories. Some are running on campus
-            today, some are half-finished in a branch, and the history of both
-            is readable.
-          </p>
+          <div className="mb-14 mt-8 flex items-end justify-between gap-10">
+            <div>
+              <h1 className="max-w-3xl text-balance text-[clamp(36px,5.5vw,68px)] font-extrabold leading-[1.02] tracking-[-0.03em]">
+                Everything we are building
+              </h1>
+              <p className="mt-5 max-w-[56ch] text-pretty text-lg leading-relaxed text-gh-muted">
+                Club projects are public repositories. Some are running on
+                campus today, some are half-finished in a branch, and the
+                history of both is readable.
+              </p>
+            </div>
+            <MascotSlot />
+          </div>
 
           {projects.length > 0 ? (
             <ProjectsGrid projects={projects} teams={teams} />

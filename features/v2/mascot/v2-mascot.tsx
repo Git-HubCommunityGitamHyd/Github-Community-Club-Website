@@ -89,6 +89,9 @@ const GAZE_FOLLOW = 0.11
 const GLOW =
   "radial-gradient(circle closest-side, rgba(63,185,80,0.26) 0%, rgba(63,185,80,0.17) 30%, rgba(63,185,80,0.07) 58%, rgba(63,185,80,0.02) 80%, rgba(63,185,80,0) 100%)"
 
+/** The band an "auto" dock uses: the middle of the page's own docks. */
+const AUTO_DOCK = { from: 0.3, to: 0.64 }
+
 /** Duration of the settle after it lands in a new dock, in ms. */
 const ARRIVAL_MS = 520
 
@@ -165,8 +168,23 @@ function dockPoint(dock: Placed, progress: number): Point {
  */
 export function V2Mascot({
   heroSlotRef,
+  heroSlotId,
+  docks = MASCOT_DOCKS,
 }: {
-  heroSlotRef: RefObject<HTMLDivElement | null>
+  /** The homepage hands over a ref to its hero slot. */
+  heroSlotRef?: RefObject<HTMLDivElement | null>
+  /**
+   * Inner pages name the slot by id instead: their headers are server
+   * components, which cannot hold a ref (see features/v2/mascot/page-mascot.tsx).
+   */
+  heroSlotId?: string
+  /**
+   * Which sections to dock beside, in page order, as a stable array. Or
+   * "auto": every element marked `data-mascot-dock`, in document order, which
+   * is what the inner pages use because their sections come from the CMS (a
+   * members page has one per team) and cannot be listed ahead of time.
+   */
+  docks?: Dock[] | "auto"
 }) {
   const reducedMotion = useReducedMotion()
 
@@ -197,6 +215,9 @@ export function V2Mascot({
    * exists to avoid.
    */
   const lastPerchRef = useRef<Perch | null>(null)
+  /** The mascot's layer, raised above popups while perched on one. */
+  const mascotElRef = useRef<HTMLDivElement>(null)
+  const liftedRef = useRef(false)
 
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -355,23 +376,37 @@ export function V2Mascot({
       // preview asked rather than somewhere the cursor dragged it.
       const perch = getPerch()
       if (perch) lastPerchRef.current = perch
+      // Above a popup's overlay while going to, sitting on, or coming back
+      // from a popup; back under the navbar layer once it is home.
+      const lifted =
+        Boolean(lastPerchRef.current?.aboveDialogs) &&
+        perchWeightRef.current > 0.02
+      if (mascotElRef.current && lifted !== liftedRef.current) {
+        liftedRef.current = lifted
+        mascotElRef.current.style.zIndex = lifted ? "70" : ""
+      }
       const smoothPerch = reducedMotion ? 1 : 1 - Math.exp(-dt / PERCH_TAU)
       perchWeightRef.current +=
         ((perch ? 1 : 0) - perchWeightRef.current) * smoothPerch
       const w = perchWeightRef.current
       const anchor = lastPerchRef.current
-      if (anchor && w > 0.001) {
-        dockCx += (anchor.x - dockCx) * w
-        dockCy += (anchor.y - dockCy) * w
-      }
 
       const startCx = heroDoc.left + heroDoc.width / 2
       const startCy = heroDoc.top - window.scrollY + heroDoc.height / 2
 
       // Interpolate centres, not corners: the hero slot is larger than the
       // dock, so aligning corners would land it off-centre.
-      const targetCx = startCx + (dockCx - startCx) * p
-      const targetCy = startCy + (dockCy - startCy) * p
+      let targetCx = startCx + (dockCx - startCx) * p
+      let targetCy = startCy + (dockCy - startCy) * p
+
+      // The perch goes on last, over the hero-to-dock journey rather than
+      // into the dock. Blended into the dock it was scaled by `p` along with
+      // everything else, so a popup opened at the top of an inner page
+      // (scroll 0, p = 0) left the mascot in its header slot, merely shrunk.
+      if (anchor && w > 0.001) {
+        targetCx += (anchor.x - targetCx) * w
+        targetCy += (anchor.y - targetCy) * w
+      }
 
       const eased = easedRef.current ?? { x: targetCx, y: targetCy }
       // Only the docked follow is smoothed. Easing the hero-to-dock journey as
@@ -403,7 +438,8 @@ export function V2Mascot({
       centreRef.current = { x: eased.x, y: eased.y }
       // Shrunk by the same weight that moved it, so leaving the rail for a
       // card is one movement rather than a slide and then a resize.
-      const perchScale = PERCH_HEIGHT / heroDoc.height
+      const perchScale =
+        (lastPerchRef.current?.height ?? PERCH_HEIGHT) / heroDoc.height
       const drawn = (s + (perchScale - s) * w) * settle
       x.set(eased.x - (heroDoc.width * drawn) / 2)
       y.set(eased.y - (heroDoc.height * drawn) / 2)
@@ -412,7 +448,9 @@ export function V2Mascot({
     }
 
     const measure = () => {
-      const heroEl = heroSlotRef.current
+      const heroEl =
+        heroSlotRef?.current ??
+        (heroSlotId ? document.getElementById(heroSlotId) : null)
       if (!heroEl) return
       const rect = documentRect(heroEl)
       // The hero slot is hidden below md, so it measures 0x0 there. Guard, or
@@ -433,12 +471,26 @@ export function V2Mascot({
       // no journey entries). Docks for missing sections are dropped rather
       // than defaulted, so the mascot never waits at a station that is not
       // there.
+      const found =
+        docks === "auto"
+          ? Array.from(
+              document.querySelectorAll<HTMLElement>("[data-mascot-dock]"),
+            ).map((el, index) => ({
+              el,
+              dock: {
+                id: el.id || `dock-${index}`,
+                from: AUTO_DOCK.from,
+                to: AUTO_DOCK.to,
+              } as Dock,
+            }))
+          : docks.flatMap((dock) => {
+              const el = document.getElementById(dock.id)
+              return el ? [{ el, dock }] : []
+            })
       docksRef.current = assignSides(
-        MASCOT_DOCKS.flatMap((dock) => {
-          const el = document.getElementById(dock.id)
-          if (!el) return []
+        found.map(({ el, dock }) => {
           const r = documentRect(el)
-          return [{ ...dock, top: r.top, height: r.height }]
+          return { ...dock, top: r.top, height: r.height }
         }),
       )
 
@@ -473,7 +525,7 @@ export function V2Mascot({
       window.removeEventListener("resize", measure)
       window.removeEventListener("mousemove", onMove)
     }
-  }, [heroSlotRef, x, y, scale, reducedMotion])
+  }, [heroSlotRef, heroSlotId, docks, x, y, scale, reducedMotion])
 
   if (!size) return null
 
@@ -523,6 +575,7 @@ export function V2Mascot({
       </motion.div>
 
       <motion.div
+        ref={mascotElRef}
         className="fixed left-0 top-0 z-[60] hidden md:block"
         style={placement}
       >

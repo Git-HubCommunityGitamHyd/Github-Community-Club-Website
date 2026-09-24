@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { deleteMember, updateMember } from "@/lib/db/members"
 import { toMemberInput, validateMember } from "@/lib/validation/member"
 import { requireAdminApi } from "@/lib/auth/require-admin"
+import { getTeam } from "@/lib/db/teams"
 
 export const runtime = "nodejs"
 
@@ -28,6 +29,13 @@ export async function PATCH(
   const result = validateMember(body)
   if (!result.ok) {
     return NextResponse.json({ errors: result.errors }, { status: 400 })
+  }
+  // A team deleted in another tab while this form was open.
+  if (result.data.teamId && !(await getTeam(Number(result.data.teamId)))) {
+    return NextResponse.json(
+      { errors: { teamId: "That team no longer exists. Reload." } },
+      { status: 400 },
+    )
   }
 
   const member = await updateMember(id, toMemberInput(result.data))

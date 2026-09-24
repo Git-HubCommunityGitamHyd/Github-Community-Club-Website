@@ -1,5 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { countPendingProposals } from "@/lib/db/proposals"
+import { countPendingBuilds } from "@/lib/db/builds"
 
 const LINKS = [
   { href: "/admin", label: "Applications" },
@@ -8,12 +10,26 @@ const LINKS = [
   { href: "/admin/journey", label: "Journey" },
   { href: "/admin/projects", label: "Projects" },
   { href: "/admin/members", label: "Members" },
+  { href: "/admin/teams", label: "Teams" },
+  { href: "/admin/proposals", label: "Proposals" },
+  { href: "/admin/builds", label: "Builds" },
 ]
 
-export function AdminNav({ active }: { active: string }) {
+export async function AdminNav({ active }: { active: string }) {
+  // Submissions from the public forms wait here until someone looks, so the
+  // nav says how many are waiting rather than relying on someone checking.
+  const [proposals, builds] = await Promise.all([
+    countPendingProposals(),
+    countPendingBuilds(),
+  ])
+  const pending: Record<string, number> = {
+    "/admin/proposals": proposals,
+    "/admin/builds": builds,
+  }
+
   return (
     <div className="mb-8 flex items-center justify-between border-b border-gh-border pb-4">
-      <nav className="flex gap-6">
+      <nav className="flex flex-wrap gap-x-6 gap-y-2">
         {LINKS.map((link) => (
           <Link
             key={link.href}
@@ -25,6 +41,11 @@ export function AdminNav({ active }: { active: string }) {
             }`}
           >
             {link.label}
+            {pending[link.href] > 0 && (
+              <span className="ml-1.5 rounded-full bg-gh-accent px-1.5 py-px text-[11px] font-semibold tabular-nums text-gh-deep">
+                {pending[link.href]}
+              </span>
+            )}
           </Link>
         ))}
       </nav>

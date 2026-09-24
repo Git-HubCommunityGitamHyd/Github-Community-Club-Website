@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { Identicon } from "@/components/ui/identicon"
 import { cn } from "@/lib/utils"
 
 /**
@@ -13,7 +14,7 @@ import { cn } from "@/lib/utils"
  *
  * - It takes people, not bare URLs. Each face needs a name for its label and
  *   a fallback for anyone without a photo, which a list of URLs cannot carry.
- *   Someone with no photo gets their initials rather than a broken image.
+ *   Someone with no avatar gets an identicon rather than a broken image.
  * - Each face is a button when `onSelect` is given, so clicking a person
  *   opens their profile. The original faces were inert `<img>`s.
  * - The overflow chip counts what was actually hidden (`people.length - max`)
@@ -29,8 +30,10 @@ import { cn } from "@/lib/utils"
 
 export type AvatarPerson = {
   name: string
-  /** Null draws initials. */
+  /** Null draws an identicon seeded by name. */
   src: string | null
+  /** Identicon colour. */
+  color: string
 }
 
 const SIZES = {
@@ -94,7 +97,11 @@ export function AvatarCircles({
             className="h-full w-full object-cover"
           />
         ) : (
-          <span aria-hidden="true">{initialsOf(person.name)}</span>
+          <Identicon
+            seed={person.name}
+            color={person.color}
+            className="p-[18%]"
+          />
         )
 
         return onSelect ? (

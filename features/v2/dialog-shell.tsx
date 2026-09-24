@@ -7,6 +7,14 @@ import { X } from "lucide-react"
 import { useLenis } from "@/features/v2/smooth-scroll"
 import { useMounted } from "@/lib/use-mounted"
 import { cn } from "@/lib/utils"
+import { setPerch } from "@/features/v2/mascot/perch"
+
+/** Height the octocat is drawn at while sitting on a popup, in px. */
+const DIALOG_PERCH_HEIGHT = 104
+
+/** Its centre, measured from the panel's top-right corner, in px. */
+const DIALOG_PERCH_FROM_RIGHT = 132
+const DIALOG_PERCH_RISE = 30
 
 /**
  * The overlay behind every v2 detail dialog (board member, event).
@@ -24,6 +32,7 @@ export function DialogShell({
   children,
   panelClassName,
   bleed = false,
+  perchMascot = false,
 }: {
   open: boolean
   onClose: () => void
@@ -36,6 +45,12 @@ export function DialogShell({
    * edges, and puts the close button on a scrim so it stays legible over one.
    */
   bleed?: boolean
+  /**
+   * Asks the page's octocat to come and sit on the panel's top edge while
+   * it is open, the way it sits on a project preview. Only pages that mount
+   * the mascot notice; everywhere else the request is simply unread.
+   */
+  perchMascot?: boolean
 }) {
   const mounted = useMounted()
   const lenis = useLenis()
@@ -62,6 +77,31 @@ export function DialogShell({
     }
   }, [open, lenis, onClose])
 
+  // Published every frame while open rather than once: the panel springs in
+  // (y and scale), and a perch read at mount would be where the panel
+  // started, not where it lands. A layout read per frame is fine for the few
+  // seconds a popup is open, and it stops the moment it closes.
+  useEffect(() => {
+    if (!open || !perchMascot) return
+    let frame = requestAnimationFrame(function publish() {
+      const panel = panelRef.current
+      if (panel) {
+        const rect = panel.getBoundingClientRect()
+        setPerch({
+          x: rect.right - DIALOG_PERCH_FROM_RIGHT,
+          y: rect.top - DIALOG_PERCH_RISE,
+          height: DIALOG_PERCH_HEIGHT,
+          aboveDialogs: true,
+        })
+      }
+      frame = requestAnimationFrame(publish)
+    })
+    return () => {
+      cancelAnimationFrame(frame)
+      setPerch(null)
+    }
+  }, [open, perchMascot])
+
   const onOverlayClick = useCallback(
     (event: React.MouseEvent) => {
       if (event.target === event.currentTarget) onClose()
@@ -75,7 +115,13 @@ export function DialogShell({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-gh-deep/70 p-4 backdrop-blur-sm sm:p-6"
+          className={cn(
+            "fixed inset-0 z-[60] flex items-center justify-center bg-gh-deep/70 p-4 backdrop-blur-sm sm:p-6",
+            // Headroom for the octocat sitting on the panel's top edge. A
+            // tall panel (a build with a gallery) otherwise starts 7.5vh from
+            // the top and the perched mascot's head is cut off by the window.
+            perchMascot && "pt-28 sm:pt-28",
+          )}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -93,7 +139,8 @@ export function DialogShell({
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
             className={cn(
-              "relative max-h-[85vh] w-full overflow-y-auto rounded-3xl border border-gh-border bg-gh-surface shadow-2xl focus:outline-none",
+              "relative w-full overflow-y-auto rounded-3xl border border-gh-border bg-gh-surface shadow-2xl focus:outline-none",
+              perchMascot ? "max-h-[calc(100dvh-9.5rem)]" : "max-h-[85vh]",
               !bleed && "p-8 sm:p-10",
               panelClassName ?? "max-w-2xl",
             )}

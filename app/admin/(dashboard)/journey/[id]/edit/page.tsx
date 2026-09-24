@@ -1,12 +1,18 @@
 import { notFound } from "next/navigation"
 import { getJourneyEntry } from "@/lib/db/journey"
 import { JourneyForm } from "@/features/admin/journey-form"
+import { requireAdminPage } from "@/lib/auth/require-admin"
 
 export default async function EditJourneyEntryPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
+  // Here as well as in the layout: Next renders a layout and its page in
+  // parallel, so the layout's redirect alone does not stop this page from
+  // reading the database and streaming the result to a logged-out visitor.
+  await requireAdminPage()
+
   const id = Number((await params).id)
   const entry = Number.isNaN(id) ? null : await getJourneyEntry(id)
   if (!entry) notFound()

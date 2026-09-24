@@ -6,6 +6,9 @@ import type { BoardMember } from "@/lib/db/board-members"
 import type { Event } from "@/lib/db/events"
 import type { JourneyEntry } from "@/lib/db/journey"
 import type { Project } from "@/lib/db/projects"
+import type { Member } from "@/lib/db/members"
+import type { PublicProposal } from "@/lib/db/proposals"
+import type { PublicBuild } from "@/lib/db/builds"
 import { NAV_ITEMS } from "@/features/home/content"
 import { SmoothScroll } from "@/features/v2/smooth-scroll"
 import { useActiveSection } from "@/features/v2/use-active-section"
@@ -28,6 +31,8 @@ import { V2BoardSection } from "@/features/v2/sections/board"
 import { V2EventsSection } from "@/features/v2/sections/events"
 import { V2ProjectsSection } from "@/features/v2/sections/projects"
 import { V2JoinSection } from "@/features/v2/sections/join"
+import { V2IdeasSection } from "@/features/v2/sections/ideas"
+import { V2BuildsSection } from "@/features/v2/sections/builds"
 import { V2Mascot } from "@/features/v2/mascot/v2-mascot"
 
 /**
@@ -54,6 +59,9 @@ export function V2Page(props: {
   events: Event[]
   journeyEntries: JourneyEntry[]
   projects: Project[]
+  members: Member[]
+  proposals: PublicProposal[]
+  builds: PublicBuild[]
 }) {
   // The shell sits inside the provider so the scroll spy can read the page's
   // single Lenis instance rather than racing it.
@@ -76,11 +84,17 @@ function V2Shell({
   events,
   journeyEntries,
   projects,
+  members,
+  proposals,
+  builds,
 }: {
   boardMembers: BoardMember[]
   events: Event[]
   journeyEntries: JourneyEntry[]
   projects: Project[]
+  members: Member[]
+  proposals: PublicProposal[]
+  builds: PublicBuild[]
 }) {
   const [isQrPopupOpen, setIsQrPopupOpen] = useState(false)
   const hasProjects = projects.length > 0
@@ -123,11 +137,15 @@ function V2Shell({
 
         <V2AboutSection onScrollTo={scrollToSection} />
         <V2JourneySection entries={journeyEntries} />
-        <V2BoardSection members={boardMembers} />
+        <V2BoardSection members={boardMembers} clubMembers={members} />
         <V2EventsSection events={events} />
         {/* Absent, not empty, when there is nothing to show. The nav item and
             the scroll spy entry come and go with it. */}
         {hasProjects && <V2ProjectsSection projects={projects} />}
+        {/* Not in the nav, on purpose: they are ways in for students outside
+            the club rather than parts of the club's own story. */}
+        <V2IdeasSection proposals={proposals} />
+        <V2BuildsSection builds={builds} />
         <V2BenefitsSection />
 
         <HatchBand />

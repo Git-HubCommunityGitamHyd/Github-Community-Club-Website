@@ -24,6 +24,14 @@ export type Perch = {
   /** Viewport coordinates of where the mascot's centre should sit. */
   x: number
   y: number
+  /** Drawn height while perched, in px. Defaults to the preview card's. */
+  height?: number
+  /**
+   * Draw above modal overlays. A popup's overlay sits at the mascot's own
+   * layer, so a mascot asked onto a popup would otherwise land behind the
+   * dimmed backdrop it is meant to be sitting on top of.
+   */
+  aboveDialogs?: boolean
 }
 
 let perch: Perch | null = null

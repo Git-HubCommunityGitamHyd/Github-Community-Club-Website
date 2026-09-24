@@ -36,11 +36,22 @@ export function ProjectsGrid({
     <div className="space-y-6">
       {/* Coming back from a project page lands here. */}
       <TransitionSettled />
+      {/* data-mascot-dock: the octocat docks beside the lead project, then
+          crosses to the other side for the grid (features/v2/mascot). */}
       {lead && (
-        <ProjectCard project={lead} team={teams.get(lead.id) ?? []} featured />
+        <div data-mascot-dock>
+          <ProjectCard
+            project={lead}
+            team={teams.get(lead.id) ?? []}
+            featured
+          />
+        </div>
       )}
       {rest.length > 0 && (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          data-mascot-dock
+          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {rest.map((project) => (
             <ProjectCard
               key={project.id}

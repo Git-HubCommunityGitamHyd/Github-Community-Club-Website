@@ -1,7 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 import type { BoardMember } from "@/lib/db/board-members"
+import type { Member } from "@/lib/db/members"
+import { AvatarCircles } from "@/components/ui/avatar-circles"
+import { toAvatar } from "@/features/v2/people/profile"
 import { TeamShowcase, type TeamMember } from "@/components/ui/team-showcase"
 import { ProfileDialog } from "@/features/v2/people/profile-dialog"
 import { SectionLabel } from "@/features/v2/section-label"
@@ -21,7 +26,14 @@ function toTeamMember(member: BoardMember): TeamMember {
   }
 }
 
-export function V2BoardSection({ members }: { members: BoardMember[] }) {
+export function V2BoardSection({
+  members,
+  clubMembers,
+}: {
+  members: BoardMember[]
+  /** Everyone in the club, for the faces beside the members page link. */
+  clubMembers: Member[]
+}) {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [selected, setSelected] = useState<BoardMember | null>(null)
 
@@ -55,6 +67,29 @@ export function V2BoardSection({ members }: { members: BoardMember[] }) {
           <p className="rounded-3xl border border-dashed border-gh-border px-8 py-14 text-center text-gh-muted">
             The board for this term has not been published yet.
           </p>
+        )}
+
+        {clubMembers.length > 0 && (
+          // The same pill as "View all projects", with the faces of who is
+          // behind it on its left: the avatars say "people" before the label
+          // is read, and the button says where they are.
+          <div className="mt-14 flex flex-wrap items-center gap-5">
+            <AvatarCircles
+              people={clubMembers.map(toAvatar)}
+              max={5}
+              moreHref="/members"
+            />
+            <Link
+              href="/members"
+              className="group inline-flex items-center gap-2.5 rounded-full border border-gh-border px-6 py-3 text-[15px] font-semibold text-gh-text transition-colors duration-300 hover:border-gh-accent hover:bg-gh-accent hover:text-gh-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-bg active:scale-[0.98]"
+            >
+              View all {clubMembers.length} members
+              <ArrowRight
+                aria-hidden="true"
+                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
+              />
+            </Link>
+          </div>
         )}
       </div>
 

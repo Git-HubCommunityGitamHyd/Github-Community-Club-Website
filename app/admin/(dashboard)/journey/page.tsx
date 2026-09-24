@@ -4,8 +4,14 @@ import { Button } from "@/components/ui/button"
 import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"
 import { JOURNEY_ICONS } from "@/features/v2/journey/icons"
+import { requireAdminPage } from "@/lib/auth/require-admin"
 
 export default async function AdminJourneyPage() {
+  // Here as well as in the layout: Next renders a layout and its page in
+  // parallel, so the layout's redirect alone does not stop this page from
+  // reading the database and streaming the result to a logged-out visitor.
+  await requireAdminPage()
+
   const entries = await listJourneyEntries()
 
   return (

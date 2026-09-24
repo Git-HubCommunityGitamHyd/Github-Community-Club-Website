@@ -10,11 +10,19 @@ export type MemberFormInput = {
   linkedin: string
   email: string
   accent: string
+  tagline: string
+  handle: string
+  /** Blank for no team. Whether the team exists is the route's check. */
+  teamId: string
   sortOrder: string
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const GITHUB_USERNAME_RE = /^[a-zA-Z0-9-]{1,39}$/
+const HANDLE_RE = /^[a-zA-Z0-9._-]{1,39}$/
+
+/** Long enough for a line, short enough to stay one line on a card. */
+const TAGLINE_MAX = 80
 
 export type ValidationResult =
   | { ok: true; data: MemberFormInput }
@@ -55,6 +63,22 @@ export function validateMember(
   const accent = String(input.accent ?? "").trim() || "green"
   if (!(accent in BOARD_ACCENTS)) errors.accent = "Unknown ring style"
 
+  const tagline = String(input.tagline ?? "").trim()
+  if (tagline.length > TAGLINE_MAX) {
+    errors.tagline = `Keep it under ${TAGLINE_MAX} characters`
+  }
+
+  // "@name" and "name" both mean the handle "name"; the page adds the @.
+  const handle = String(input.handle ?? "")
+    .trim()
+    .replace(/^@+/, "")
+  if (handle && !HANDLE_RE.test(handle)) {
+    errors.handle = "Letters, numbers, dots, dashes and underscores, up to 39"
+  }
+
+  const teamId = String(input.teamId ?? "").trim()
+  if (teamId && !/^[1-9]\d*$/.test(teamId)) errors.teamId = "Unknown team"
+
   const sortOrder = String(input.sortOrder ?? "0").trim()
   if (sortOrder && Number.isNaN(Number(sortOrder))) {
     errors.sortOrder = "Sort order must be a number"
@@ -73,6 +97,9 @@ export function validateMember(
       linkedin,
       email,
       accent,
+      tagline,
+      handle,
+      teamId,
       sortOrder,
     },
   }
@@ -89,6 +116,9 @@ export function toMemberInput(data: MemberFormInput): MemberInput {
     linkedin: data.linkedin || null,
     email: data.email || null,
     accent: data.accent,
+    tagline: data.tagline,
+    handle: data.handle || null,
+    teamId: data.teamId ? Number(data.teamId) : null,
     sortOrder: Number(data.sortOrder || 0),
   }
 }
