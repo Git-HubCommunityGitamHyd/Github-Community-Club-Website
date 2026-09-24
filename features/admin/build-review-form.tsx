@@ -17,6 +17,7 @@ import {
   weekLabel,
   type Credit,
 } from "@/features/builds/keys"
+import { useAdminUrl } from "@/features/admin/admin-base"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -102,6 +103,7 @@ export function BuildReviewForm({
   thisWeek: string
 }) {
   const router = useRouter()
+  const adminHref = useAdminUrl()
   const [form, setForm] = useState<FormState>({
     slug: build.slug,
     title: build.title,
@@ -148,7 +150,7 @@ export function BuildReviewForm({
     // Only accepted builds can be a week's pick.
     if (payload.status !== "accepted") payload.weekOf = ""
     try {
-      const res = await fetch(`/api/admin/builds/${build.id}`, {
+      const res = await fetch(adminHref(`/api/admin/builds/${build.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -162,7 +164,7 @@ export function BuildReviewForm({
       })
       const body = await res.json().catch(() => ({}))
       if (res.ok) {
-        router.push("/admin/builds")
+        router.push(adminHref("/admin/builds"))
         router.refresh()
         return
       }
@@ -681,7 +683,7 @@ export function BuildReviewForm({
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/admin/builds")}
+          onClick={() => router.push(adminHref("/admin/builds"))}
         >
           Cancel
         </Button>

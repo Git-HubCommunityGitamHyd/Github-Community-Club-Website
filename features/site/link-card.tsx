@@ -20,7 +20,7 @@ export function LinkCard({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={`group flex items-center gap-4 rounded-2xl border p-5 transition-[border-color,background-color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-bg active:scale-[0.99] ${
+      className={`group flex min-w-0 items-center gap-4 rounded-2xl border p-5 transition-[border-color,background-color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-bg active:scale-[0.99] ${
         accent
           ? "border-gh-accent/40 bg-gh-accent/[0.07] hover:border-gh-accent/70 hover:bg-gh-accent/[0.12]"
           : "border-gh-border bg-gh-surface/70 hover:border-gh-muted/60 hover:bg-gh-elevated"

@@ -5,6 +5,7 @@ import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"
 import { projectStatus } from "@/features/projects/statuses"
 import { requireAdminPage } from "@/lib/auth/require-admin"
+import { adminUrl } from "@/lib/auth/admin-path"
 
 export default async function AdminProjectsPage() {
   // Here as well as in the layout: Next renders a layout and its page in
@@ -22,7 +23,7 @@ export default async function AdminProjectsPage() {
           <h1 className="text-2xl font-semibold">
             Projects <span className="text-gh-muted">({projects.length})</span>
           </h1>
-          <Link href="/admin/projects/new">
+          <Link href={adminUrl("/admin/projects/new")}>
             <Button>Add project</Button>
           </Link>
         </div>
@@ -71,13 +72,15 @@ export default async function AdminProjectsPage() {
                     <td className="px-4 py-3">{project.sort_order}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
-                        <Link href={`/admin/projects/${project.id}/edit`}>
+                        <Link
+                          href={adminUrl(`/admin/projects/${project.id}/edit`)}
+                        >
                           <Button variant="outline" size="sm">
                             Edit
                           </Button>
                         </Link>
                         <DeleteButton
-                          url={`/api/admin/projects/${project.id}`}
+                          url={adminUrl(`/api/admin/projects/${project.id}`)}
                           confirmMessage={`Delete ${project.name}?`}
                         />
                       </div>

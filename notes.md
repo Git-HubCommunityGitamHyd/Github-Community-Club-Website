@@ -1891,3 +1891,107 @@ checks every file before sending any, so one oversized file does not leave
 half a batch uploaded, and the form appends with a functional update because
 the upload calls back once per file.
 
+
+## Phase 34 - phones and tablets
+
+The browser pane could not render frames, so the audit ran in headless
+Chrome driven by a script: each page screenshotted top to bottom at 390 and
+820 (and 1180 for the homepage), plus automated checks. The first overflow
+check trusted any clipping ancestor, which hid the link card overflow because
+the page wrapper clips everything; it now only excuses a clip narrower than
+the screen, which is what an intentional clip (a card, a marquee) looks like.
+
+The mascot decision: tablets have no side gutters at any width, and no
+cursor for the leash and gaze to follow, so docking there only ever covered
+content. Gating on `(hover: hover) and (pointer: fine)` as well as width
+keeps docking exactly where it was designed (desktop with a mouse) and lets
+it stay in the hero on touch devices rather than disappearing.
+
+The hydration fix is general: any component rendering from framer's
+`useReducedMotion` mismatched the server for reduced-motion visitors. The
+replacement uses `useSyncExternalStore` with a `false` server snapshot, so
+hydration matches and React re-renders with the real value straight after.
+
+## Phase 35 - the CMS behind a secret path, and a honeypot at /admin
+
+**Why a rewrite rather than moving the folder.** Next routes are folders,
+so a secret URL cannot be a folder name without committing the secret.
+`proxy.ts` (Next 16's name for middleware; OpenNext runs it) maps
+`/<ADMIN_PATH>/x` to `/admin/x` and `/<ADMIN_PATH>/api/x` to
+`/api/admin/x`. The routes, their session checks and the D1 code did not
+change. Putting the API under the same segment is load-bearing: it lets the
+session cookie's path be `/<ADMIN_PATH>`, so it reaches both pages and API
+and nothing else.
+
+**Server and browser learn the segment differently.** Server code calls
+`adminUrl()` (lib/auth/admin-path.ts, reads env). Client components call
+`useAdminUrl()`, fed by `AdminBaseProvider` in app/admin/layout.tsx, which
+only renders on pages already served from the secret path. The mapping
+itself (lib/auth/admin-url.ts) is a plain module shared by both and by the
+proxy. Code keeps naming routes by their internal path (`"/admin/board"`),
+so `AdminNav active=` comparisons did not change.
+
+**Fail closed.** No or malformed `ADMIN_PATH` (16 to 64 of `[a-z0-9-]`)
+means no admin route answers at all, and app/admin/layout.tsx 404s as a
+second check. `/api/admin/*` 404s from outside, except `/api/admin/login`,
+which is the honeypot's endpoint, since that is the URL a prober guesses.
+404s are rewrites to a missing route, so they are the site's ordinary 404.
+
+**Lockout.** Counted from `auth_events`: `login_failed` rows for the IP in
+the last 15 minutes and after its last `login_ok`. Checked before the
+password is compared, so a locked IP gets no signal from further guesses.
+IP is `cf-connecting-ip` (set by Cloudflare, not forgeable through it);
+`x-forwarded-for` is only the local-dev fallback.
+
+**Cookie.** Renamed to `cms_session` because the old cookie was still a
+valid HMAC under path `/` for up to a week; renaming retired those. 8 hours,
+Strict (a CMS link opened from a chat app lands on login; reload fixes it).
+
+**Honeypot.** Every `/admin` URL is rewritten to app/honeypot with the
+original path in `x-honeypot-path` (set by the proxy, overwriting anything
+the client sent). The joke only escalates once they are committed: the
+first error is a real-sounding one. It never sends the password; the
+endpoint only reads `username`. Writes are capped at 40 per IP per 15
+minutes so a scanner cannot fill D1, and rows older than 90 days are pruned
+on about one write in fifty. The reCAPTCHA-blue in the CAPTCHA is a second
+accent on purpose: it is a parody of that widget. Copy follows the club
+facts (recruits in rounds, "experience is not the filter").
+
+**Layer 1, Cloudflare Access**, is dashboard configuration at deploy time,
+and is the one that actually stops a leaked path: with it, the secret path
+itself asks for a maintainer's email before the app sees the request.
+
+## Phase 36 - documentation
+
+**One source, three readers.** The docs are plain Markdown in `docs/`, so
+they render on GitHub (Mermaid included), read fine in an editor, and the
+CMS shows the same files. The alternative, docs written into the CMS
+database, would vanish with a bad migration and could not be reviewed in a
+pull request alongside the code they describe.
+
+**How the CMS gets the files.** The Worker has no filesystem at runtime, so
+the Markdown is bundled: `lib/docs/registry.ts` imports each file, and a
+Turbopack rule in `next.config.js` runs `*.md` through `raw-loader`. The
+documented `type: "raw"` rule compiled every import to `undefined` in this
+Next build; `raw-loader` with `as: "*.js"` is the other documented route and
+works. Docs edits therefore reach the CMS on the next deploy, not live.
+
+**Mermaid only in the browser.** `import("mermaid")` inside an effect is
+still compiled for the server, which put about 3.4 MB of mermaid and its
+layout engines into the server bundle, counted against the Worker's size
+limit. `next/dynamic` with `ssr: false` keeps it client-only. Diagrams are
+themed with the gh palette; the schema is split into three ER diagrams
+because one was 3,500px wide.
+
+**Links.** Docs link to each other as `./05-database.md#anchor` and to code
+as `../proxy.ts`, which is correct on GitHub. In the CMS a doc link becomes
+its CMS page (headings get ids from rehype-slug, so anchors work) and a
+code link opens the file on GitHub.
+
+**What the docs are for.** Written for a maintainer who arrives after
+everyone who built the site has graduated: a glossary, the two-things-one-
+name distinction, why each odd rule exists, a migration ledger, and a
+runbook with commands rather than descriptions. README copy follows the club
+facts (community group open to all; club recruits in rounds; experience is
+not the filter) and claims no licence the repo does not have.
+

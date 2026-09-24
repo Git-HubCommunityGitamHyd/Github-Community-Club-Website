@@ -33,7 +33,11 @@ lib/
   auth/                # session cookie + require-admin helpers
 workers/               # cloudinary-sign Worker (separate deploy)
 db/schema.sql          # plus db/migrations/ for ALTERs
+docs/                  # long-form documentation, also shown in the CMS (Docs)
+proxy.ts               # secret CMS path + /admin honeypot routing
 ```
+
+**Documentation lives in `docs/`** and is the long-term reference for maintainers (architecture, deployment, database, CMS and security, workflows, runbook). When you change how something works, update the matching doc in the same change. The CMS Docs page renders the same files: `lib/docs/registry.ts` imports each one as a string (`next.config.js` has a Turbopack rule running `*.md` through `raw-loader`; the bare `type: "raw"` rule compiled the imports to `undefined`), so a new file in `docs/` needs a line there. Mermaid is loaded only in the browser via `features/admin/docs/mermaid-lazy.tsx` (`next/dynamic`, `ssr: false`); a plain dynamic import still compiled ~3.4 MB of mermaid into the server bundle, which counts against the Worker size limit. Inside ```` ```mermaid ```` blocks, avoid `<placeholder>` text: Mermaid treats it as HTML.
 
 There used to be two homepages: the original at `/` and a redesign built alongside it at `/v2`. The redesign replaced the original, everything only the original used was deleted, and `next.config.js` redirects `/v2` to `/`. Nothing should be named `v1`/`v2` any more.
 
@@ -102,13 +106,20 @@ No local server/container to run. The `DB` binding is declared in `wrangler.json
 
 ## Admin auth
 
-No auth library — one shared password (`ADMIN_PASSWORD` env var) protects everything under `/admin` (except login) and `/api/admin/*`. `lib/auth/session.ts` signs a cookie (`${expiry}.${hmac}`, HMAC keyed by `SESSION_SECRET`, verified with `crypto.timingSafeEqual`) rather than storing sessions anywhere. **Rotating `SESSION_SECRET` and restarting is the "log everyone out" procedure** — there's no session store to clear.
+No auth library — one shared password (`ADMIN_PASSWORD` env var) protects every CMS page (except login) and API route. `lib/auth/session.ts` signs a cookie (`${expiry}.${hmac}`, HMAC keyed by `SESSION_SECRET`, verified with `crypto.timingSafeEqual`) rather than storing sessions anywhere. **Rotating `SESSION_SECRET` and restarting is the "log everyone out" procedure** — there's no session store to clear.
 
 Page auth lives in `app/admin/(dashboard)/layout.tsx` via `requireAdminPage()` — `/admin/login` is outside that group so it stays public. API auth is `requireAdminApi()` at the top of every `/api/admin/**` handler except login. `features/admin/admin-nav.tsx` is the shared nav + logout button. `cookies()`, `params`, and `searchParams` are async in Next 16 — always `await` them (see `getSessionCookie()` in `lib/auth/session.ts`).
 
 **Every page under `app/admin/(dashboard)/` calls `await requireAdminPage()` itself, first thing, not only the layout.** Next renders a layout and its page in parallel, so the layout's `redirect()` does not stop the page from querying D1 and streaming the result: logged out, `curl /admin` returned the full applications list (names, emails, phones) inside a response that also redirected to login. A new admin page without its own check leaks whatever it reads.
 
-**`COOKIE_PATH` in `lib/auth/session.ts` is `"/"`, not `"/admin"`.** It was originally `/admin`, which silently broke every `/api/admin/**` route the first time one was added — `/api/admin/*` doesn't fall under the `/admin` path prefix, so the browser never sent the cookie there and every request 401'd despite `/admin` itself working fine. If you're debugging a mysterious 401 on an admin API route, check this first.
+### The CMS is not at /admin
+
+The routes live in `app/admin` and `app/api/admin`, but **the public URL is a secret segment**, `ADMIN_PATH` (env; `wrangler secret put` in production). [`proxy.ts`](proxy.ts) rewrites `/<ADMIN_PATH>/x` to `/admin/x` and `/<ADMIN_PATH>/api/x` to `/api/admin/x`. Every `/admin` URL is rewritten to the honeypot (`app/honeypot`, `features/honeypot/`), `POST /api/admin/login` goes to its decoy endpoint, and any other `/api/admin/*`, `/honeypot` or `/api/honeypot` is a 404. With `ADMIN_PATH` unset no admin route answers at all.
+
+- **Never write a literal admin URL into a link, fetch, redirect or form action.** Name the internal route and map it: `adminUrl("/admin/board")` on the server (`lib/auth/admin-path.ts`), `const adminHref = useAdminUrl()` in client components (`features/admin/admin-base.tsx`, provided by `app/admin/layout.tsx`). A bare `/admin/...` sends the maintainer to the honeypot; a bare `/api/admin/...` 404s. `AdminNav active=` stays internal.
+- The session cookie is `cms_session`: 8 hours, `SameSite=Strict`, path `/<ADMIN_PATH>`. The API sits under the same segment precisely so one cookie path covers pages and API (an old `/admin` cookie path once 401'd every `/api/admin` route). Opened from another site, a CMS link lands on login because Strict withholds the cookie; reload.
+- Login locks an IP out after 5 wrong passwords in 15 minutes (`lib/db/auth-events.ts`). Real logins and honeypot hits are in `auth_events`, shown on the CMS Security page. Nothing ever stores a password, including the decoy's.
+- Never put the segment in anything public: robots.txt, the sitemap, client code outside `app/admin`, commits.
 
 ## Gotchas
 

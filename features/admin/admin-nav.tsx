@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { countPendingProposals } from "@/lib/db/proposals"
 import { countPendingBuilds } from "@/lib/db/builds"
+import { adminUrl } from "@/lib/auth/admin-path"
 
 const LINKS = [
   { href: "/admin", label: "Applications" },
@@ -13,6 +14,8 @@ const LINKS = [
   { href: "/admin/teams", label: "Teams" },
   { href: "/admin/proposals", label: "Proposals" },
   { href: "/admin/builds", label: "Builds" },
+  { href: "/admin/security", label: "Security" },
+  { href: "/admin/docs", label: "Docs" },
 ]
 
 export async function AdminNav({ active }: { active: string }) {
@@ -33,7 +36,7 @@ export async function AdminNav({ active }: { active: string }) {
         {LINKS.map((link) => (
           <Link
             key={link.href}
-            href={link.href}
+            href={adminUrl(link.href)}
             className={`text-sm font-medium ${
               active === link.href
                 ? "text-gh-text"
@@ -49,7 +52,7 @@ export async function AdminNav({ active }: { active: string }) {
           </Link>
         ))}
       </nav>
-      <form action="/api/admin/logout" method="POST">
+      <form action={adminUrl("/api/admin/logout")} method="POST">
         <Button variant="outline" type="submit" size="sm">
           Log out
         </Button>

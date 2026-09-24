@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"
 import { requireAdminPage } from "@/lib/auth/require-admin"
+import { adminUrl } from "@/lib/auth/admin-path"
 
 export default async function AdminEventsPage() {
   // Here as well as in the layout: Next renders a layout and its page in
@@ -25,7 +26,7 @@ export default async function AdminEventsPage() {
           <h1 className="text-2xl font-semibold">
             Events <span className="text-gh-muted">({events.length})</span>
           </h1>
-          <Link href="/admin/events/new">
+          <Link href={adminUrl("/admin/events/new")}>
             <Button>Add event</Button>
           </Link>
         </div>
@@ -80,13 +81,13 @@ export default async function AdminEventsPage() {
                   <td className="px-4 py-3">{event.sort_order}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <Link href={`/admin/events/${event.id}/edit`}>
+                      <Link href={adminUrl(`/admin/events/${event.id}/edit`)}>
                         <Button variant="outline" size="sm">
                           Edit
                         </Button>
                       </Link>
                       <DeleteButton
-                        url={`/api/admin/events/${event.id}`}
+                        url={adminUrl(`/api/admin/events/${event.id}`)}
                         confirmMessage={`Delete ${event.title}?`}
                       />
                     </div>

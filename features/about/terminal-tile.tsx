@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react"
-import { useInView, useReducedMotion } from "framer-motion"
+import { useInView } from "framer-motion"
+import { useReducedMotion } from "@/lib/use-reduced-motion"
 
 /**
  * The dark tile in the about bento.

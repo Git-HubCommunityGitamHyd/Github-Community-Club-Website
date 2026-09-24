@@ -180,7 +180,7 @@ function EventCover({
           sizes={
             featured
               ? "(min-width: 1024px) 50vw, 100vw"
-              : "(min-width: 1024px) 45vw, 100vw"
+              : "(min-width: 768px) 45vw, 100vw"
           }
           className="object-cover transition-transform duration-1000 ease-out group-hover/event:scale-[1.045]"
         />

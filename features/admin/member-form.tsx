@@ -8,6 +8,7 @@ import type { Member } from "@/lib/db/members"
 import type { Team } from "@/lib/db/teams"
 import { BOARD_ACCENTS, BOARD_ACCENT_KEYS } from "@/features/board/accents"
 import { MemberAvatar } from "@/features/people/member-avatar"
+import { useAdminUrl } from "@/features/admin/admin-base"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -54,6 +55,7 @@ export function MemberForm({
   teams: Team[]
 }) {
   const router = useRouter()
+  const adminHref = useAdminUrl()
   const [form, setForm] = useState<FormState>(toFormState(initial))
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
@@ -69,8 +71,8 @@ export function MemberForm({
     setSubmitting(true)
 
     const url = initial
-      ? `/api/admin/members/${initial.id}`
-      : "/api/admin/members"
+      ? adminHref(`/api/admin/members/${initial.id}`)
+      : adminHref("/api/admin/members")
     const method = initial ? "PATCH" : "POST"
 
     try {
@@ -82,7 +84,7 @@ export function MemberForm({
       const body = await res.json().catch(() => ({}))
 
       if (res.ok) {
-        router.push("/admin/members")
+        router.push(adminHref("/admin/members"))
         router.refresh()
         return
       }
@@ -197,7 +199,7 @@ export function MemberForm({
             <>
               No teams yet.{" "}
               <a
-                href="/admin/teams/new"
+                href={adminHref("/admin/teams/new")}
                 className="text-gh-accent underline-offset-4 hover:underline"
               >
                 Add one
@@ -364,7 +366,7 @@ export function MemberForm({
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/admin/members")}
+          onClick={() => router.push(adminHref("/admin/members"))}
         >
           Cancel
         </Button>

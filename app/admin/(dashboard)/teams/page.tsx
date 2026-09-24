@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"
 import { requireAdminPage } from "@/lib/auth/require-admin"
+import { adminUrl } from "@/lib/auth/admin-path"
 
 export default async function AdminTeamsPage() {
   // Here as well as in the layout: Next renders a layout and its page in
@@ -21,7 +22,7 @@ export default async function AdminTeamsPage() {
           <h1 className="text-2xl font-semibold">
             Teams <span className="text-gh-muted">({teams.length})</span>
           </h1>
-          <Link href="/admin/teams/new">
+          <Link href={adminUrl("/admin/teams/new")}>
             <Button>Add team</Button>
           </Link>
         </div>
@@ -46,13 +47,13 @@ export default async function AdminTeamsPage() {
                   <td className="px-4 py-3">{team.sort_order}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <Link href={`/admin/teams/${team.id}/edit`}>
+                      <Link href={adminUrl(`/admin/teams/${team.id}/edit`)}>
                         <Button variant="outline" size="sm">
                           Edit
                         </Button>
                       </Link>
                       <DeleteButton
-                        url={`/api/admin/teams/${team.id}`}
+                        url={adminUrl(`/api/admin/teams/${team.id}`)}
                         confirmMessage={`Delete the ${team.name} team? Its ${team.member_count} member(s) stay, without a team.`}
                       />
                     </div>

@@ -10,6 +10,7 @@ import {
   journeyIcon,
 } from "@/features/journey/icons"
 import type { JourneyEntry } from "@/lib/db/journey"
+import { useAdminUrl } from "@/features/admin/admin-base"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -57,6 +58,7 @@ function formatEntryDate(month: string): string {
 
 export function JourneyForm({ initial }: { initial?: JourneyEntry }) {
   const router = useRouter()
+  const adminHref = useAdminUrl()
   const [form, setForm] = useState<FormState>(toFormState(initial))
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
@@ -77,8 +79,8 @@ export function JourneyForm({ initial }: { initial?: JourneyEntry }) {
     setSubmitting(true)
 
     const url = initial
-      ? `/api/admin/journey/${initial.id}`
-      : "/api/admin/journey"
+      ? adminHref(`/api/admin/journey/${initial.id}`)
+      : adminHref("/api/admin/journey")
     const method = initial ? "PATCH" : "POST"
 
     try {
@@ -90,7 +92,7 @@ export function JourneyForm({ initial }: { initial?: JourneyEntry }) {
       const body = await res.json().catch(() => ({}))
 
       if (res.ok) {
-        router.push("/admin/journey")
+        router.push(adminHref("/admin/journey"))
         router.refresh()
         return
       }
@@ -221,7 +223,7 @@ export function JourneyForm({ initial }: { initial?: JourneyEntry }) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/admin/journey")}
+          onClick={() => router.push(adminHref("/admin/journey"))}
         >
           Cancel
         </Button>

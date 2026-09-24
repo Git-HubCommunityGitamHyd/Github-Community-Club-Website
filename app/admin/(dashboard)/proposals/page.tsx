@@ -12,6 +12,7 @@ import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"
 import { StatusTabs } from "@/features/admin/status-tabs"
 import { requireAdminPage } from "@/lib/auth/require-admin"
+import { adminUrl } from "@/lib/auth/admin-path"
 
 export default async function AdminProposalsPage({
   searchParams,
@@ -48,7 +49,7 @@ export default async function AdminProposalsPage({
         </p>
 
         <StatusTabs
-          base="/admin/proposals"
+          base={adminUrl("/admin/proposals")}
           active={status}
           tabs={[
             { key: "all", label: "All", count: all.length },
@@ -116,13 +117,15 @@ export default async function AdminProposalsPage({
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
-                        <Link href={`/admin/proposals/${proposal.id}`}>
+                        <Link
+                          href={adminUrl(`/admin/proposals/${proposal.id}`)}
+                        >
                           <Button variant="outline" size="sm">
                             {proposal.status === "pending" ? "Review" : "Edit"}
                           </Button>
                         </Link>
                         <DeleteButton
-                          url={`/api/admin/proposals/${proposal.id}`}
+                          url={adminUrl(`/api/admin/proposals/${proposal.id}`)}
                           confirmMessage={`Delete "${proposal.title}" for good? Declining keeps a record; deleting does not.`}
                         />
                       </div>

@@ -1,11 +1,38 @@
 import { createHash, timingSafeEqual } from "node:crypto"
 import { cookies } from "next/headers"
+import { adminBase } from "@/lib/auth/admin-path"
 
-export const COOKIE_NAME = "admin_session"
-// "/" — not "/admin" — so the cookie also reaches /api/admin/* routes,
-// which live outside the /admin path prefix but still need the session.
-export const COOKIE_PATH = "/"
-const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000
+// Renamed from "admin_session" when the CMS moved to a secret path, so the
+// week-long cookies issued under path "/" before that stopped counting.
+export const COOKIE_NAME = "cms_session"
+// One working day. A stolen cookie is worth hours, not a week.
+const SESSION_TTL_S = 8 * 60 * 60
+const SESSION_TTL_MS = SESSION_TTL_S * 1000
+
+/**
+ * Attributes for the session cookie, `maxAge` 0 to clear it.
+ *
+ * Path is the secret segment, so the browser only ever sends the cookie to
+ * the CMS: its pages are /<secret>/... and its API is /<secret>/api/..., so
+ * one path covers both, and no request to the public site carries it. (The
+ * path used to be "/admin", which silently 401'd every /api/admin route;
+ * with the API now under the same segment that trap is gone.)
+ *
+ * SameSite=Strict: the cookie is never sent on a request started from
+ * another site, so a link to the CMS opened from a chat app lands on the
+ * login page. Reload and it is sent.
+ */
+export function sessionCookieOptions(maxAge = SESSION_TTL_S) {
+  const base = adminBase()
+  if (!base) throw new Error("ADMIN_PATH is not set")
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict" as const,
+    path: `/${base}`,
+    maxAge,
+  }
+}
 
 function requireEnv(name: string): string {
   const value = process.env[name]

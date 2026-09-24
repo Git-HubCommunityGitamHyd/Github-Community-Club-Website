@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react"
 import dynamic from "next/dynamic"
-import { motion, useMotionValue, useReducedMotion } from "framer-motion"
+import { motion, useMotionValue } from "framer-motion"
+import { useReducedMotion } from "@/lib/use-reduced-motion"
 import {
   MASCOT_DOCKS,
   DOCK_BLEND,
@@ -103,6 +104,13 @@ const ARRIVAL_MS = 520
  * standing in front of the preview rather than perching on it.
  */
 const PERCH_HEIGHT = 84
+
+/**
+ * Narrowest viewport, in px, at which the mascot leaves the hero and docks
+ * beside sections (Tailwind's `lg`), and then only with a mouse: on touch
+ * devices of any width it rides in the hero only. Below `md` it is not shown.
+ */
+const DOCK_MIN_WIDTH = 1024
 
 /**
  * Time constant for handing the mascot to and from a perch, in seconds.
@@ -338,13 +346,23 @@ export function HomeMascot({
       pointerRef.current = { x: gaze.x, y: gaze.y }
     }
 
+    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)")
+
     const apply = () => {
       const heroDoc = heroDocRectRef.current
       if (!heroDoc || !heroDoc.height) return
 
       const now = performance.now()
       if (!lastFrameRef.current) lastFrameRef.current = now
-      const p = Math.min(1, Math.max(0, window.scrollY / DOCK_SCROLL))
+      // Docking needs side gutters and a cursor. On a tablet the content runs
+      // nearly edge to edge at every width, so a docked mascot sat on top of
+      // headings and copy, and there is no pointer for it to lean toward. There
+      // it stays in its hero slot (or an inner page's header slot) and scrolls
+      // away with it, like any other content.
+      const p =
+        window.innerWidth < DOCK_MIN_WIDTH || !finePointer.matches
+          ? 0
+          : Math.min(1, Math.max(0, window.scrollY / DOCK_SCROLL))
 
       const dockedScale = DOCK_HEIGHT / heroDoc.height
       const s = Math.max(dockedScale, 1 + (dockedScale - 1) * p)

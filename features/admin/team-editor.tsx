@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PROJECT_ROLES, PROJECT_ROLE_KEYS } from "@/features/projects/roles"
 import type { Member } from "@/lib/db/members"
+import { useAdminUrl } from "@/features/admin/admin-base"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -41,12 +42,13 @@ export function TeamEditor({
   rows: TeamRow[]
   onChange: (rows: TeamRow[]) => void
 }) {
+  const adminHref = useAdminUrl()
   if (members.length === 0) {
     return (
       <p className="rounded-md border border-dashed border-gh-border px-4 py-6 text-center text-sm text-gh-muted">
         Nobody to tag yet.{" "}
         <Link
-          href="/admin/members/new"
+          href={adminHref("/admin/members/new")}
           className="font-medium text-gh-accent underline-offset-4 hover:underline"
         >
           Add members

@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import type { Team } from "@/lib/db/teams"
+import { useAdminUrl } from "@/features/admin/admin-base"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -14,6 +15,7 @@ type FormState = { name: string; description: string; sortOrder: string }
 
 export function TeamForm({ initial }: { initial?: Team }) {
   const router = useRouter()
+  const adminHref = useAdminUrl()
   const [form, setForm] = useState<FormState>({
     name: initial?.name ?? "",
     description: initial?.description ?? "",
@@ -33,7 +35,9 @@ export function TeamForm({ initial }: { initial?: Team }) {
     setSubmitting(true)
     try {
       const res = await fetch(
-        initial ? `/api/admin/teams/${initial.id}` : "/api/admin/teams",
+        initial
+          ? adminHref(`/api/admin/teams/${initial.id}`)
+          : adminHref("/api/admin/teams"),
         {
           method: initial ? "PATCH" : "POST",
           headers: { "Content-Type": "application/json" },
@@ -42,7 +46,7 @@ export function TeamForm({ initial }: { initial?: Team }) {
       )
       const body = await res.json().catch(() => ({}))
       if (res.ok) {
-        router.push("/admin/teams")
+        router.push(adminHref("/admin/teams"))
         router.refresh()
         return
       }
@@ -121,7 +125,7 @@ export function TeamForm({ initial }: { initial?: Team }) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/admin/teams")}
+          onClick={() => router.push(adminHref("/admin/teams"))}
         >
           Cancel
         </Button>

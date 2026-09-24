@@ -10,6 +10,7 @@ import { slugify } from "@/lib/validation/project"
 import type { Project, TeamMember } from "@/lib/db/projects"
 import type { Member } from "@/lib/db/members"
 import { TeamEditor, type TeamRow } from "@/features/admin/team-editor"
+import { useAdminUrl } from "@/features/admin/admin-base"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -103,6 +104,7 @@ export function ProjectForm({
   members: Member[]
 }) {
   const router = useRouter()
+  const adminHref = useAdminUrl()
   const [form, setForm] = useState<FormState>(toFormState(initial))
   const [team, setTeam] = useState<TeamRow[]>(() =>
     initialTeam.map((person) => ({
@@ -133,8 +135,8 @@ export function ProjectForm({
     setSubmitting(true)
 
     const url = initial
-      ? `/api/admin/projects/${initial.id}`
-      : "/api/admin/projects"
+      ? adminHref(`/api/admin/projects/${initial.id}`)
+      : adminHref("/api/admin/projects")
     const method = initial ? "PATCH" : "POST"
 
     try {
@@ -153,7 +155,7 @@ export function ProjectForm({
       const body = await res.json().catch(() => ({}))
 
       if (res.ok) {
-        router.push("/admin/projects")
+        router.push(adminHref("/admin/projects"))
         router.refresh()
         return
       }
@@ -443,7 +445,7 @@ export function ProjectForm({
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/admin/projects")}
+          onClick={() => router.push(adminHref("/admin/projects"))}
         >
           Cancel
         </Button>

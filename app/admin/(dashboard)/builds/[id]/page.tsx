@@ -6,6 +6,7 @@ import { mondayOf, monthOf } from "@/features/builds/keys"
 import { BuildReviewForm } from "@/features/admin/build-review-form"
 import { SubmitterCard } from "@/features/admin/status-tabs"
 import { requireAdminPage } from "@/lib/auth/require-admin"
+import { adminUrl } from "@/lib/auth/admin-path"
 
 export default async function ReviewBuildPage({
   params,
@@ -27,7 +28,7 @@ export default async function ReviewBuildPage({
     <main className="min-h-screen bg-gh-bg px-4 py-10 text-gh-text">
       <div className="mx-auto max-w-6xl">
         <Link
-          href="/admin/builds"
+          href={adminUrl("/admin/builds")}
           className="text-sm text-gh-muted hover:text-gh-text"
         >
           Back to builds

@@ -37,8 +37,8 @@ export function EventsSection({ events }: { events: Event[] }) {
             Nothing scheduled yet. The first event of the semester goes up here.
           </p>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="lg:col-span-2">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="md:col-span-2">
               <EventCard
                 event={featured}
                 featured

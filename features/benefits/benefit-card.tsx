@@ -55,7 +55,7 @@ export function BenefitCard({
       ref={ref}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
-      className="group/benefit relative h-full w-full p-10"
+      className="group/benefit relative h-full w-full p-7 sm:p-10"
       style={
         {
           "--spot-x": "50%",
@@ -82,11 +82,11 @@ export function BenefitCard({
       />
 
       <div className="relative flex h-full flex-col justify-between">
-        <div className="flex items-start justify-between gap-6">
+        <div className="flex items-start justify-between gap-4 sm:gap-6">
           <span className="font-mono text-[28px] font-extrabold tabular-nums leading-none text-gh-border transition-colors duration-300 group-hover/benefit:text-gh-accent/50">
             {String(index + 1).padStart(2, "0")}
           </span>
-          <span className="rounded-full border border-gh-border px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-gh-muted transition-colors duration-300 group-hover/benefit:border-gh-accent/40 group-hover/benefit:text-gh-accent">
+          <span className="whitespace-nowrap rounded-full border border-gh-border px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-gh-muted transition-colors duration-300 group-hover/benefit:border-gh-accent/40 group-hover/benefit:text-gh-accent">
             {benefit.proof}
           </span>
         </div>

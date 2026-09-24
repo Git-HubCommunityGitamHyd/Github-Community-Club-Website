@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"
 import { requireAdminPage } from "@/lib/auth/require-admin"
+import { adminUrl } from "@/lib/auth/admin-path"
 
 export default async function AdminBoardPage() {
   // Here as well as in the layout: Next renders a layout and its page in
@@ -24,7 +25,7 @@ export default async function AdminBoardPage() {
             Board members{" "}
             <span className="text-gh-muted">({members.length})</span>
           </h1>
-          <Link href="/admin/board/new">
+          <Link href={adminUrl("/admin/board/new")}>
             <Button>Add member</Button>
           </Link>
         </div>
@@ -72,13 +73,13 @@ export default async function AdminBoardPage() {
                   <td className="px-4 py-3">{member.sort_order}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <Link href={`/admin/board/${member.id}/edit`}>
+                      <Link href={adminUrl(`/admin/board/${member.id}/edit`)}>
                         <Button variant="outline" size="sm">
                           Edit
                         </Button>
                       </Link>
                       <DeleteButton
-                        url={`/api/admin/board-members/${member.id}`}
+                        url={adminUrl(`/api/admin/board-members/${member.id}`)}
                         confirmMessage={`Delete ${member.name}?`}
                       />
                     </div>

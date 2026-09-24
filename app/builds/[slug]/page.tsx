@@ -121,7 +121,7 @@ export default async function BuildPage({
     blocks.push({
       label: "Links",
       body: (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2">
           {build.live_url && (
             <LinkCard
               href={build.live_url}

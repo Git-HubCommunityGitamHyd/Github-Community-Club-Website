@@ -5,6 +5,7 @@ import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"
 import { MemberAvatar } from "@/features/people/member-avatar"
 import { requireAdminPage } from "@/lib/auth/require-admin"
+import { adminUrl } from "@/lib/auth/admin-path"
 
 export default async function AdminMembersPage() {
   // Here as well as in the layout: Next renders a layout and its page in
@@ -22,7 +23,7 @@ export default async function AdminMembersPage() {
           <h1 className="text-2xl font-semibold">
             Members <span className="text-gh-muted">({members.length})</span>
           </h1>
-          <Link href="/admin/members/new">
+          <Link href={adminUrl("/admin/members/new")}>
             <Button>Add member</Button>
           </Link>
         </div>
@@ -56,13 +57,13 @@ export default async function AdminMembersPage() {
                   <td className="px-4 py-3">{member.sort_order}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <Link href={`/admin/members/${member.id}/edit`}>
+                      <Link href={adminUrl(`/admin/members/${member.id}/edit`)}>
                         <Button variant="outline" size="sm">
                           Edit
                         </Button>
                       </Link>
                       <DeleteButton
-                        url={`/api/admin/members/${member.id}`}
+                        url={adminUrl(`/api/admin/members/${member.id}`)}
                         confirmMessage={`Delete ${member.name}? They are removed from every project they are tagged on.`}
                       />
                     </div>

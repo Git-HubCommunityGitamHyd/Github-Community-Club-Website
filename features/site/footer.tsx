@@ -42,8 +42,8 @@ export function SiteFooter() {
     // same GitHub family the rest of the site uses.
     <footer className="border-t border-gh-border bg-gh-deep text-gh-text">
       <div className="mx-auto max-w-7xl px-4 pb-14 pt-20 sm:px-6 lg:px-8">
-        <div className="grid gap-x-8 gap-y-14 md:grid-cols-12 lg:gap-x-12">
-          <div className="md:col-span-4">
+        <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-12 lg:gap-x-12">
+          <div className="sm:col-span-2 lg:col-span-4">
             <div className="mb-4 flex items-center gap-2.5">
               <FaGithub className="h-7 w-7" aria-hidden="true" />
               <span className="text-base font-extrabold tracking-tight">
@@ -75,7 +75,7 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          <nav className="md:col-span-3" aria-label="Homepage sections">
+          <nav className="lg:col-span-3" aria-label="Homepage sections">
             <h2 className="mb-5 font-mono text-[13px] font-bold uppercase tracking-wide text-gh-accent">
               Sections
             </h2>
@@ -96,7 +96,7 @@ export function SiteFooter() {
             </ul>
           </nav>
 
-          <nav className="md:col-span-2" aria-label="Pages">
+          <nav className="lg:col-span-2" aria-label="Pages">
             <h2 className="mb-5 font-mono text-[13px] font-bold uppercase tracking-wide text-gh-accent">
               Pages
             </h2>
@@ -114,7 +114,7 @@ export function SiteFooter() {
             </ul>
           </nav>
 
-          <div className="md:col-span-3">
+          <div className="lg:col-span-3">
             <h2 className="mb-5 font-mono text-[13px] font-bold uppercase tracking-wide text-gh-accent">
               Contact
             </h2>

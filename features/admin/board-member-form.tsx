@@ -8,6 +8,7 @@ import { ImageUploadField } from "@/features/admin/image-upload-field"
 import { MemberAvatar } from "@/features/people/member-avatar"
 import type { BoardMember } from "@/lib/db/board-members"
 import { BOARD_ACCENTS, BOARD_ACCENT_KEYS } from "@/features/board/accents"
+import { useAdminUrl } from "@/features/admin/admin-base"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -42,6 +43,7 @@ function toFormState(member?: BoardMember): FormState {
 
 export function BoardMemberForm({ initial }: { initial?: BoardMember }) {
   const router = useRouter()
+  const adminHref = useAdminUrl()
   const [form, setForm] = useState<FormState>(toFormState(initial))
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
@@ -57,8 +59,8 @@ export function BoardMemberForm({ initial }: { initial?: BoardMember }) {
     setSubmitting(true)
 
     const url = initial
-      ? `/api/admin/board-members/${initial.id}`
-      : "/api/admin/board-members"
+      ? adminHref(`/api/admin/board-members/${initial.id}`)
+      : adminHref("/api/admin/board-members")
     const method = initial ? "PATCH" : "POST"
 
     try {
@@ -70,7 +72,7 @@ export function BoardMemberForm({ initial }: { initial?: BoardMember }) {
       const body = await res.json().catch(() => ({}))
 
       if (res.ok) {
-        router.push("/admin/board")
+        router.push(adminHref("/admin/board"))
         router.refresh()
         return
       }
@@ -271,7 +273,7 @@ export function BoardMemberForm({ initial }: { initial?: BoardMember }) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/admin/board")}
+          onClick={() => router.push(adminHref("/admin/board"))}
         >
           Cancel
         </Button>

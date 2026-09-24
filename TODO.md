@@ -1413,13 +1413,167 @@ optimisation.
       `git show HEAD:public/images/events/<file>`), then run the migration on
       production
 
+## Phase 34 - mobile and tablet responsiveness - DONE
+
+Audited every public page at 360, 390, 820 and 1180 wide (headless Chrome,
+touch emulation): screenshots of each page top to bottom, an overflow check
+that ignores only intentional local clips, a tap-target check, console and
+network errors, and the menu, dialogs, form stepper and lightbox opened.
+
+- [x] Phone and tablet menu vanished once scrolled: the glass backdrop is an
+      absolutely positioned sibling and painted over the unpositioned toggle.
+      Header row is `relative z-20` now (the wordmark only survived because it
+      was already positioned)
+- [x] Menu closes on Escape and on a tap outside it (only the X did)
+- [x] Hydration error for every visitor with reduced motion on: framer's
+      `useReducedMotion` reads the media query on the first client render,
+      so the terminal tile rendered different markup from the server.
+      `lib/use-reduced-motion.ts` (server snapshot during hydration) replaces
+      it in all seven places
+- [x] Mascot on tablets: docked beside sections it sat on event titles, the
+      timeline and the join copy, because there are no side gutters at any
+      tablet width. It now docks only with a mouse at 1024px and up; on touch
+      devices it stays in the hero (or an inner page's header slot) and
+      scrolls away with it. Never dropped; below 768px it was already hidden
+- [x] Footer: four columns squeezed the email off the edge at 820; now two
+      columns up to `lg`
+- [x] Events: two-up from `md` instead of `lg`, so a tablet no longer shows
+      one tall card per row
+- [x] About stats: the third tile spans the row on phones instead of leaving
+      half a row empty
+- [x] Hero on phones: headline 44px to 56px, less top padding, and the empty
+      mascot column no longer adds a gap under the buttons
+- [x] Benefit cards: less padding on phones, proof pill no longer wraps
+- [x] Link cards on project and build pages: a long repo name widened the
+      grid past the screen and pushed the arrow off; the grid column is
+      `minmax(0,1fr)` now
+- [x] Tap targets: "Read our story" and the board name list were 16-23px
+      tall; padded to about 40px without moving them
+
+### Checks
+- [x] No horizontal overflow on any public page at 360 or 820
+- [x] No page errors; menu opens, closes on outside tap; event, profile, QR
+      dialogs, proposal stepper and build lightbox all fit at 390 and 820
+- [x] tsc, eslint clean
+- [ ] Not checked on a real device (headless Chrome with touch emulation)
+
+### Follow-ups
+- [ ] Local test builds pointed at the deleted event photos; repointed to
+      placeholder images (local data only)
+
+## Phase 35 - hide the CMS, harden login, a honeypot at /admin - DONE
+
+The user: "/admin" is exposed and any curious student will try it. Make
+/admin a honeypot, "fun and trolling" for griefers, hide the real CMS but
+keep it reachable for maintainers, 5 wrong passwords per IP, stricter cookie.
+
+- [x] Layer 1, Cloudflare Access in front of the secret path: set up in the
+      Cloudflare dashboard at deploy time (see Follow-ups), not code
+- [x] Layer 2, secret path: the CMS is served at `/<ADMIN_PATH>/...` and its
+      API at `/<ADMIN_PATH>/api/...` (`proxy.ts` rewrites onto the unchanged
+      app/admin and app/api/admin routes). Unset `ADMIN_PATH` fails closed
+- [x] Every hardcoded `/admin` and `/api/admin` URL (pages, forms, nav,
+      redirects, the upload sign URL) goes through `adminUrl()` on the
+      server or `useAdminUrl()` in client components
+- [x] `/api/admin/*` is a plain 404 from outside; so are the internal
+      `/honeypot` and `/api/honeypot` routes
+- [x] Lockout: 5 wrong passwords per IP in 15 minutes, checked before the
+      password; the login page says how many tries are left
+- [x] Cookie: renamed `cms_session` (old week-long cookies stop counting),
+      8 hour TTL, `SameSite=Strict`, `HttpOnly`, `Secure` in production,
+      path scoped to the secret segment so the public site never gets it
+- [x] `auth_events` table (migration `2026-09-auth-events.sql`, applied
+      locally) logging real logins and honeypot hits; never a password
+- [x] CMS Security page: counts for 7 days, current lockouts, last 200 events
+- [x] Layer 3, the honeypot at every `/admin` URL: a believable login whose
+      errors turn into git errors, a fake "Access granted" on try 5 with a
+      clone that hangs at 99% and dies on HTTP 418, then "You found the
+      honeypot" with a `git blame` card (their IP, browser, username, time),
+      an octocat that follows the cursor and looks away from the password
+      field, a "Forgot password?" CAPTCHA for merge conflicts that no answer
+      passes, a console message, and a pointer to apply to the club
+- [x] The decoy never sends the password; only the username is logged
+
+### Checks
+- [x] curl: `/admin` and `/admin/board` 200 decoy; `/admin/.env`,
+      `/honeypot`, `/api/honeypot`, `/api/admin/board-members` 404;
+      secret path redirects to its login; secret API 401 without a session
+- [x] Six wrong passwords from one IP: tries left 4, 3, 2, 1, then locked,
+      then locked again without checking the password; all rows logged
+- [x] Decoy clicked through in the browser to the reveal; CAPTCHA opens
+- [x] The secret segment is in no file under `.next/static`
+- [x] tsc, eslint, next build clean
+- [ ] Logged-in CMS not clicked through (needs the password, which I must
+      not type): check board, events and an image upload once yourself
+
+### Follow-ups
+- [ ] Production: `npx wrangler secret put ADMIN_PATH` (a fresh value, not
+      the local one) and confirm the deployed Worker reads it, since
+      OpenNext may also bundle values from `.env`
+- [ ] Production: run `db/migrations/2026-09-auth-events.sql` remotely
+- [ ] Cloudflare Access: Zero Trust, Access, add a self-hosted application
+      for `<domain>/<ADMIN_PATH>*` with an allow policy listing the
+      maintainers' emails (one-time PIN login is fine)
+- [ ] The lockout is per IP, and campus Wi-Fi shares IPs: a griefer on the
+      same network can lock a maintainer out for 15 minutes. Access (layer
+      1) is the real answer; say if it becomes a problem
+
+## Phase 36 - documentation, in the repo and in the CMS - DONE
+
+The user: add comprehensive documentation of the codebase, architecture,
+deployment and database, with Mermaid diagrams, readable in the CMS since it
+is protected, and rewrite README.md as a proper project page for the club.
+"Documentation must be clear, since it'll be used for long term purposes."
+
+- [x] `docs/` rewritten as a set: README (index), 01 overview, 02
+      architecture, 03 local development, 04 deployment, 05 database, 06 CMS
+      and security, 07 content workflows, 08 media and uploads, 09 frontend,
+      10 operations runbook, plus the existing member avatar prompt
+- [x] 20 Mermaid diagrams: system context, code layers, request and form
+      sequences, proxy routing, deploy pipeline and routine, three ER
+      diagrams, schema-change flow, login sequence, CMS save sequence,
+      application flow, proposal and build state machines, track links,
+      commit counts, upload signing, homepage composition
+- [x] Migration ledger in the database doc (order, what each file does)
+- [x] Runbook: handover checklist, rotate password/session/secret path,
+      clear a lockout, lost track link, delete someone's data, backup,
+      Time Travel restore, logs, a symptom-to-fix table
+- [x] CMS Docs page (`/<ADMIN_PATH>/docs`, `/docs/[slug]`): sidebar,
+      site-styled Markdown, diagrams in the site palette, doc-to-doc links
+      stay in the CMS, links to code open on GitHub; in the admin nav
+- [x] README.md rewritten: logo, badges, about the club (community group
+      vs club), features by audience, tech stack, architecture diagram,
+      quick start, structure, docs index, contributing, credits
+- [x] CLAUDE.md: docs/ and proxy.ts in the layout, docs upkeep rule, the
+      raw-loader and mermaid bundling gotchas
+
+### Checks
+- [x] Every docs page 200 with a session, `/docs/nope` 404, logged out
+      redirects to login
+- [x] Every diagram on every page draws (none fell back to source)
+- [x] Mermaid is not in the server bundle (only a 4 KB wrapper)
+- [x] tsc, eslint, prettier, next build clean; secret path not in static
+- [x] Facts checked against code: API methods (POST/PATCH/DELETE),
+      applications are read-only in the CMS, migration contents, public
+      build columns
+- [ ] GitHub rendering of the diagrams not checked (the repo is not pushed
+      from here); they use only standard Mermaid syntax
+
+### Follow-ups
+- [ ] Docs name `WORKER_SELF_REFERENCE` pointing at the wrong service as a
+      known issue; fix it before the first deploy
+- [ ] No LICENSE file in the repo; the README does not claim one. Decide
+      whether to add one
+- [ ] Applications have no delete in the CMS (the runbook gives the SQL)
+
 ## Open items
 
 - [x] Promote `/v2` to `/` (Phase 31)
 - [ ] Replace the seeded board and event rows with the real ones through
-      `/admin/board` and `/admin/events`
-- [ ] Mobile responsiveness pass (still deferred by request)
+      the CMS board and events screens (now at the secret path)
+- [x] Mobile and tablet responsiveness pass (Phase 34)
 - [x] Members page (Phase 24)
+- [x] Hide the CMS, honeypot, login lockout (Phase 35)
 - [ ] Security and optimisation pass (next, per the user): rate limiting and
       Turnstile on `/api/proposals`, `/api/builds`, `/api/builds/upload-sign`;
       upload size cap; purge images of declined builds

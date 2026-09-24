@@ -211,9 +211,11 @@ export function MobileNav({
   visibleClassName,
   visible,
   backdrop,
-}: MobileNavProps) {
+  ref,
+}: MobileNavProps & { ref?: React.Ref<HTMLElement> }) {
   return (
     <motion.nav
+      ref={ref}
       animate={{
         ...(backdrop
           ? {}
@@ -243,9 +245,13 @@ export function MobileNavHeader({
   className?: string
 }) {
   return (
+    // `relative z-20` is load-bearing: the glass backdrop is an absolutely
+    // positioned sibling painted before this row, and positioned elements
+    // paint above in-flow ones. Without it, the menu toggle (not positioned)
+    // disappeared under the glass the moment the bar shrank on scroll.
     <div
       className={cn(
-        "flex w-full flex-row items-center justify-between",
+        "relative z-20 flex w-full flex-row items-center justify-between",
         className,
       )}
     >

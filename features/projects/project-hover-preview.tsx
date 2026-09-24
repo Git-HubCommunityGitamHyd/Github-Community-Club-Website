@@ -2,13 +2,8 @@
 
 import { useEffect, useRef } from "react"
 import Image from "next/image"
-import {
-  AnimatePresence,
-  animate,
-  motion,
-  useMotionValue,
-  useReducedMotion,
-} from "framer-motion"
+import { AnimatePresence, animate, motion, useMotionValue } from "framer-motion"
+import { useReducedMotion } from "@/lib/use-reduced-motion"
 import { setPerch } from "@/features/mascot/perch"
 
 /**

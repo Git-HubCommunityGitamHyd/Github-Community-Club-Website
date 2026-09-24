@@ -10,6 +10,7 @@ import {
   PROPOSAL_STATUS_KEYS,
   proposalStatus,
 } from "@/features/proposals/keys"
+import { useAdminUrl } from "@/features/admin/admin-base"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -32,6 +33,7 @@ type FormState = {
  */
 export function ProposalReviewForm({ proposal }: { proposal: Proposal }) {
   const router = useRouter()
+  const adminHref = useAdminUrl()
   const [form, setForm] = useState<FormState>({
     title: proposal.title,
     idea: proposal.idea,
@@ -53,14 +55,17 @@ export function ProposalReviewForm({ proposal }: { proposal: Proposal }) {
     setServerError(null)
     setSubmitting(true)
     try {
-      const res = await fetch(`/api/admin/proposals/${proposal.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, ...overrides }),
-      })
+      const res = await fetch(
+        adminHref(`/api/admin/proposals/${proposal.id}`),
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...form, ...overrides }),
+        },
+      )
       const body = await res.json().catch(() => ({}))
       if (res.ok) {
-        router.push("/admin/proposals")
+        router.push(adminHref("/admin/proposals"))
         router.refresh()
         return
       }
@@ -245,7 +250,7 @@ export function ProposalReviewForm({ proposal }: { proposal: Proposal }) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/admin/proposals")}
+          onClick={() => router.push(adminHref("/admin/proposals"))}
         >
           Cancel
         </Button>

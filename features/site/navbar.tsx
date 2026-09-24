@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { FaGithub } from "react-icons/fa6"
 import {
   MobileNav,
@@ -149,6 +149,28 @@ export function SiteNavbar({
   homeHref?: string
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const mobileRef = useRef<HTMLElement>(null)
+
+  // The open menu closes the way a menu is expected to: Escape, or a tap
+  // anywhere outside it. Before, only the X closed it, so tapping the page
+  // behind left it hanging over the content.
+  useEffect(() => {
+    if (!isMobileMenuOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsMobileMenuOpen(false)
+    }
+    const onPointer = (e: PointerEvent) => {
+      if (!mobileRef.current?.contains(e.target as Node)) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+    document.addEventListener("keydown", onKey)
+    document.addEventListener("pointerdown", onPointer)
+    return () => {
+      document.removeEventListener("keydown", onKey)
+      document.removeEventListener("pointerdown", onPointer)
+    }
+  }, [isMobileMenuOpen])
 
   const go = (link: string) => {
     setIsMobileMenuOpen(false)
@@ -165,7 +187,7 @@ export function SiteNavbar({
         </div>
       </NavBody>
 
-      <MobileNav className={SURFACE} backdrop={MOBILE_GLASS}>
+      <MobileNav ref={mobileRef} className={SURFACE} backdrop={MOBILE_GLASS}>
         <MobileNavHeader>
           <Wordmark href={homeHref} />
           <div className="flex items-center gap-2">

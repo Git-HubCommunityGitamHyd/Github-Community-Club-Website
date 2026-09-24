@@ -9,6 +9,7 @@ import { ImageUploadField } from "@/features/admin/image-upload-field"
 import type { Event } from "@/lib/db/events"
 import { EVENT_CATEGORIES } from "@/features/events/categories"
 import { EVENT_IMAGES_MAX } from "@/lib/validation/event"
+import { useAdminUrl } from "@/features/admin/admin-base"
 
 const inputClass =
   "w-full rounded-md border border-gh-border bg-gh-elevated px-3 py-2 text-base sm:text-sm text-gh-text placeholder:text-gh-muted focus:border-gh-accent focus:outline-none focus:ring-1 focus:ring-gh-accent"
@@ -71,6 +72,7 @@ function formatEventDate(start: string, end: string): string {
 
 export function EventForm({ initial }: { initial?: Event }) {
   const router = useRouter()
+  const adminHref = useAdminUrl()
   const [form, setForm] = useState<FormState>(toFormState(initial))
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
@@ -103,8 +105,8 @@ export function EventForm({ initial }: { initial?: Event }) {
     setSubmitting(true)
 
     const url = initial
-      ? `/api/admin/events/${initial.id}`
-      : "/api/admin/events"
+      ? adminHref(`/api/admin/events/${initial.id}`)
+      : adminHref("/api/admin/events")
     const method = initial ? "PATCH" : "POST"
 
     try {
@@ -116,7 +118,7 @@ export function EventForm({ initial }: { initial?: Event }) {
       const body = await res.json().catch(() => ({}))
 
       if (res.ok) {
-        router.push("/admin/events")
+        router.push(adminHref("/admin/events"))
         router.refresh()
         return
       }
@@ -383,7 +385,7 @@ export function EventForm({ initial }: { initial?: Event }) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/admin/events")}
+          onClick={() => router.push(adminHref("/admin/events"))}
         >
           Cancel
         </Button>

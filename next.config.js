@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // The CMS Docs page imports docs/*.md as plain strings, so the same files
+  // GitHub renders are bundled into the Worker (which has no filesystem to
+  // read them from at runtime).
+  turbopack: {
+    rules: {
+      "*.md": { loaders: ["raw-loader"], as: "*.js" },
+    },
+  },
   // The redesign was previewed at /v2 before it replaced the homepage. Links
   // to it were shared, so they land on / instead of a 404.
   async redirects() {

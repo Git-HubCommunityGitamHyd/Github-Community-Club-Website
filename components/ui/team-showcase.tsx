@@ -252,7 +252,7 @@ function MemberRow({
           onFocus={() => onHover(member.id)}
           onBlur={() => onHover(null)}
           className={cn(
-            "rounded text-left text-base font-semibold leading-none tracking-tight transition-colors duration-300 md:text-[18px]",
+            "-my-2 rounded py-2 text-left text-base font-semibold leading-none tracking-tight transition-colors duration-300 md:text-[18px]",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent",
             isActive ? "text-gh-text" : "text-gh-text/80",
           )}

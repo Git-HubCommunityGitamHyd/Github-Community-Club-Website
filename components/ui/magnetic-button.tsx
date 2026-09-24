@@ -1,13 +1,8 @@
 "use client"
 
 import { useRef, type ReactNode } from "react"
-import {
-  motion,
-  useMotionValue,
-  useReducedMotion,
-  useSpring,
-  useTransform,
-} from "framer-motion"
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
+import { useReducedMotion } from "@/lib/use-reduced-motion"
 import { cn } from "@/lib/utils"
 
 /**

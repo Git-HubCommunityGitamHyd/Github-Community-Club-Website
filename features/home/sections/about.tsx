@@ -182,6 +182,9 @@ export function AboutSection({
             value={3}
             label="Campuses"
             counting={counting}
+            // Odd one out on the two-column phone grid: full width there
+            // rather than half a row with a hole beside it.
+            className="col-span-2 md:col-span-1"
           />
 
           {/* Dark tile — a terminal, so the one dark panel in a light bento has
@@ -282,6 +285,7 @@ function StatTile({
   format,
   label,
   counting,
+  className = "",
 }: {
   icon: LucideIcon
   value: number
@@ -291,12 +295,13 @@ function StatTile({
   format?: (value: number) => string
   label: string
   counting: boolean
+  className?: string
 }) {
   return (
     <motion.article
       variants={ENTRY}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className={`${QUIET_TILE} group relative flex flex-col justify-between gap-6 overflow-hidden rounded-2xl p-6`}
+      className={`${QUIET_TILE} group relative flex flex-col justify-between gap-6 overflow-hidden rounded-2xl p-6 ${className}`}
     >
       {/* The tile's own glyph again, oversized and nearly invisible. These
           three were a small icon, a number and a label in a box with most of

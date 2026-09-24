@@ -5,6 +5,7 @@ import { DeleteButton } from "@/features/admin/delete-button"
 import { AdminNav } from "@/features/admin/admin-nav"
 import { JOURNEY_ICONS } from "@/features/journey/icons"
 import { requireAdminPage } from "@/lib/auth/require-admin"
+import { adminUrl } from "@/lib/auth/admin-path"
 
 export default async function AdminJourneyPage() {
   // Here as well as in the layout: Next renders a layout and its page in
@@ -22,7 +23,7 @@ export default async function AdminJourneyPage() {
           <h1 className="text-2xl font-semibold">
             Journey <span className="text-gh-muted">({entries.length})</span>
           </h1>
-          <Link href="/admin/journey/new">
+          <Link href={adminUrl("/admin/journey/new")}>
             <Button>Add entry</Button>
           </Link>
         </div>
@@ -56,13 +57,15 @@ export default async function AdminJourneyPage() {
                     <td className="px-4 py-3">{entry.sort_order}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
-                        <Link href={`/admin/journey/${entry.id}/edit`}>
+                        <Link
+                          href={adminUrl(`/admin/journey/${entry.id}/edit`)}
+                        >
                           <Button variant="outline" size="sm">
                             Edit
                           </Button>
                         </Link>
                         <DeleteButton
-                          url={`/api/admin/journey/${entry.id}`}
+                          url={adminUrl(`/api/admin/journey/${entry.id}`)}
                           confirmMessage={`Delete ${entry.title}?`}
                         />
                       </div>

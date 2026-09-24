@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useRef, type RefObject } from "react"
-import { motion, useReducedMotion } from "framer-motion"
+import { motion } from "framer-motion"
+import { useReducedMotion } from "@/lib/use-reduced-motion"
 import { ArrowRight } from "lucide-react"
 import { ButtonColorful } from "@/components/ui/button-colorful"
 import { CanvasText } from "@/components/ui/canvas-text"
@@ -41,7 +42,7 @@ export function HeroSection({
       <HeroTexture />
       <ContributionGrid />
 
-      <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-4 pb-24 pt-40 sm:px-6 md:grid-cols-12 lg:px-8">
+      <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-4 pb-20 pt-32 sm:px-6 md:grid-cols-12 md:pb-24 md:pt-40 lg:px-8">
         <motion.div
           initial="hidden"
           animate="show"
@@ -51,7 +52,7 @@ export function HeroSection({
           <motion.h1
             variants={ENTRY}
             transition={{ duration: 0.7 }}
-            className="text-balance text-[clamp(44px,7.2vw,104px)] font-extrabold leading-[0.95] tracking-[-0.045em]"
+            className="text-balance text-[clamp(56px,7.2vw,104px)] font-extrabold leading-[0.95] tracking-[-0.045em]"
           >
             GitHub
             <br />
@@ -98,7 +99,7 @@ export function HeroSection({
             <button
               type="button"
               onClick={() => onScrollTo("journey")}
-              className="group inline-flex items-center gap-1.5 text-[15px] font-semibold text-gh-muted underline-offset-[6px] transition-colors duration-200 hover:text-gh-text hover:underline"
+              className="group -my-3 inline-flex items-center gap-1.5 py-3 text-[15px] font-semibold text-gh-muted underline-offset-[6px] transition-colors duration-200 hover:text-gh-text hover:underline"
             >
               Read our story
               <ArrowRight
@@ -113,7 +114,9 @@ export function HeroSection({
             toward the pill's slot as you scroll. Aspect ratio must stay 1.25
             to match the nav slot — the dock scale is derived from height
             alone, so a mismatch stretches the model on the way down. */}
-        <div className="relative md:col-span-5">
+        {/* Hidden below md with its slot: there is no mascot on phones, and
+            an empty grid row would only add a gap under the buttons. */}
+        <div className="relative hidden md:col-span-5 md:block">
           <div
             ref={heroSlotRef}
             className="pointer-events-none relative z-10 mx-auto hidden h-[240px] w-[300px] md:block lg:h-[300px] lg:w-[375px]"

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server"
 import { redirect } from "next/navigation"
+import { adminUrl } from "./admin-path"
 import { getSessionCookie, verifySessionValue } from "./session"
 
 export async function requireAdminPage() {
   if (!verifySessionValue(await getSessionCookie())) {
-    redirect("/admin/login")
+    redirect(adminUrl("/admin/login"))
   }
 }
 

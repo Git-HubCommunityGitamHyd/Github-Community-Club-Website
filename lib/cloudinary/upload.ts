@@ -16,7 +16,7 @@ export class UploadError extends Error {}
 
 export async function uploadToCloudinary(
   file: File,
-  signUrl = "/api/admin/upload-sign",
+  signUrl: string,
   /** Sent to the sign route, e.g. `{ folder: "board" }` for admin uploads. */
   signBody?: Record<string, string>,
 ): Promise<string> {

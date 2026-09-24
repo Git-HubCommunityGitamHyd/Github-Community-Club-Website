@@ -11,6 +11,7 @@ import {
   type AdminUploadFolder,
 } from "@/lib/cloudinary/folders"
 import { cn } from "@/lib/utils"
+import { useAdminUrl } from "@/features/admin/admin-base"
 
 /** Checked before uploading, so a wrong file fails in a second, not after it uploads. */
 function problemWith(file: File): string | null {
@@ -57,6 +58,7 @@ export function ImageUploadField({
   multiple?: boolean
 }) {
   const id = useId()
+  const adminHref = useAdminUrl()
   const inputRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
   const [dragging, setDragging] = useState(false)
@@ -81,7 +83,11 @@ export function ImageUploadField({
       for (const [i, file] of files.entries()) {
         if (files.length > 1)
           setProgress(`Uploading ${i + 1} of ${files.length}…`)
-        onChange(await uploadToCloudinary(file, undefined, { folder }))
+        onChange(
+          await uploadToCloudinary(file, adminHref("/api/admin/upload-sign"), {
+            folder,
+          }),
+        )
       }
     } catch (err) {
       setError(

@@ -7,7 +7,7 @@ import {
   useRef,
   type ReactNode,
 } from "react"
-import { useReducedMotion } from "framer-motion"
+import { useReducedMotion } from "@/lib/use-reduced-motion"
 import { cn } from "@/lib/utils"
 
 /**
