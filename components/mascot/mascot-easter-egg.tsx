@@ -69,7 +69,7 @@ const CLICKS_TO_UNLOCK = 7
 
 const TITLE = "Congrats on unlocking the easter egg!"
 const SUBTITLE =
-  "Fun fact: this site was vibecoded — but built with care, so hopefully you can't tell."
+  "Fun fact: this site was vibecoded, but built with care, so hopefully you can't tell."
 const FULL_MESSAGE = `${TITLE}\n${SUBTITLE}`
 const TYPE_SPEED_MS = 18
 // Matches the speech bubble's own fade-in (0.35s delay + 0.3s duration) so

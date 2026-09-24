@@ -27,6 +27,8 @@ import {
   SiTypescript,
   SiVercel,
 } from "react-icons/si"
+import { AwsIcon } from "@/features/v2/about/aws-icon"
+import { cn } from "@/lib/utils"
 import { InfiniteSlider } from "@/components/ui/infinite-slider"
 
 /**
@@ -47,7 +49,12 @@ import { InfiniteSlider } from "@/components/ui/infinite-slider"
  * mobile, data, machine learning, infrastructure, and design last. Twenty-four
  * names arriving in no order reads as a dump; in runs it reads as a stack.
  */
-const TOOLS: { icon: IconType; label: string }[] = [
+const TOOLS: {
+  icon: IconType
+  label: string
+  /** A wordmark rather than a glyph: sized by height, not boxed square. */
+  wide?: boolean
+}[] = [
   { icon: SiGit, label: "Git" },
   { icon: SiGithub, label: "GitHub" },
   { icon: SiGithubactions, label: "Actions" },
@@ -79,6 +86,7 @@ const TOOLS: { icon: IconType; label: string }[] = [
   { icon: SiCloudflare, label: "Cloudflare" },
   { icon: SiVercel, label: "Vercel" },
   { icon: SiGooglecloud, label: "Google Cloud" },
+  { icon: AwsIcon, label: "AWS", wide: true },
 
   { icon: SiFigma, label: "Figma" },
   { icon: SiFramer, label: "Framer" },
@@ -114,9 +122,15 @@ export function ToolMarquee() {
               key={tool.label}
               className="flex shrink-0 items-center gap-3.5 text-gh-muted transition-colors duration-300 hover:text-gh-text"
             >
+              {/* Square for glyphs, height-only for wordmarks. Forcing a
+                  wordmark into the glyphs' square box letterboxes it and it
+                  reads as the one small logo in the row. */}
               <tool.icon
                 aria-hidden="true"
-                className="h-8 w-8 md:h-10 md:w-10"
+                className={cn(
+                  "h-8 md:h-10",
+                  tool.wide ? "w-auto" : "w-8 md:w-10",
+                )}
               />
               <span className="whitespace-nowrap text-lg font-semibold tracking-[-0.01em] md:text-xl">
                 {tool.label}

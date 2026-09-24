@@ -10,13 +10,13 @@ export function BoardSection({ members }: { members: BoardMember[] }) {
       className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8"
     >
       <span className="font-mono text-[13px] font-bold text-gh-accent">
-        03 — BOARD
+        03 / BOARD
       </span>
       <h2 className="mb-3 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-tight">
         Executive Board.
       </h2>
       <p className="mb-12 text-lg text-gh-muted">
-        Meet the leaders driving our community forward — click any card for the
+        Meet the leaders driving our community forward. Click any card for the
         full story.
       </p>
 

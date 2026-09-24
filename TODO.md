@@ -607,12 +607,8 @@ Both questions raised during Phase 17 are resolved.
       `InfiniteSlider` covers one copy of the list in `duration` seconds
       whatever that copy's width, so doubling the list at a fixed duration
       would have doubled the speed
-- [ ] **AWS not added.** Simple Icons removed every Amazon mark over trademark
-      policy, and `react-icons` 5.7.0 exports no `amazon`/`aws` icon at all.
-      Not substituted with the Amazon retail mark and not hand-drawn. Waiting
-      on a decision: leave it out, or add the official AWS asset from Amazon's
-      brand resources to `public/` (which means accepting their trademark
-      terms, and it will not inherit `currentColor` the way the rest do)
+- [x] AWS added in Phase 21 from a source the user supplied, since Simple
+      Icons carries no Amazon mark
 
 ### Checks
 
@@ -622,6 +618,61 @@ Both questions raised during Phase 17 are resolved.
   than assumed from the brand name: `SiCockroachlabs` exists and
   `SiCockroachdb` does not, `SiGooglecloud` exists, and no AWS spelling does
 - `npx tsc --noEmit` and `npx eslint` clean
+
+## Phase 21 - AWS mark, and an honesty pass on the copy
+
+### AWS
+
+- [x] Added from the monocolor SVG Repo vector the user supplied (MIT), as an
+      inline component rather than an `<img>`, so there is no extra request and
+      `fill="currentColor"` gives it the same muted-to-white hover the Simple
+      Icons marks get
+- [x] Path data verified by SHA-256 against the source rather than eyeballed,
+      since 4350 characters of coordinates cannot be proofread
+- [x] viewBox cropped to the artwork. The source pads a 30x18 wordmark into a
+      32x32 square, which letterboxed it inside the square box the glyphs fill
+      and made AWS the one visibly small logo in the row. Cropped plus a `wide`
+      flag rendering `w-auto` at a shared height lines it up on cap height
+
+### Copy
+
+- [x] About intro rewritten. It restated the hero almost word for word; it now
+      introduces the distinction between the open community group and the club
+- [x] "Start contributing" tile no longer promises open membership
+- [x] Board intro rewritten; it repeated itself inside two sentences
+- [x] Networking: the claim that alumni return to judge build weekends is gone
+- [x] Open source: the contribution-drive numbers are gone
+- [x] Mentorship proof "Weekly office hours" replaced; a college club has none
+- [x] Building things: rewritten to projects that benefit students plus
+      internal builds, not a two-day hackathon demo
+- [x] Skill development proof "Weekly sessions" softened to "Hands-on
+      workshops", which is not a cadence the site has to keep
+- [x] Join banner, the three reasons and the application intro all rewritten
+      around the real process. "Applications are read by the board, not a
+      filter" was directly contradicted by there being an interview
+- [x] Every em dash removed from visible copy, v1 and admin included: section
+      labels, alt text, aria-labels, form labels, the easter egg and the admin
+      table's empty-cell placeholder. Zero remain outside code comments
+
+### Checks
+
+- AWS verified in the DOM: `fill` computes to `rgb(139, 148, 158)`, the same
+  `gh-muted` the Simple Icons marks inherit, at height 40 against the glyphs'
+  40, width 67 for the wordmark. 50 icon elements, being 25 tools doubled
+- Swept the rendered page for every struck phrase and counted em dashes in
+  `body.innerText`: zero
+
+### Follow-ups
+
+- [ ] **Two flagged strings are database rows, not code**, so the repository
+      sweep could not reach them. Both are seeded `events` rows: one described
+      as "Forty-one first-time contributors got a pull request merged", and one
+      titled "Open source office hours". They need editing through
+      `/admin/events`, on the remote database as well as locally
+- [ ] Worth deciding whether the "700+ members" stat counts the community group
+      or the club. The copy now reads as the community figure, which is the
+      only reading consistent with an interview-gated club, but it is
+      unconfirmed
 
 ## Next
 

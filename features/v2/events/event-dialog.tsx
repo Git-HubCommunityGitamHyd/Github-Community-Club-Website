@@ -117,7 +117,7 @@ export function EventDialog({
               <div className="relative h-56 w-full overflow-hidden sm:h-72">
                 <Image
                   src={cover}
-                  alt={`${event.title} — photo from the event`}
+                  alt={`${event.title}: photo from the event`}
                   fill
                   sizes="(max-width: 768px) 100vw, 768px"
                   className="object-cover"
@@ -214,7 +214,7 @@ export function EventDialog({
                     >
                       <Image
                         src={src}
-                        alt={`${event.title} — photo ${index + 2}`}
+                        alt={`${event.title}: photo ${index + 2}`}
                         fill
                         sizes="(max-width: 640px) 50vw, 240px"
                         className="object-cover transition-transform duration-500 hover:scale-[1.04]"

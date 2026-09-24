@@ -34,8 +34,8 @@ export function V2BoardSection({ members }: { members: BoardMember[] }) {
           The people behind it
         </h2>
         <p className="mb-14 max-w-[52ch] text-pretty text-lg leading-relaxed text-gh-muted">
-          Students who run the workshops, review the pull requests and keep the
-          community going. Pick a name to read their story.
+          The board plans the workshops, reviews what the club ships and runs
+          recruitment each cycle. Select a name for more.
         </p>
 
         {members.length > 0 ? (

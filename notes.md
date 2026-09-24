@@ -1193,3 +1193,43 @@ here would have been the Amazon retail smile standing in for AWS: a different
 company's logo, shipped silently. The right move is to check every name against
 the installed package first, and to report a gap as a gap rather than papering
 over it with a substitute or a hand-drawn path.
+
+### Verify transferred path data by hash, not by eye
+
+The AWS mark had to be carried into the repo by hand because Simple Icons has
+no Amazon logo and the site's own network access to the source was gated. That
+meant moving 4350 characters of path coordinates, which cannot be proofread: a
+single transposed digit produces a shape that still renders and is wrong in a
+way nobody notices until it ships.
+
+Hashing both ends settles it. The browser computed a SHA-256 of the `d`
+attribute at the source, and the same hash was recomputed from the file after
+writing. Equal hashes mean the transfer is exact, which no amount of reading
+can establish. Worth doing for any opaque blob moved between systems by hand.
+
+### A wordmark does not blend into a set of glyphs by colour alone
+
+Matching the AWS logo to its neighbours meant `fill="currentColor"` so it
+inherits the hover, which was the obvious half. The half that actually decided
+whether it looked native was geometry. The source pads a 30x18 wordmark into a
+32x32 square; dropped into the square box the glyphs fill, it renders
+letterboxed and reads as the one small, faint logo in the row.
+
+Cropping the viewBox to the artwork gives it an honest intrinsic ratio, and
+rendering it at a shared height with `w-auto` rather than a shared box lines it
+up on cap height with the glyphs. Glyphs are sized by their box; wordmarks are
+sized by their height. A set containing both needs to say which each one is,
+which is what the `wide` flag on the tool list does.
+
+### A copy audit that only greps the repository is incomplete
+
+Sweeping the source for struck phrases came back clean, and the rendered page
+still contained two of them. Both were rows in the D1 `events` table: this site
+has been CMS-backed since board members and events moved into the database, so
+an unknown amount of its visible text simply is not in the repository.
+
+The reliable check is to read `document.body.innerText` on the rendered page
+and search that, which is what the reader actually sees regardless of where it
+came from. The source grep then only tells you which half of the problem is
+yours to fix in code and which half belongs in `/admin`, and the CMS half has
+to be fixed on the remote database too, not just the local seed.

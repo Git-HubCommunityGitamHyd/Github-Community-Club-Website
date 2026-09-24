@@ -8,7 +8,7 @@ export function EventsSection({ events }: { events: Event[] }) {
     <section id="events" className="border-y border-gh-border bg-gh-surface">
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <span className="font-mono text-[13px] font-bold text-gh-accent">
-          04 — EVENTS
+          04 / EVENTS
         </span>
         <h2 className="mb-3 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-tight">
           Events we&apos;ve hosted.

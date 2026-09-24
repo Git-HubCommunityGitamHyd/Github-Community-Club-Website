@@ -14,14 +14,14 @@ export function JoinSection({ onOpenQr }: { onOpenQr: () => void }) {
         <div className="relative z-10 mx-auto max-w-7xl px-4 py-24 text-center sm:px-6 lg:px-8">
           <div className="inline-block rounded-3xl bg-black/70 p-10 backdrop-blur-md sm:p-14">
             <span className="font-mono text-[13px] font-bold text-gh-accent">
-              06 — JOIN
+              06 / JOIN
             </span>
             <h2 className="mb-5 mt-4 text-[clamp(36px,6vw,72px)] font-extrabold tracking-tight">
               Build what&apos;s next with us.
             </h2>
             <p className="mx-auto mb-2 max-w-lg text-lg text-gray-400">
-              Open to every student at GITAM — no experience required, just
-              curiosity.
+              The community group is open to every student at GITAM. Club
+              membership is a separate application, with an interview.
             </p>
             <button
               onClick={() =>
@@ -67,7 +67,7 @@ export function JoinSection({ onOpenQr }: { onOpenQr: () => void }) {
               Apply to join
             </h3>
             <p className="text-gh-muted">
-              Fill out the form and we&apos;ll be in touch —{" "}
+              Fill out the form and we&apos;ll be in touch.{" "}
               <button
                 onClick={onOpenQr}
                 className="font-medium text-gh-accent underline underline-offset-2"

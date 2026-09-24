@@ -10,7 +10,7 @@ export function BenefitsSection() {
       className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8"
     >
       <span className="font-mono text-[13px] font-bold text-gh-accent">
-        05 — BENEFITS
+        05 / BENEFITS
       </span>
       <h2 className="mb-4 mt-4 text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-tight">
         Why join us?

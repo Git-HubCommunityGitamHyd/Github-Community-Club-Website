@@ -75,9 +75,9 @@ export function V2AboutSection({
           A community of builders, designers and open-source contributors.
         </h2>
         <p className="mb-14 max-w-[56ch] text-pretty text-lg leading-relaxed text-gh-muted">
-          We are students at GITAM University who learn in public — running
-          workshops, maintaining repositories together, and getting each
-          other&apos;s first pull requests merged.
+          Two things share one name. The community group is open to any student
+          at GITAM and always will be. The club is the smaller team that runs
+          it, and it recruits in rounds.
         </p>
 
         <motion.div
@@ -108,7 +108,7 @@ export function V2AboutSection({
             </div>
 
             <p className="relative z-10 mt-12 max-w-[34ch] text-pretty text-lg leading-relaxed text-gh-muted">
-              {openSource.desc} — in public repositories, reviewed by the people
+              {openSource.desc}, in public repositories reviewed by the people
               sitting next to you.
             </p>
           </motion.article>
@@ -233,14 +233,14 @@ export function V2AboutSection({
                 Start contributing
               </h3>
               <p className="mt-2 text-pretty text-gh-muted">
-                No experience required. The next workshop takes you from install
-                to merged.
+                The community group is open now. Club applications run in rounds
+                and include an interview.
               </p>
             </div>
             <button
               type="button"
               onClick={() => onScrollTo("join")}
-              aria-label="Start contributing — go to the join form"
+              aria-label="Start contributing: go to the join form"
               className="flex size-16 shrink-0 items-center justify-center rounded-full border border-gh-border text-gh-text transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-surface group-hover:border-transparent group-hover:bg-gh-accent group-hover:text-gh-deep"
             >
               <span

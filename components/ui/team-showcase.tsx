@@ -154,7 +154,7 @@ function PhotoCard({
   return (
     <button
       type="button"
-      aria-label={`${member.name} — ${member.role}`}
+      aria-label={`${member.name}, ${member.role}`}
       onMouseEnter={() => onHover(member.id)}
       onMouseLeave={() => onHover(null)}
       onFocus={() => onHover(member.id)}

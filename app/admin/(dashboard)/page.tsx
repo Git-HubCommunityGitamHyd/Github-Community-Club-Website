@@ -37,7 +37,7 @@ export default async function AdminPage() {
                   <td className="px-4 py-3">{app.phone}</td>
                   <td className="px-4 py-3">{app.branch}</td>
                   <td className="px-4 py-3">{app.year}</td>
-                  <td className="px-4 py-3">{app.github_username ?? "—"}</td>
+                  <td className="px-4 py-3">{app.github_username ?? "-"}</td>
                   <td className="max-w-xs px-4 py-3">{app.why_join}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-gh-muted">
                     {new Date(app.created_at).toLocaleString()}

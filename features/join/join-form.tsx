@@ -81,7 +81,7 @@ export function JoinForm() {
         <CardContent className="p-8 text-center">
           <h3 className="mb-2 text-2xl font-semibold">Application received!</h3>
           <p className="text-gh-muted">
-            Thanks for applying — we&apos;ll be in touch soon.
+            Thanks for applying. We&apos;ll be in touch soon.
           </p>
         </CardContent>
       </Card>

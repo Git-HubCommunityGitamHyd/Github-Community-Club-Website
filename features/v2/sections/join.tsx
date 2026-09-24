@@ -24,8 +24,8 @@ import { SectionTexture } from "@/components/ui/texture"
 
 const REASONS = [
   {
-    title: "No experience needed",
-    body: "Most people who join have never opened a pull request. That is the point of the workshops.",
+    title: "Experience is not the filter",
+    body: "We ask what you have been curious about and what you want to build. Nobody is turned down for never having opened a pull request.",
   },
   {
     title: "Ship something real",
@@ -33,7 +33,7 @@ const REASONS = [
   },
   {
     title: "Every branch welcome",
-    body: "The board has people from CSE, ECE and IT. Curiosity is the only requirement we actually check.",
+    body: "The board has people from CSE, ECE and IT. No branch is weighted over another at any stage.",
   },
 ]
 
@@ -80,8 +80,8 @@ export function V2JoinSection({ onOpenQr }: { onOpenQr: () => void }) {
               Build what&apos;s next with us.
             </h2>
             <p className="mb-10 max-w-lg text-pretty text-lg leading-relaxed text-gray-300">
-              Open to every student at GITAM — no experience required, just
-              curiosity.
+              The community group is open to every student at GITAM. Club
+              membership is a separate application, with an interview.
             </p>
 
             <MagneticButton
@@ -108,8 +108,8 @@ export function V2JoinSection({ onOpenQr }: { onOpenQr: () => void }) {
               Apply to join
             </h3>
             <p className="mt-4 text-pretty leading-relaxed text-gh-muted">
-              Applications are read by the board, not a filter. Tell us what you
-              are curious about and we will point you at the right first step.
+              Applications are read by the board. Tell us what you are curious
+              about; shortlisted applicants are invited to a short interview.
             </p>
 
             <ul className="mt-10 space-y-7">
@@ -135,7 +135,7 @@ export function V2JoinSection({ onOpenQr }: { onOpenQr: () => void }) {
               className="mt-10 inline-flex items-center gap-2 rounded-full border border-gh-border px-5 py-2.5 text-sm font-medium text-gh-text transition-colors hover:border-gh-muted hover:bg-gh-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-bg"
             >
               <FaWhatsapp aria-hidden="true" className="h-4 w-4" />
-              Prefer WhatsApp? Scan the group QR
+              Just want the community group? Scan the QR
             </button>
           </div>
 

@@ -7,7 +7,7 @@ export function AboutSection() {
       className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8"
     >
       <span className="font-mono text-[13px] font-bold text-gh-accent">
-        01 — ABOUT
+        01 / ABOUT
       </span>
       <h2 className="mb-5 mt-4 max-w-3xl text-balance text-[clamp(32px,4.5vw,56px)] font-extrabold leading-tight tracking-tight">
         A community of builders, designers, and open-source contributors.

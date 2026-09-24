@@ -232,7 +232,7 @@ export function V2JoinForm() {
         <div className="sm:col-span-2">
           <label className={LABEL} htmlFor="githubUsername">
             GitHub username{" "}
-            <span className="font-normal text-gh-muted">— optional</span>
+            <span className="font-normal text-gh-muted">(optional)</span>
           </label>
           <input
             {...fieldProps("githubUsername")}
