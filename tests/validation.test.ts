@@ -67,7 +67,7 @@ const journey = {
 const event = {
   title: "Workshop",
   description: "Build together",
-  eventDate: "September 25, 2026",
+  startsOn: "2026-09-25",
   category: "Workshop",
 }
 
@@ -146,6 +146,36 @@ for (const value of ["Infinity", "-Infinity", "1e999", "not-a-number"]) {
     rejected(validateEvent({ ...event, attendees: value }), "attendees")
   })
 }
+
+test("event dates are required, real, in order, and build the label", () => {
+  rejected(validateEvent({ ...event, startsOn: "" }), "eventDate")
+  rejected(validateEvent({ ...event, startsOn: "2026-02-30" }), "eventDate")
+  rejected(validateEvent({ ...event, startsOn: "25/09/2026" }), "eventDate")
+  rejected(
+    validateEvent({ ...event, startsOn: "2026-09-25", endsOn: "2026-09-24" }),
+    "eventDate",
+  )
+  // A client-sent label is ignored; the server builds it from the dates.
+  const single = validateEvent({ ...event, eventDate: "whenever" })
+  assert.equal(single.ok, true)
+  if (single.ok) {
+    assert.equal(single.data.eventDate, "September 25, 2026")
+    assert.equal(single.data.endsOn, "2026-09-25")
+  }
+  const range = validateEvent({
+    ...event,
+    startsOn: "2026-01-20",
+    endsOn: "2026-01-22",
+  })
+  if (range.ok) assert.equal(range.data.eventDate, "January 20–22, 2026")
+  const across = validateEvent({
+    ...event,
+    startsOn: "2025-12-30",
+    endsOn: "2026-01-02",
+  })
+  if (across.ok)
+    assert.equal(across.data.eventDate, "December 30, 2025 – January 2, 2026")
+})
 
 test("latest week handles empty, unpicked and unsorted builds without mutating them", () => {
   assert.equal(latestBuildWeek([]), undefined)

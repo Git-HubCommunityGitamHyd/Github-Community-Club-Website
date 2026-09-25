@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ImageUploadField } from "@/features/admin/image-upload-field"
 import type { Event } from "@/lib/db/events"
 import { EVENT_CATEGORIES } from "@/features/events/categories"
+import { eventDateLabel } from "@/features/events/format"
 import { EVENT_IMAGES_MAX } from "@/lib/validation/event"
 import { useAdminUrl } from "@/features/admin/admin-base"
 
@@ -42,34 +43,6 @@ function toFormState(event?: Event): FormState {
   }
 }
 
-// Formats native <input type="date"> values (YYYY-MM-DD) into the display
-// strings this app already uses everywhere, e.g. "October 20–26, 2024".
-function formatEventDate(start: string, end: string): string {
-  if (!start) return ""
-  const startDate = new Date(`${start}T00:00:00`)
-  const startLabel = startDate.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  })
-  if (!end || end === start) return startLabel
-
-  const endDate = new Date(`${end}T00:00:00`)
-  const sameMonth =
-    startDate.getMonth() === endDate.getMonth() &&
-    startDate.getFullYear() === endDate.getFullYear()
-  if (sameMonth) {
-    const month = startDate.toLocaleDateString("en-US", { month: "long" })
-    return `${month} ${startDate.getDate()}–${endDate.getDate()}, ${startDate.getFullYear()}`
-  }
-  const endLabel = endDate.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  })
-  return `${startLabel} – ${endLabel}`
-}
-
 export function EventForm({ initial }: { initial?: Event }) {
   const router = useRouter()
   const adminHref = useAdminUrl()
@@ -77,8 +50,14 @@ export function EventForm({ initial }: { initial?: Event }) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
-  const [startDate, setStartDate] = useState("")
-  const [endDate, setEndDate] = useState("")
+  // Prefilled when editing. A single-day event stores ends_on equal to
+  // starts_on; the form shows that as an empty end date.
+  const [startDate, setStartDate] = useState(initial?.starts_on ?? "")
+  const [endDate, setEndDate] = useState(
+    initial?.ends_on && initial.ends_on !== initial.starts_on
+      ? initial.ends_on
+      : "",
+  )
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -96,7 +75,7 @@ export function EventForm({ initial }: { initial?: Event }) {
   function setDates(start: string, end: string) {
     setStartDate(start)
     setEndDate(end)
-    set("eventDate", formatEventDate(start, end))
+    set("eventDate", eventDateLabel(start, end))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -113,7 +92,11 @@ export function EventForm({ initial }: { initial?: Event }) {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          startsOn: startDate,
+          endsOn: endDate,
+        }),
       })
       const body = await res.json().catch(() => ({}))
 
@@ -365,7 +348,7 @@ export function EventForm({ initial }: { initial?: Event }) {
 
       <div>
         <label className={labelClass} htmlFor="sortOrder">
-          Sort order
+          Order on the same day
         </label>
         <input
           id="sortOrder"
@@ -374,6 +357,11 @@ export function EventForm({ initial }: { initial?: Event }) {
           value={form.sortOrder}
           onChange={(e) => set("sortOrder", e.target.value)}
         />
+        <p className="mt-1 text-sm text-gh-muted">
+          Events are listed newest first by their end date, so this is only
+          needed for events that end on the same day (the sessions of a fest):
+          lower shows first. Otherwise leave it at 0.
+        </p>
       </div>
 
       {serverError && <p className="text-sm text-red-500">{serverError}</p>}

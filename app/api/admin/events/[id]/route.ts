@@ -33,6 +33,8 @@ export async function PATCH(
   const event = await updateEvent(id, {
     title: result.data.title,
     eventDate: result.data.eventDate,
+    startsOn: result.data.startsOn,
+    endsOn: result.data.endsOn,
     location: result.data.location || null,
     attendees: result.data.attendees ? Number(result.data.attendees) : null,
     category: result.data.category,

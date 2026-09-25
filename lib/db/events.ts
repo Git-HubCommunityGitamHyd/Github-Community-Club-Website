@@ -4,6 +4,9 @@ export type Event = {
   id: number
   title: string
   event_date: string
+  /** YYYY-MM-DD. Null only for rows saved before the dates were stored. */
+  starts_on: string | null
+  ends_on: string | null
   location: string | null
   attendees: number | null
   category: string
@@ -17,6 +20,8 @@ export type Event = {
 export type EventInput = {
   title: string
   eventDate: string
+  startsOn: string
+  endsOn: string
   location: string | null
   attendees: number | null
   category: string
@@ -38,7 +43,13 @@ function toEvent(row: EventRow): Event {
 export async function listEvents(): Promise<Event[]> {
   const db = await getDb()
   const { results } = await db
-    .prepare("SELECT * FROM events ORDER BY sort_order, id")
+    // Newest first by the day the event ended, so a new event lands on top
+    // without renumbering anything. sort_order only orders events that
+    // ended on the same day (the sessions of a fest). Rows without dates,
+    // which predate the columns, go last until someone edits them.
+    .prepare(
+      "SELECT * FROM events ORDER BY ends_on IS NULL, ends_on DESC, sort_order, id",
+    )
     .all<EventRow>()
   return results.map(toEvent)
 }
@@ -56,13 +67,15 @@ export async function insertEvent(input: EventInput): Promise<Event> {
   const db = await getDb()
   const row = await db
     .prepare(
-      `INSERT INTO events (title, event_date, location, attendees, category, duration, description, images, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO events (title, event_date, starts_on, ends_on, location, attendees, category, duration, description, images, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        RETURNING *`,
     )
     .bind(
       input.title,
       input.eventDate,
+      input.startsOn,
+      input.endsOn,
       input.location,
       input.attendees,
       input.category,
@@ -84,7 +97,8 @@ export async function updateEvent(
   const row = await db
     .prepare(
       `UPDATE events
-       SET title = ?, event_date = ?, location = ?, attendees = ?,
+       SET title = ?, event_date = ?, starts_on = ?, ends_on = ?,
+           location = ?, attendees = ?,
            category = ?, duration = ?, description = ?, images = ?, sort_order = ?
        WHERE id = ?
        RETURNING *`,
@@ -92,6 +106,8 @@ export async function updateEvent(
     .bind(
       input.title,
       input.eventDate,
+      input.startsOn,
+      input.endsOn,
       input.location,
       input.attendees,
       input.category,

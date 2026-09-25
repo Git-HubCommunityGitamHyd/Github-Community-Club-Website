@@ -31,7 +31,7 @@ navbar. Keep `app/page.tsx` to fetching and composing.
 
 Homepage sections that can grow without limit show the first few and link
 to a full page: projects (five, then `/projects`) and events (five, then
-`/events`). Both lists follow the CMS order. The event cards and their photo
+`/events`). Projects follow their CMS order; events are newest first by end date. The event cards and their photo
 dialog are one component, `features/events/events-grid.tsx`, used by the
 section and the page alike.
 

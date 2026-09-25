@@ -167,7 +167,9 @@ erDiagram
     events {
         INTEGER id PK
         TEXT title
-        TEXT event_date
+        TEXT event_date "label, built from the dates"
+        TEXT starts_on "YYYY-MM-DD"
+        TEXT ends_on "YYYY-MM-DD"
         TEXT location
         INTEGER attendees
         TEXT category "key: EVENT_CATEGORIES"
@@ -234,7 +236,12 @@ token in a submitter's status link. The token itself is never stored, so
 neither a database backup nor an admin screen can produce a working link.
 
 **Sort order.** Tables shown in a list have `sort_order`; lower numbers come
-first. The CMS exposes it as a number field.
+first. The CMS exposes it as a number field. **Events are the exception:**
+they are listed newest first by `ends_on`, so a new event goes to the top
+without renumbering anything, and `sort_order` only orders events that
+ended on the same day (the sessions of a fest). `event_date` is the display
+label ("January 20–22, 2026"), built by validation from the two dates, never
+typed. Rows with no dates are listed last; the CMS list marks them.
 
 **Deleting.** Deleting a team leaves its members, teamless
 (`ON DELETE SET NULL`). Deleting a project or member removes their
@@ -278,9 +285,9 @@ starts empty from there.
 
 When you add one, list it here with the date you ran it on production:
 
-| File       | What it does | Run on production |
-| ---------- | ------------ | ----------------- |
-| (none yet) |              |                   |
+| File                      | What it does                                                        | Run on production |
+| ------------------------- | ------------------------------------------------------------------- | ----------------- |
+| `2026-09-event-dates.sql` | Adds `events.starts_on` and `ends_on`; events ordered by date since | 25 September 2026 |
 
 ## Reading data by hand
 

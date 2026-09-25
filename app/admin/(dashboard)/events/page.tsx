@@ -76,7 +76,16 @@ export default async function AdminEventsPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">{event.title}</td>
-                  <td className="px-4 py-3">{event.event_date}</td>
+                  <td className="px-4 py-3">
+                    {event.event_date}
+                    {/* Saved before dates were stored: listed last on the
+                        site until edited. */}
+                    {!event.ends_on && (
+                      <span className="mt-1 block text-xs text-amber-400">
+                        Edit to set dates
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{event.category}</td>
                   <td className="px-4 py-3">{event.sort_order}</td>
                   <td className="px-4 py-3">

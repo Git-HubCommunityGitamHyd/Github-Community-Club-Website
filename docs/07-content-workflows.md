@@ -29,14 +29,14 @@ sequenceDiagram
 There is no cache to clear and no rebuild. Every public page reads D1 on
 each request, so a save is live on the next page load.
 
-| Content  | Shows up on                                          | Notes                                                    |
-| -------- | ---------------------------------------------------- | -------------------------------------------------------- |
-| Board    | Homepage "Board" section                             | Photo in Cloudinary `board/`; ring colour is a key       |
-| Events   | Homepage "Events" section, event dialog              | Ordered photos, first is the cover, up to 12             |
-| Journey  | Homepage timeline                                    | Icon is a key from `features/journey/icons.ts`           |
-| Projects | Homepage "Projects", `/projects`, `/projects/[slug]` | Team credits come from Members; commit count from GitHub |
-| Members  | `/members`, profile dialogs, project pages           | Avatar, not a photo; grouped by team                     |
-| Teams    | `/members` groups                                    | Deleting a team keeps its members                        |
+| Content  | Shows up on                                          | Notes                                                              |
+| -------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
+| Board    | Homepage "Board" section                             | Photo in Cloudinary `board/`; ring colour is a key                 |
+| Events   | Homepage "Events" section, `/events`, event dialog   | Newest first by date; photos ordered, first is the cover, up to 12 |
+| Journey  | Homepage timeline                                    | Icon is a key from `features/journey/icons.ts`                     |
+| Projects | Homepage "Projects", `/projects`, `/projects/[slug]` | Team credits come from Members; commit count from GitHub           |
+| Members  | `/members`, profile dialogs, project pages           | Avatar, not a photo; grouped by team                               |
+| Teams    | `/members` groups                                    | Deleting a team keeps its members                                  |
 
 Project bodies use a tiny text format rather than Markdown: blank lines
 separate paragraphs, `## ` starts a heading, lines starting `- ` make a list
