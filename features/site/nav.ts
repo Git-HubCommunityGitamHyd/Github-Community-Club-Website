@@ -28,6 +28,7 @@ export function spySectionIds(hasProjects: boolean) {
 /** Pages that are not homepage sections. Linked from the footer. */
 export const PAGE_LINKS = [
   { name: "Members", href: "/members" },
+  { name: "Events", href: "/events" },
   { name: "Projects", href: "/projects" },
   { name: "Proposals", href: "/proposals" },
   { name: "Builds", href: "/builds" },

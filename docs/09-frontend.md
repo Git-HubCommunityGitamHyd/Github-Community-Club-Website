@@ -29,12 +29,18 @@ To add a section: create `features/home/sections/<id>.tsx`, render it in
 `home-page.tsx`, and add it to `features/site/nav.ts` if it belongs in the
 navbar. Keep `app/page.tsx` to fetching and composing.
 
+Homepage sections that can grow without limit show the first few and link
+to a full page: projects (five, then `/projects`) and events (five, then
+`/events`). Both lists follow the CMS order. The event cards and their photo
+dialog are one component, `features/events/events-grid.tsx`, used by the
+section and the page alike.
+
 Links to homepage sections from any other page are `/#<id>`. A bare `#<id>`
 does nothing off the homepage.
 
 ## Inner pages
 
-`/members`, `/projects`, `/proposals`, `/builds` and their sub-pages wrap
+`/members`, `/events`, `/projects`, `/proposals`, `/builds` and their sub-pages wrap
 themselves in `PageChrome` (`features/site/page-chrome.tsx`), which provides
 the same navbar, footer and mascot as the homepage. Their headers include a
 `MascotSlot` where the mascot rests.

@@ -30,7 +30,7 @@ Keep these apart in code and in copy. They are different:
 
 | Who          | What they do                                                                  |
 | ------------ | ----------------------------------------------------------------------------- |
-| Any visitor  | Reads the homepage, members, projects, proposals and builds pages             |
+| Any visitor  | Reads the homepage, members, events, projects, proposals and builds pages     |
 | A student    | Applies to join, proposes an idea, submits a build, checks its status by link |
 | A maintainer | Logs into the CMS, edits content, reviews submissions, reads the security log |
 | A developer  | Changes the code, runs migrations, deploys                                    |
@@ -45,6 +45,7 @@ identifies them (see [Content workflows](./07-content-workflows.md)).
 | ------------------------------- | ------------------------------------------------------------------------------------------ |
 | `/`                             | The homepage: hero, about, journey, board, events, projects, ideas, builds, benefits, join |
 | `/members`                      | Every member, grouped by team, with avatars and profiles                                   |
+| `/events`                       | Every event the club has run, with photos (the homepage shows the first five)              |
 | `/projects`, `/projects/[slug]` | What the club builds, one page per project                                                 |
 | `/proposals`                    | Ideas students sent in that the club accepted                                              |
 | `/proposals/new`                | A one-question-at-a-time form for proposing an idea                                        |

@@ -1,20 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 import type { Event } from "@/lib/db/events"
-import { EventCard } from "@/features/events/event-card"
-import { EventDialog } from "@/features/events/event-dialog"
+import { EventsGrid } from "@/features/events/events-grid"
 import { SectionLabel } from "@/features/site/section-label"
 import { SectionTexture } from "@/components/ui/texture"
 
-export function EventsSection({ events }: { events: Event[] }) {
-  const [selected, setSelected] = useState<Event | null>(null)
+/**
+ * At most five on the homepage: the featured event plus two rows of two. The
+ * rest are what the events page is for. Order is the CMS order.
+ */
+const HOME_LIMIT = 5
 
-  // The first event is given the full width and a horizontal layout, the rest
-  // run two-up. Three equal columns is the generic layout this avoids, and a featured row gives the section a focal point without
-  // needing a second accent colour to create one. With one or two events the
-  // grid simply has fewer cells — nothing here assumes a count.
-  const [featured, ...rest] = events
+export function EventsSection({ events }: { events: Event[] }) {
+  const shown = events.slice(0, HOME_LIMIT)
+  const hasMore = events.length > HOME_LIMIT
 
   return (
     <section
@@ -28,8 +29,8 @@ export function EventsSection({ events }: { events: Event[] }) {
           What we&apos;ve run
         </h2>
         <p className="mb-14 max-w-[52ch] text-pretty text-lg leading-relaxed text-gh-muted">
-          Workshops, hackathons and contribution drives from past semesters.
-          Open any one for the full write-up and photos.
+          Workshops, talks and hackathons from past semesters. Open any one for
+          the full write-up and photos.
         </p>
 
         {events.length === 0 ? (
@@ -37,27 +38,24 @@ export function EventsSection({ events }: { events: Event[] }) {
             Nothing scheduled yet. The first event of the semester goes up here.
           </p>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="md:col-span-2">
-              <EventCard
-                event={featured}
-                featured
-                onActivate={() => setSelected(featured)}
-              />
-            </div>
+          <EventsGrid events={shown} />
+        )}
 
-            {rest.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                onActivate={() => setSelected(event)}
+        {hasMore && (
+          <div className="mt-12">
+            <Link
+              href="/events"
+              className="group inline-flex items-center gap-2.5 rounded-full border border-gh-border px-6 py-3 text-[15px] font-semibold text-gh-text transition-colors duration-300 hover:border-gh-accent hover:bg-gh-accent hover:text-gh-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gh-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gh-bg"
+            >
+              View all {events.length} events
+              <ArrowRight
+                aria-hidden="true"
+                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
               />
-            ))}
+            </Link>
           </div>
         )}
       </div>
-
-      <EventDialog event={selected} onClose={() => setSelected(null)} />
     </section>
   )
 }
