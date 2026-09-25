@@ -18,5 +18,7 @@ export const PROJECT_ROLE_KEYS = Object.keys(PROJECT_ROLES)
 
 /** Falls back rather than throwing, so an unknown key still renders. */
 export function projectRole(key: string | null | undefined): ProjectRole {
-  return PROJECT_ROLES[key ?? ""] ?? PROJECT_ROLES.member
+  return key && Object.hasOwn(PROJECT_ROLES, key)
+    ? PROJECT_ROLES[key]
+    : PROJECT_ROLES.member
 }

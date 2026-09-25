@@ -7,7 +7,8 @@ named `github-community-db`. The Worker reaches it through the `DB` binding;
 there is no connection string, no password and no server to run.
 
 - Schema: [`db/schema.sql`](../db/schema.sql), the complete current schema.
-- Changes to existing tables: [`db/migrations/`](../db/migrations/).
+- Changes to existing tables: one-off files in `db/migrations/` (see
+  [Changing the schema](#changing-the-schema)).
 - Access: only through `lib/db/*.ts`, one file per table.
 
 ```ts
@@ -268,32 +269,18 @@ comment saying what it does and why. Each runs **exactly once per database**.
 A repeated `ALTER ... ADD COLUMN` fails with "duplicate column", which is how
 you find out it already ran.
 
-### Migration ledger
+### Migration history
 
-The files, in the order they must run against an older database. Production
-status is tracked in `TODO.md` ("Deploy" in Open items); at the time of
-writing, everything from `project-team` onwards had not yet been run
-remotely.
+Production was rebuilt from `schema.sql` on 25 September 2026 (a fresh,
+empty database in the club's Cloudflare account), so every earlier migration
+is already part of the schema and the old files were removed. `db/migrations/`
+starts empty from there.
 
-| Order | File                              | What it does                                                                  |
-| ----- | --------------------------------- | ----------------------------------------------------------------------------- |
-| 1     | `2026-09-board-member-accent.sql` | Adds `board_members.accent`                                                   |
-| 2     | `2026-09-projects.sql`            | Creates `projects`                                                            |
-| 3     | `2026-09-project-team.sql`        | Adds project dev notes and commit count; creates `members`, `project_members` |
-| 4     | `2026-09-teams.sql`               | Creates `teams`, adds `members.team_id`                                       |
-| 5     | `2026-09-member-tagline.sql`      | Adds `members.tagline` and `handle`                                           |
-| 6     | `2026-09-proposals-builds.sql`    | Creates `proposals` and `builds`                                              |
-| 7     | `2026-09-tracking-links.sql`      | Adds `track_hash` to proposals and builds                                     |
-| 8     | `2026-09-build-pages.sql`         | Adds build `slug`, `dev_notes`, `credits`, commit count; fills slugs          |
-| 9     | `2026-09-board-photos-to-cms.sql` | Clears old `/images/board/` paths so photos come from Cloudinary              |
-| 10    | `2026-09-event-photos-to-cms.sql` | Removes old `/images/events/` paths from event photos                         |
-| 11    | `2026-09-auth-events.sql`         | Creates `auth_events`                                                         |
+When you add one, list it here with the date you ran it on production:
 
-Before running 9 and 10 in production, upload the real board and event
-photos through the CMS, or those rows will show no photo.
-
-A brand-new database needs none of these: `npm run db:migrate:remote`
-creates everything from `schema.sql`.
+| File       | What it does | Run on production |
+| ---------- | ------------ | ----------------- |
+| (none yet) |              |                   |
 
 ## Reading data by hand
 

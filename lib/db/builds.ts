@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { getDb } from "./client"
 import { RESERVED_BUILD_SLUGS, type Credit } from "@/features/builds/keys"
 
@@ -131,7 +132,7 @@ export async function listPublicBuilds(): Promise<PublicBuild[]> {
 }
 
 /** One accepted build by its slug, for /builds/<slug>. */
-export async function getPublicBuildBySlug(
+export const getPublicBuildBySlug = cache(async function getPublicBuildBySlug(
   slug: string,
 ): Promise<PublicBuild | null> {
   const db = await getDb()
@@ -143,7 +144,7 @@ export async function getPublicBuildBySlug(
     .bind(slug)
     .first<Row<PublicBuild>>()
   return row ? decode<PublicBuild>(row) : null
-}
+})
 
 export async function listBuilds(): Promise<Build[]> {
   const db = await getDb()

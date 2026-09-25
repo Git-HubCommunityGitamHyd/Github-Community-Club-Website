@@ -104,7 +104,7 @@ export function BuildReviewForm({
 }) {
   const router = useRouter()
   const adminHref = useAdminUrl()
-  const [form, setForm] = useState<FormState>({
+  const [form, setForm] = useState<FormState>(() => ({
     slug: build.slug,
     title: build.title,
     tagline: build.tagline,
@@ -120,7 +120,7 @@ export function BuildReviewForm({
     weekOf: build.week_of ?? "",
     sortOrder: String(build.sort_order),
     adminNote: build.admin_note,
-  })
+  }))
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)

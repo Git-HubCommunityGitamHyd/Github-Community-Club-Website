@@ -49,5 +49,9 @@ export const JOURNEY_ICON_KEYS = Object.keys(JOURNEY_ICONS) as JourneyIconKey[]
 
 /** Falls back rather than throwing, so an unrecognised key never blanks the page. */
 export function journeyIcon(key: string): LucideIcon {
-  return (JOURNEY_ICONS[key as JourneyIconKey] ?? JOURNEY_ICONS.commit).icon
+  return (
+    Object.hasOwn(JOURNEY_ICONS, key)
+      ? JOURNEY_ICONS[key as JourneyIconKey]
+      : JOURNEY_ICONS.commit
+  ).icon
 }

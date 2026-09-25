@@ -3,6 +3,15 @@
 import type { PublicBuild } from "@/lib/db/builds"
 import { buildRole } from "@/features/builds/keys"
 
+/** ISO dates sort chronologically; no intermediate arrays or sorting needed. */
+export function latestBuildWeek(builds: Pick<PublicBuild, "week_of">[]) {
+  let latest: string | undefined
+  for (const { week_of } of builds) {
+    if (week_of && (!latest || week_of > latest)) latest = week_of
+  }
+  return latest
+}
+
 /** "Asha, Rahul and Meera", lead first. */
 export function creditLine(build: Pick<PublicBuild, "credits">): string {
   const names = [...build.credits]

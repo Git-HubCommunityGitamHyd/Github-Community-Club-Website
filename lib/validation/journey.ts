@@ -30,10 +30,10 @@ export function validateJourneyEntry(
   // store a key that would silently fall back to the default glyph.
   const icon = String(input.icon ?? "").trim()
   if (!icon) errors.icon = "Icon is required"
-  else if (!(icon in JOURNEY_ICONS)) errors.icon = "Unknown icon"
+  else if (!Object.hasOwn(JOURNEY_ICONS, icon)) errors.icon = "Unknown icon"
 
   const sortOrder = String(input.sortOrder ?? "0").trim()
-  if (sortOrder && Number.isNaN(Number(sortOrder))) {
+  if (sortOrder && !Number.isFinite(Number(sortOrder))) {
     errors.sortOrder = "Sort order must be a number"
   }
 

@@ -65,7 +65,7 @@ export const BUILD_ROLES: Record<string, { label: string; rank: number }> = {
 export const BUILD_ROLE_KEYS = Object.keys(BUILD_ROLES)
 
 export function buildRole(key: string) {
-  return BUILD_ROLES[key] ?? BUILD_ROLES.member
+  return Object.hasOwn(BUILD_ROLES, key) ? BUILD_ROLES[key] : BUILD_ROLES.member
 }
 
 export type Credit = { name: string; role: string; contribution: string }

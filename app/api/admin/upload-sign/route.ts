@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { requireAdminApi } from "@/lib/auth/require-admin"
 import { IMAGE_FORMATS, isAdminUploadFolder } from "@/lib/cloudinary/folders"
+import { requestSignature } from "@/lib/cloudinary/sign"
 
 export const runtime = "nodejs"
 
@@ -14,18 +15,6 @@ export async function POST(request: Request) {
   const unauthorized = await requireAdminApi()
   if (unauthorized) return unauthorized
 
-  const uploadSignUrl = process.env.UPLOAD_SIGN_URL
-  const sharedSecret = process.env.WORKER_SHARED_SECRET
-  if (!uploadSignUrl || !sharedSecret) {
-    return NextResponse.json(
-      {
-        error:
-          "Image uploads are not set up: UPLOAD_SIGN_URL and WORKER_SHARED_SECRET are missing",
-      },
-      { status: 503 },
-    )
-  }
-
   const body = (await request.json().catch(() => null)) as {
     folder?: unknown
   } | null
@@ -36,23 +25,25 @@ export async function POST(request: Request) {
     )
   }
 
-  let response: Response
+  let response: Response | null
   try {
-    response = await fetch(uploadSignUrl, {
-      method: "POST",
-      headers: {
-        "X-Worker-Secret": sharedSecret,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        folder: body.folder,
-        allowed_formats: IMAGE_FORMATS,
-      }),
+    response = await requestSignature({
+      folder: body.folder,
+      allowed_formats: IMAGE_FORMATS,
     })
   } catch {
     return NextResponse.json(
       { error: "The upload signing service is unreachable" },
       { status: 502 },
+    )
+  }
+  if (!response) {
+    return NextResponse.json(
+      {
+        error:
+          "Image uploads are not set up: WORKER_SHARED_SECRET or the signing Worker is missing",
+      },
+      { status: 503 },
     )
   }
   if (!response.ok) {
@@ -62,5 +53,15 @@ export async function POST(request: Request) {
     )
   }
 
-  return NextResponse.json(await response.json())
+  const payload = await response.json().catch(() => null)
+  if (
+    payload?.params?.folder !== body.folder ||
+    payload?.params?.allowed_formats !== IMAGE_FORMATS
+  ) {
+    return NextResponse.json(
+      { error: "The upload signing service returned an invalid signature" },
+      { status: 502 },
+    )
+  }
+  return NextResponse.json(payload)
 }

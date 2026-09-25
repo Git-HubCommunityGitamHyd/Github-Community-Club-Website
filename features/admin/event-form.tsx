@@ -73,7 +73,7 @@ function formatEventDate(start: string, end: string): string {
 export function EventForm({ initial }: { initial?: Event }) {
   const router = useRouter()
   const adminHref = useAdminUrl()
-  const [form, setForm] = useState<FormState>(toFormState(initial))
+  const [form, setForm] = useState<FormState>(() => toFormState(initial))
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)

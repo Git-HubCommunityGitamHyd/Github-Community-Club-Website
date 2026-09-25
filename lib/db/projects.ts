@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { getDb } from "./client"
 import type { Member } from "./members"
 import { projectRole } from "@/features/projects/roles"
@@ -73,14 +74,16 @@ export async function getProject(id: number): Promise<Project | null> {
   return row ? decode(row) : null
 }
 
-export async function getProjectBySlug(slug: string): Promise<Project | null> {
+export const getProjectBySlug = cache(async function getProjectBySlug(
+  slug: string,
+): Promise<Project | null> {
   const db = await getDb()
   const row = await db
     .prepare("SELECT * FROM projects WHERE slug = ?")
     .bind(slug)
     .first<ProjectRow>()
   return row ? decode(row) : null
-}
+})
 
 const COLUMNS = `name, slug, summary, body, status, live_url, repo_url,
                  preview_image, cover_image, tags, dev_notes, sort_order`

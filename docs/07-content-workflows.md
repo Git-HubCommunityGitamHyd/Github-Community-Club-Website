@@ -117,7 +117,8 @@ Saving fetches the repository's commit count straight away.
 
 Screenshots are uploaded by the student's browser straight to Cloudinary,
 into the `build-submissions` folder only. Declining a build does not delete
-its images from Cloudinary (tracked in `TODO.md`).
+its images from Cloudinary (a
+[known gap](./10-operations-runbook.md#known-gaps)).
 
 ## Track links
 

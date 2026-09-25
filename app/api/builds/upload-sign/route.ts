@@ -3,6 +3,7 @@ import {
   BUILD_UPLOAD_FOLDER,
   BUILD_UPLOAD_FORMATS,
 } from "@/features/builds/keys"
+import { requestSignature } from "@/lib/cloudinary/sign"
 
 export const runtime = "nodejs"
 
@@ -14,26 +15,24 @@ export const runtime = "nodejs"
  * folder (lib/validation/build.ts).
  */
 export async function POST() {
-  const uploadSignUrl = process.env.UPLOAD_SIGN_URL
-  const sharedSecret = process.env.WORKER_SHARED_SECRET
-  if (!uploadSignUrl || !sharedSecret) {
+  let response: Response | null
+  try {
+    response = await requestSignature({
+      folder: BUILD_UPLOAD_FOLDER,
+      allowed_formats: BUILD_UPLOAD_FORMATS,
+    })
+  } catch {
+    return NextResponse.json(
+      { error: "Couldn't start the upload. Try again." },
+      { status: 502 },
+    )
+  }
+  if (!response) {
     return NextResponse.json(
       { error: "Image uploads are not set up yet" },
       { status: 503 },
     )
   }
-
-  const response = await fetch(uploadSignUrl, {
-    method: "POST",
-    headers: {
-      "X-Worker-Secret": sharedSecret,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      folder: BUILD_UPLOAD_FOLDER,
-      allowed_formats: BUILD_UPLOAD_FORMATS,
-    }),
-  })
   if (!response.ok) {
     return NextResponse.json(
       { error: "Couldn't start the upload. Try again." },
@@ -41,10 +40,13 @@ export async function POST() {
     )
   }
 
-  const payload = await response.json()
+  const payload = await response.json().catch(() => null)
   // A Worker deployed before public uploads existed ignores the body and
   // signs an unrestricted upload. Refuse that rather than hand it out.
-  if (payload?.params?.folder !== BUILD_UPLOAD_FOLDER) {
+  if (
+    payload?.params?.folder !== BUILD_UPLOAD_FOLDER ||
+    payload?.params?.allowed_formats !== BUILD_UPLOAD_FORMATS
+  ) {
     return NextResponse.json(
       { error: "Image uploads are not set up yet" },
       { status: 503 },

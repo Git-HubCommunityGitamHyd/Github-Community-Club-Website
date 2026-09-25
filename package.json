@@ -7,6 +7,7 @@
     "dev": "next dev",
     "start": "next start",
     "lint": "eslint .",
+    "test": "node --import ./tests/register.mjs --test tests/*.test.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:migrate:local": "wrangler d1 execute github-community-db --local --file=db/schema.sql",
@@ -14,8 +15,8 @@
     "db:patch:local": "wrangler d1 execute github-community-db --local --file",
     "db:patch:remote": "wrangler d1 execute github-community-db --remote --file",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "deploy": "node scripts/without-local-env.mjs opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "node scripts/without-local-env.mjs opennextjs-cloudflare build && opennextjs-cloudflare upload",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv --include-runtime=false cloudflare-env.d.ts",
     "build:doodles": "node scripts/build-doodle-pattern.mjs"
   },

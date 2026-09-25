@@ -33,7 +33,7 @@ export function validateEvent(
   const location = String(input.location ?? "").trim()
 
   const attendees = String(input.attendees ?? "").trim()
-  if (attendees && Number.isNaN(Number(attendees))) {
+  if (attendees && !Number.isFinite(Number(attendees))) {
     errors.attendees = "Attendees must be a number"
   }
 
@@ -57,7 +57,7 @@ export function validateEvent(
   }
 
   const sortOrder = String(input.sortOrder ?? "0").trim()
-  if (sortOrder && Number.isNaN(Number(sortOrder))) {
+  if (sortOrder && !Number.isFinite(Number(sortOrder))) {
     errors.sortOrder = "Sort order must be a number"
   }
 

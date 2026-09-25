@@ -66,5 +66,7 @@ export const BOARD_ACCENT_KEYS = Object.keys(BOARD_ACCENTS) as BoardAccentKey[]
 
 /** Falls back rather than throwing, so an old or unknown key still renders. */
 export function boardAccent(key: string | null | undefined): BoardAccent {
-  return BOARD_ACCENTS[key as BoardAccentKey] ?? BOARD_ACCENTS.green
+  return key && Object.hasOwn(BOARD_ACCENTS, key)
+    ? BOARD_ACCENTS[key as BoardAccentKey]
+    : BOARD_ACCENTS.green
 }

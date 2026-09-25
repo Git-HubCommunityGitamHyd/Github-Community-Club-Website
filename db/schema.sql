@@ -21,8 +21,7 @@ CREATE TABLE IF NOT EXISTS board_members (
   email        TEXT,
   -- Key into BOARD_ACCENTS (features/board/accents.ts) — the ring around
   -- the photo in their dialog. A key, not a hex value, so the CMS cannot put
-  -- an off-palette colour on the page. Existing databases get this through
-  -- db/migrations/2026-09-board-member-accent.sql.
+  -- an off-palette colour on the page.
   accent       TEXT NOT NULL DEFAULT 'green',
   sort_order   INTEGER NOT NULL DEFAULT 0,
   created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))

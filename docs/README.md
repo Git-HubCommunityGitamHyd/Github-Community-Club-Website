@@ -13,6 +13,10 @@ The same files are readable in three places:
 
 ## Where to start
 
+**New to running the site?** Start with the
+[Guide for a new board](./12-new-board-guide.md): access, editing content,
+deploying and handing over, in order.
+
 | If you want to…                                    | Read                                              |
 | -------------------------------------------------- | ------------------------------------------------- |
 | Understand what the site is and who it is for      | [Overview](./01-overview.md)                      |
@@ -25,6 +29,8 @@ The same files are readable in three places:
 | Upload or change images                            | [Media and uploads](./08-media-and-uploads.md)    |
 | Change how the public site looks or moves          | [Frontend](./09-frontend.md)                      |
 | Fix something, hand over, rotate a secret          | [Operations runbook](./10-operations-runbook.md)  |
+| Look up an endpoint, its fields and responses      | [API reference](./11-api-reference.md)            |
+| Take over the site as a new board                  | [Guide for a new board](./12-new-board-guide.md)  |
 | Ask a new member for their avatar                  | [Member avatar prompt](./member-avatar-prompt.md) |
 
 ## The short version
@@ -40,14 +46,12 @@ The same files are readable in three places:
 
 ## Other files worth knowing
 
-| File                    | What it is                                                       |
-| ----------------------- | ---------------------------------------------------------------- |
-| `README.md` (repo root) | The project's front page on GitHub                               |
-| `CLAUDE.md`             | Rules and sharp edges for anyone (or any AI agent) editing code  |
-| `TODO.md`               | Every phase of work so far, what was checked, what is still open |
-| `notes.md`              | The reasoning behind decisions, phase by phase                   |
-| `db/schema.sql`         | The full database schema                                         |
-| `.env.example`          | Every setting the app reads, with a comment each                 |
+| File                    | What it is                                                      |
+| ----------------------- | --------------------------------------------------------------- |
+| `README.md` (repo root) | The project's front page on GitHub                              |
+| `CLAUDE.md`             | Rules and sharp edges for anyone (or any AI agent) editing code |
+| `db/schema.sql`         | The full database schema                                        |
+| `.env.example`          | Every setting the app reads, with a comment each                |
 
 ## Keeping these docs true
 

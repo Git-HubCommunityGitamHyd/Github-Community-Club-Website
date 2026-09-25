@@ -23,7 +23,7 @@ function checkKey(
   message: string,
   errors: Record<string, string>,
 ) {
-  if (!(value in set)) errors[field] = message
+  if (!Object.hasOwn(set, value)) errors[field] = message
 }
 
 function checkIdea(

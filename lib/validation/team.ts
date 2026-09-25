@@ -28,7 +28,7 @@ export function validateTeam(input: Record<string, unknown>): ValidationResult {
   }
 
   const sortOrder = String(input.sortOrder ?? "0").trim()
-  if (sortOrder && Number.isNaN(Number(sortOrder))) {
+  if (sortOrder && !Number.isFinite(Number(sortOrder))) {
     errors.sortOrder = "Sort order must be a number"
   }
 

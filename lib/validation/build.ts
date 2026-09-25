@@ -47,7 +47,7 @@ function validateCredits(
     errors.credits = `Up to ${CREDITS_MAX} people`
   } else if (credits.some((c) => !c.name || c.name.length > 80)) {
     errors.credits = "Every person needs a name (under 80 characters)"
-  } else if (credits.some((c) => !(c.role in BUILD_ROLES))) {
+  } else if (credits.some((c) => !Object.hasOwn(BUILD_ROLES, c.role))) {
     errors.credits = "Pick a role for everyone"
   } else if (credits.some((c) => c.contribution.length > CONTRIBUTION_MAX)) {
     errors.credits = `Keep each contribution under ${CONTRIBUTION_MAX} characters`
@@ -183,7 +183,7 @@ export function validateBuildReview(
   const credits = validateCredits(input.credits, errors)
 
   const status = String(input.status ?? "")
-  if (!(status in BUILD_STATUSES)) errors.status = "Pick a status"
+  if (!Object.hasOwn(BUILD_STATUSES, status)) errors.status = "Pick a status"
 
   const monthRaw = String(input.month ?? "").trim()
   let month: string | null = null

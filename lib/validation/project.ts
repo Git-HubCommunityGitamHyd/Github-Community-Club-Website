@@ -78,7 +78,8 @@ export function validateProject(
   // store a key that would silently fall back to the default status.
   const status = String(input.status ?? "").trim()
   if (!status) errors.status = "Status is required"
-  else if (!(status in PROJECT_STATUSES)) errors.status = "Unknown status"
+  else if (!Object.hasOwn(PROJECT_STATUSES, status))
+    errors.status = "Unknown status"
 
   const liveUrl = String(input.liveUrl ?? "").trim()
   checkUrl(liveUrl, "liveUrl", errors)
@@ -96,7 +97,7 @@ export function validateProject(
   const team = validateTeam(input.team, errors)
 
   const sortOrder = String(input.sortOrder ?? "0").trim()
-  if (sortOrder && Number.isNaN(Number(sortOrder))) {
+  if (sortOrder && !Number.isFinite(Number(sortOrder))) {
     errors.sortOrder = "Sort order must be a number"
   }
 
@@ -154,7 +155,7 @@ function validateTeam(
     }
     seen.add(memberId)
     const role = String(item.role ?? "").trim()
-    if (!(role in PROJECT_ROLES)) {
+    if (!Object.hasOwn(PROJECT_ROLES, role)) {
       errors.team = "Unknown project role"
       continue
     }

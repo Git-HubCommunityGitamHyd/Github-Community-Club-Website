@@ -27,15 +27,11 @@ Proposals and Builds show a count of new submissions in the nav.
 sequenceDiagram
     autonumber
     participant M as Maintainer
-    participant A as Cloudflare Access
     participant P as proxy.ts
     participant L as Login page and route
     participant DB as D1 auth_events
 
-    M->>A: https://site/ADMIN_PATH
-    A->>M: email one-time PIN (maintainers only)
-    M->>A: PIN
-    A->>P: request allowed through
+    M->>P: https://site/ADMIN_PATH
     P->>L: rewrite to /admin → not logged in → /ADMIN_PATH/login
     M->>L: POST password
     L->>DB: failures from this IP in last 15 min?
@@ -50,14 +46,17 @@ sequenceDiagram
     end
 ```
 
-There are three layers, each independent of the others:
+There are two layers, independent of each other:
 
-1. **Cloudflare Access** (configured in the Cloudflare dashboard, see
-   [Deployment](./04-deployment.md#cloudflare-access-protects-the-cms)). Only
-   listed emails get past it.
-2. **The secret path.** The CMS answers only at `/<ADMIN_PATH>`. Anyone who
+1. **The secret path.** The CMS answers only at `/<ADMIN_PATH>`. Anyone who
    guesses `/admin` gets the decoy.
-3. **The password,** with a lockout after 5 wrong tries per IP in 15 minutes.
+2. **The password,** with a lockout after 5 wrong tries per IP in 15 minutes.
+
+So the address and the password are both secrets. Share them only with
+maintainers, privately, and change both when someone leaves. Cloudflare
+Access (an email one-time code in front of the CMS) is a possible third
+layer that was deliberately not set up; see
+[Deployment](./04-deployment.md#optional-cloudflare-access-in-front-of-the-cms).
 
 ## The secret path, in detail
 
@@ -149,8 +148,8 @@ Implemented in `app/api/admin/login/route.ts` with `lib/db/auth-events.ts`:
   cannot forge through Cloudflare.
 
 Many students share one campus IP. Someone else's wrong guesses can lock a
-maintainer out for up to 15 minutes. Cloudflare Access prevents this, since
-nobody without an allowed email reaches the login at all.
+maintainer out for up to 15 minutes. Wait, switch to mobile data, or clear
+the lockout (see the runbook).
 
 ## The honeypot at /admin
 
@@ -191,7 +190,8 @@ The public forms (join, proposals, builds) are not behind a login, so:
 - Build image uploads can only land in the `build-submissions` Cloudinary
   folder and only as images (see [Media and uploads](./08-media-and-uploads.md)).
 
-Not yet in place, and tracked in `TODO.md`: rate limiting and Cloudflare
+Not yet in place (see the runbook's
+[Known gaps](./10-operations-runbook.md#known-gaps)): rate limiting and Cloudflare
 Turnstile on the public forms, and an upload size limit for public uploads.
 
 ## Private data

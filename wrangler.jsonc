@@ -11,7 +11,13 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "github-community-portfolio",
+      "service": "github-community-website",
+    },
+    // The upload signer. Called through this binding, never its workers.dev
+    // URL: same-account Worker-to-Worker fetches over workers.dev are blocked.
+    {
+      "binding": "SIGN_WORKER",
+      "service": "gh-community-cloudinary-sign",
     },
   ],
   "images": {
@@ -21,7 +27,7 @@
     {
       "binding": "DB",
       "database_name": "github-community-db",
-      "database_id": "a3261bab-2668-473f-8f6e-3e62ebcc6cd1",
+      "database_id": "643dddeb-d49f-4560-8e0e-fe310950f7c6",
     },
   ],
   "observability": {

@@ -10,7 +10,6 @@ flowchart TB
     subgraph CF[Cloudflare]
         direction TB
         edge[Edge network<br/>TLS, cf-connecting-ip]
-        access[Cloudflare Access<br/>in front of the CMS path]
         subgraph W[Worker: github-community-website]
             proxy[proxy.ts<br/>routes /admin, secret path]
             next[Next.js app<br/>pages, API routes]
@@ -26,7 +25,6 @@ flowchart TB
 
     visitor --> edge
     maint --> edge
-    edge -->|CMS path| access --> proxy
     edge --> proxy
     edge -->|/_next/static, public/| assets
     proxy --> next

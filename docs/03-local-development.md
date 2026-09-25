@@ -77,6 +77,7 @@ uploads are not configured.
 | `npm run dev`                     | Dev server with local D1                                 |
 | `npm run build`                   | Next.js production build (a good check before a PR)      |
 | `npm run lint`                    | ESLint                                                   |
+| `npm test`                        | Regression tests for validation and upload signing       |
 | `npm run format`                  | Prettier over the whole repo                             |
 | `npm run format:check`            | Prettier, check only                                     |
 | `npm run db:migrate:local`        | Apply `db/schema.sql` to the local D1                    |
@@ -91,13 +92,14 @@ uploads are not configured.
 ## Before opening a pull request
 
 ```bash
+npm test
 npx tsc --noEmit
 npm run lint
 npm run format:check
 npm run build
 ```
 
-All four should pass. Then click through what you changed in the browser;
+All five should pass. Then click through what you changed in the browser;
 type checks do not prove a page looks right.
 
 ## Conventions

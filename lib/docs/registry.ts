@@ -9,6 +9,8 @@ import contentWorkflows from "@/docs/07-content-workflows.md"
 import media from "@/docs/08-media-and-uploads.md"
 import frontend from "@/docs/09-frontend.md"
 import runbook from "@/docs/10-operations-runbook.md"
+import apiReference from "@/docs/11-api-reference.md"
+import newBoard from "@/docs/12-new-board-guide.md"
 import avatarPrompt from "@/docs/member-avatar-prompt.md"
 
 /**
@@ -33,6 +35,7 @@ function titleOf(body: string, fallback: string) {
 
 const SOURCES: [slug: string, file: string, body: string][] = [
   ["", "README.md", index],
+  ["new-board-guide", "12-new-board-guide.md", newBoard],
   ["overview", "01-overview.md", overview],
   ["architecture", "02-architecture.md", architecture],
   ["local-development", "03-local-development.md", localDevelopment],
@@ -43,6 +46,7 @@ const SOURCES: [slug: string, file: string, body: string][] = [
   ["media-and-uploads", "08-media-and-uploads.md", media],
   ["frontend", "09-frontend.md", frontend],
   ["operations-runbook", "10-operations-runbook.md", runbook],
+  ["api-reference", "11-api-reference.md", apiReference],
   ["member-avatar-prompt", "member-avatar-prompt.md", avatarPrompt],
 ]
 

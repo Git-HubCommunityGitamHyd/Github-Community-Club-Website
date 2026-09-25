@@ -5,7 +5,8 @@ interface __BaseEnv_CloudflareEnv {
 	IMAGES: ImagesBinding;
 	ASSETS: Fetcher;
 	NEXTJS_ENV: string;
-	WORKER_SELF_REFERENCE: Fetcher /* github-community-portfolio */;
+	WORKER_SELF_REFERENCE: Fetcher /* github-community-website */;
+	SIGN_WORKER: Fetcher /* gh-community-cloudinary-sign */;
 }
 declare namespace Cloudflare {
 	interface Env extends __BaseEnv_CloudflareEnv {}

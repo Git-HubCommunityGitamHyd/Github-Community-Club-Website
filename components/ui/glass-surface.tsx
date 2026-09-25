@@ -313,20 +313,19 @@ export const GlassSurface: React.FC<GlassSurfaceProps> = ({
   useEffect(() => {
     if (!containerRef.current) return
 
+    let frame: number | undefined
     const resizeObserver = new ResizeObserver(() => {
-      setTimeout(updateDisplacementMap, 0)
+      if (frame !== undefined) cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(updateDisplacementMap)
     })
 
     resizeObserver.observe(containerRef.current)
 
     return () => {
       resizeObserver.disconnect()
+      if (frame !== undefined) cancelAnimationFrame(frame)
     }
   }, [updateDisplacementMap])
-
-  useEffect(() => {
-    setTimeout(updateDisplacementMap, 0)
-  }, [width, height, updateDisplacementMap])
 
   const getContainerStyles = (): React.CSSProperties => {
     const baseStyles: React.CSSProperties = {

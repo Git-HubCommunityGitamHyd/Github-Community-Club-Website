@@ -56,10 +56,11 @@ export function validateBoardMember(
   // "unspecified" and takes the default rather than being an error, so rows
   // written before this column existed still validate.
   const accent = String(input.accent ?? "").trim() || "green"
-  if (!(accent in BOARD_ACCENTS)) errors.accent = "Unknown ring style"
+  if (!Object.hasOwn(BOARD_ACCENTS, accent))
+    errors.accent = "Unknown ring style"
 
   const sortOrder = String(input.sortOrder ?? "0").trim()
-  if (sortOrder && Number.isNaN(Number(sortOrder))) {
+  if (sortOrder && !Number.isFinite(Number(sortOrder))) {
     errors.sortOrder = "Sort order must be a number"
   }
 

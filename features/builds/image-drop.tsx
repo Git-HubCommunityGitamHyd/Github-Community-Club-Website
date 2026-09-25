@@ -28,6 +28,7 @@ export function ImageDrop({
   const [problem, setProblem] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const pending = useRef(0)
   // The list as of the last upload, so parallel uploads append to each other
   // rather than each to a stale copy.
   const latest = useRef(value)
@@ -50,12 +51,16 @@ export function ImageDrop({
       }
       return true
     })
-    const batch = usable.slice(0, Math.max(0, room))
+    const available = BUILD_IMAGES_MAX - latest.current.length - pending.current
+    const batch = usable.slice(0, Math.max(0, available))
     if (usable.length > batch.length) {
       setProblem(`Up to ${BUILD_IMAGES_MAX} images.`)
     }
+    // Reserve the whole batch before the first await, including queued files.
+    pending.current += batch.length
+    setUploading(pending.current)
+    if (inputRef.current) inputRef.current.value = ""
     for (const file of batch) {
-      setUploading((n) => n + 1)
       try {
         const url = await uploadToCloudinary(file, "/api/builds/upload-sign")
         latest.current = [...latest.current, url]
@@ -65,18 +70,20 @@ export function ImageDrop({
           err instanceof UploadError ? err.message : "That upload failed.",
         )
       } finally {
-        setUploading((n) => n - 1)
+        pending.current -= 1
+        setUploading(pending.current)
       }
     }
-    if (inputRef.current) inputRef.current.value = ""
   }
 
   function remove(src: string) {
-    onChange(value.filter((s) => s !== src))
+    latest.current = latest.current.filter((s) => s !== src)
+    onChange(latest.current)
   }
 
   function makeCover(src: string) {
-    onChange([src, ...value.filter((s) => s !== src)])
+    latest.current = [src, ...latest.current.filter((s) => s !== src)]
+    onChange(latest.current)
   }
 
   const message = problem ?? error

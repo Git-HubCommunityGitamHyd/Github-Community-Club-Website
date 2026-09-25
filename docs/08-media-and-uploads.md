@@ -39,7 +39,7 @@ sequenceDiagram
 
     B->>App: POST { folder: "events" } (session cookie)
     App->>App: requireAdminApi(), folder is a known one?
-    App->>S: POST { folder, allowed_formats }<br/>header X-Worker-Secret
+    App->>S: POST { folder, allowed_formats }<br/>via SIGN_WORKER binding, header X-Worker-Secret
     S->>S: shared secret matches? (constant-time)
     S->>S: SHA-1 signature over folder, formats, timestamp
     S-->>App: { signature, timestamp, apiKey, cloudName, params }

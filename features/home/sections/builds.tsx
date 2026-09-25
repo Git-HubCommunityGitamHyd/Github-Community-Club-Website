@@ -7,7 +7,7 @@ import { ArrowRight, ImagePlus } from "lucide-react"
 import type { PublicBuild } from "@/lib/db/builds"
 import { SectionLabel } from "@/features/site/section-label"
 import { SectionTexture } from "@/components/ui/texture"
-import { creditLine } from "@/features/builds/format"
+import { creditLine, latestBuildWeek } from "@/features/builds/format"
 
 /** Rotation and offset for each card in the spread, back to front. */
 const FAN = [
@@ -26,11 +26,7 @@ const FAN = [
  * is both the empty state and the invitation.
  */
 export function BuildsSection({ builds }: { builds: PublicBuild[] }) {
-  const latestWeek = builds
-    .map((b) => b.week_of)
-    .filter((w): w is string => Boolean(w))
-    .sort()
-    .at(-1)
+  const latestWeek = latestBuildWeek(builds)
   const picks = (
     latestWeek ? builds.filter((b) => b.week_of === latestWeek) : builds
   ).slice(0, 3)

@@ -67,7 +67,8 @@ export function validateMember(
   if (email && !EMAIL_RE.test(email)) errors.email = "Enter a valid email"
 
   const accent = String(input.accent ?? "").trim() || "green"
-  if (!(accent in BOARD_ACCENTS)) errors.accent = "Unknown ring style"
+  if (!Object.hasOwn(BOARD_ACCENTS, accent))
+    errors.accent = "Unknown ring style"
 
   const tagline = String(input.tagline ?? "").trim()
   if (tagline.length > TAGLINE_MAX) {
@@ -86,7 +87,7 @@ export function validateMember(
   if (teamId && !/^[1-9]\d*$/.test(teamId)) errors.teamId = "Unknown team"
 
   const sortOrder = String(input.sortOrder ?? "0").trim()
-  if (sortOrder && Number.isNaN(Number(sortOrder))) {
+  if (sortOrder && !Number.isFinite(Number(sortOrder))) {
     errors.sortOrder = "Sort order must be a number"
   }
 

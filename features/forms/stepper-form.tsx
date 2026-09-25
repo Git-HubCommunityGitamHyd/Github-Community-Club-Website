@@ -225,6 +225,10 @@ export function StepperForm({
 
   const go = useCallback(
     (to: number) => {
+      if (advanceTimer.current !== null) {
+        window.clearTimeout(advanceTimer.current)
+        advanceTimer.current = null
+      }
       setDirection(to >= index ? 1 : -1)
       setIndex(to)
       setFormError(null)

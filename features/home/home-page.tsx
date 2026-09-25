@@ -73,16 +73,7 @@ function HomeShell({
 }) {
   const [isQrPopupOpen, setIsQrPopupOpen] = useState(false)
   const hasProjects = projects.length > 0
-  // Recomputed only when that boolean flips, so the spy's effect is not
-  // handed a fresh array on every render.
-  const items = useMemo(() => navItems(hasProjects), [hasProjects])
-  const sectionIds = useMemo(() => spySectionIds(hasProjects), [hasProjects])
-  const activeSection = useActiveSection(sectionIds, NAV_OFFSET)
   const heroSlotRef = useRef<HTMLDivElement>(null)
-
-  const scrollToSection = (sectionId: string) => {
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" })
-  }
 
   // `overflow-x-clip` below, not `overflow-x-hidden`: `hidden` on one axis
   // forces the other to `auto`, which makes that div a scroll container — and
@@ -91,11 +82,7 @@ function HomeShell({
   // viewport). `clip` clips the same overflow without creating one.
   return (
     <div className="relative min-h-screen overflow-x-clip bg-gh-bg font-sans text-gh-text">
-      <SiteNavbar
-        items={items}
-        activeSection={activeSection}
-        onScrollTo={scrollToSection}
-      />
+      <HomeNavbar hasProjects={hasProjects} />
       <HomeMascot heroSlotRef={heroSlotRef} />
 
       <main>
@@ -135,5 +122,23 @@ function HomeShell({
         onClose={() => setIsQrPopupOpen(false)}
       />
     </div>
+  )
+}
+
+function scrollToSection(sectionId: string) {
+  document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" })
+}
+
+/** Scroll-spy updates only re-render the navigation, not every page section. */
+function HomeNavbar({ hasProjects }: { hasProjects: boolean }) {
+  const items = useMemo(() => navItems(hasProjects), [hasProjects])
+  const sectionIds = useMemo(() => spySectionIds(hasProjects), [hasProjects])
+  const activeSection = useActiveSection(sectionIds, NAV_OFFSET)
+  return (
+    <SiteNavbar
+      items={items}
+      activeSection={activeSection}
+      onScrollTo={scrollToSection}
+    />
   )
 }

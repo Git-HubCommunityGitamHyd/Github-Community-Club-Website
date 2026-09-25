@@ -46,5 +46,6 @@ const GLYPHS: Record<string, LucideIcon> = {
 }
 
 export function categoryGlyph(category: string): LucideIcon {
-  return GLYPHS[category.trim().toLowerCase()] ?? CalendarDays
+  const key = category.trim().toLowerCase()
+  return Object.hasOwn(GLYPHS, key) ? GLYPHS[key] : CalendarDays
 }

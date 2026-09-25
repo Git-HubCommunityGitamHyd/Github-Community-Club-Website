@@ -13,7 +13,7 @@ export async function PATCH(
   if (unauthorized) return unauthorized
 
   const id = Number((await params).id)
-  if (Number.isNaN(id)) {
+  if (!Number.isSafeInteger(id) || id <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -56,7 +56,7 @@ export async function DELETE(
   if (unauthorized) return unauthorized
 
   const id = Number((await params).id)
-  if (Number.isNaN(id)) {
+  if (!Number.isSafeInteger(id) || id <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 

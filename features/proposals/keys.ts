@@ -49,7 +49,9 @@ export const PUBLIC_PROPOSAL_STATUSES = PROPOSAL_STATUS_KEYS.filter(
 )
 
 export function proposalStatus(key: string): ProposalStatus {
-  return PROPOSAL_STATUSES[key] ?? PROPOSAL_STATUSES.pending
+  return Object.hasOwn(PROPOSAL_STATUSES, key)
+    ? PROPOSAL_STATUSES[key]
+    : PROPOSAL_STATUSES.pending
 }
 
 /** Who it is for. Plain words: the form is for anyone, not just developers. */
@@ -77,5 +79,5 @@ export const PROPOSAL_HELP: Record<string, string> = {
 }
 
 export function labelOf(set: Record<string, string>, key: string): string {
-  return set[key] ?? key
+  return Object.hasOwn(set, key) ? set[key] : key
 }

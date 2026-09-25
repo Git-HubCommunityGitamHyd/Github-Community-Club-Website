@@ -70,8 +70,8 @@ There are two ways in:
   site.
 - **Image uploads** straight to Cloudinary, with drag and drop and galleries.
 - **Review queues** for proposals and builds, with counts in the nav.
-- **Security built in:** the CMS lives at a secret address behind Cloudflare
-  Access and a password, with a login lockout and a security log.
+- **Security built in:** the CMS lives at a secret address behind a
+  password, with a login lockout and a security log.
 - **A honeypot at `/admin`** that entertains whoever tries it, and writes
   down that they did.
 - **Documentation inside the CMS**, the same files as the `docs/` folder.
@@ -138,6 +138,7 @@ wrangler. Image uploads additionally need the signing Worker; see
 | -------------------------------- | ------------------------------------------ |
 | `npm run dev`                    | Start the dev server with a local database |
 | `npm run build`                  | Production build                           |
+| `npm test`                       | Regression tests                           |
 | `npm run lint`                   | ESLint                                     |
 | `npm run format`                 | Prettier                                   |
 | `npm run db:migrate:local`       | Create the local database schema           |
@@ -163,7 +164,8 @@ proxy.ts              routes the secret CMS path and the /admin honeypot
 ## Documentation
 
 Everything about how the site works lives in [`docs/`](docs/README.md), and
-is also readable inside the CMS.
+is also readable inside the CMS. **Taking over the site?** Start with the
+[Guide for a new board](docs/12-new-board-guide.md).
 
 | Guide                                               | Covers                                        |
 | --------------------------------------------------- | --------------------------------------------- |
@@ -177,6 +179,8 @@ is also readable inside the CMS.
 | [Media and uploads](docs/08-media-and-uploads.md)   | Cloudinary and the signing Worker             |
 | [Frontend](docs/09-frontend.md)                     | Homepage, mascot, motion, palette             |
 | [Operations runbook](docs/10-operations-runbook.md) | Handover, secrets, backups, troubleshooting   |
+| [API reference](docs/11-api-reference.md)           | Every endpoint, its fields and responses      |
+| [Guide for a new board](docs/12-new-board-guide.md) | Taking over the site, A to Z                  |
 
 ## Contributing
 
@@ -187,7 +191,7 @@ Club members are welcome to contribute.
 2. Branch from `main`, make your change, and check it in the browser.
 3. Before opening a pull request, run:
    ```bash
-   npx tsc --noEmit && npm run lint && npm run format:check && npm run build
+   npm test && npx tsc --noEmit && npm run lint && npm run format:check && npm run build
    ```
 4. If you changed how something works, update the matching file in `docs/`.
 5. Open a pull request describing what changed and how you checked it.

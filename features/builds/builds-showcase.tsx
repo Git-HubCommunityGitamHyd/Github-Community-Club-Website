@@ -5,6 +5,7 @@ import type { PublicBuild } from "@/lib/db/builds"
 import { BuildCard } from "@/features/builds/build-card"
 import { TransitionSettled } from "@/features/site/transition"
 import { monthLabel, weekLabel } from "@/features/builds/keys"
+import { latestBuildWeek } from "@/features/builds/format"
 import { cn } from "@/lib/utils"
 
 /**
@@ -26,21 +27,22 @@ export function BuildsShowcase({
   builds: PublicBuild[]
   currentWeek: string
 }) {
-  const latestWeek = builds
-    .map((b) => b.week_of)
-    .filter((w): w is string => Boolean(w))
-    .sort()
-    .at(-1)
+  const latestWeek = latestBuildWeek(builds)
   const weekly = latestWeek
     ? builds.filter((b) => b.week_of === latestWeek)
     : []
 
   const months: { month: string; builds: PublicBuild[] }[] = []
+  const byMonth = new Map<string, (typeof months)[number]>()
   for (const build of builds) {
     if (!build.month) continue
-    const group = months.find((m) => m.month === build.month)
+    const group = byMonth.get(build.month)
     if (group) group.builds.push(build)
-    else months.push({ month: build.month, builds: [build] })
+    else {
+      const next = { month: build.month, builds: [build] }
+      byMonth.set(build.month, next)
+      months.push(next)
+    }
   }
 
   return (

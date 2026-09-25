@@ -1,129 +1,163 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for AI coding agents (and humans) changing this repository. It is
+the short list of rules and traps. The full explanation of everything lives
+in [`docs/`](docs/README.md); read the relevant page before a non-trivial
+change, and update it in the same change.
 
-Next.js 16 (App Router) site for the GitHub Community club at GITAM Hyderabad: a long homepage, inner pages (members, projects, proposals, builds, private tracking pages), a join form, and an in-house CMS for all of it, backed by Cloudflare D1 (SQLite) behind a password-protected admin portal.
+## What this is
 
-The app itself is deployed as a Cloudflare Worker via `@opennextjs/cloudflare` (OpenNext) — not Vercel. `wrangler.jsonc` is the Worker config (bindings for `DB`/`ASSETS`/`IMAGES`), `package.json`'s `deploy`/`preview`/`upload` scripts all go through `opennextjs-cloudflare`, and `next.config.js` calls `initOpenNextCloudflareForDev()` unconditionally so plain `next dev` also gets Cloudflare bindings (via wrangler's local Miniflare emulation) and reads `.dev.vars`.
+The website and in-house CMS of the GitHub Community club at GITAM
+University, Hyderabad. Next.js 16 (App Router, React 19, TypeScript,
+Tailwind 3), deployed as **one Cloudflare Worker** via OpenNext
+(`@opennextjs/cloudflare`), data in **Cloudflare D1**, images in
+**Cloudinary**. Not Vercel.
 
-There is no `src/` directory. Path alias `@/*` maps to the repo **root**. Do not add barrel `index.ts` re-exports — import the concrete file.
+**This is not the Next.js you remember.** Next 16 renamed middleware to
+`proxy.ts`, made `cookies()`, `params` and `searchParams` async, removed
+`next lint`, and builds with Turbopack. Check
+`node_modules/next/dist/docs/` before using an API from memory.
+
+## Commands
+
+```bash
+npm run dev                 # local site + local D1 (no DB process to start)
+npm test                    # regression tests (tests/*.test.ts)
+npx tsc --noEmit
+npm run lint
+npm run format              # Prettier: no semicolons, double quotes
+npm run build
+npm run db:migrate:local    # apply db/schema.sql locally
+npm run db:patch:local -- db/migrations/<file>.sql
+npm run deploy              # production; see "Deploying" below
+```
+
+Before calling work done: tests, tsc, lint, build, and look at the change in
+the browser.
 
 ## Layout
 
 ```
-app/                   # routes only
-  page.tsx             # homepage: Promise.all over lib/db, renders <HomePage />
-  layout.tsx           # Geist fonts on <html>, metadata
-  members/ projects/ proposals/ builds/   # inner pages (server components)
-  admin/
-    login/
-    (dashboard)/       # CMS screens; every page calls requireAdminPage()
-  api/
-features/              # domain UI
-  home/                # home-page.tsx + sections/<id>.tsx, one per homepage section
-  site/                # shared chrome: navbar, footer, nav.ts, page-chrome (inner
-                       #   pages), smooth-scroll (Lenis), dialog-shell, transitions
-  mascot/              # 3D octocat, home-mascot (docks), page-mascot (inner pages)
-  about/ benefits/ board/ builds/ events/ forms/ join/ journey/ members/
-  people/ projects/ proposals/ tech/ tracking/ admin/
-components/ui/         # generic primitives (shadcn button/card, navbar shell, texture)
-lib/
-  db/                  # one file per table
-  validation/          # one file per form
-  auth/                # session cookie + require-admin helpers
-workers/               # cloudinary-sign Worker (separate deploy)
-db/schema.sql          # plus db/migrations/ for ALTERs
-docs/                  # long-form documentation, also shown in the CMS (Docs)
-proxy.ts               # secret CMS path + /admin honeypot routing
+app/                 routes only; pages fetch and compose, nothing else
+  admin/             the CMS (served at a secret path, see below)
+  api/               public GETs and form POSTs; api/admin/ is CMS CRUD
+  honeypot/          the decoy served at /admin
+features/            UI by domain: home/sections/, site/, mascot/, admin/, builds/...
+components/ui/       generic primitives, no domain knowledge
+lib/db/              one file per table; the only SQL in the codebase
+lib/validation/      one file per form; plain functions, Record<string,string> errors
+lib/auth/            session cookie, admin URL mapping
+lib/cloudinary/      upload folders, browser upload, sign.ts (server)
+lib/docs/            registry of docs/ for the CMS Docs page
+db/schema.sql        the whole schema; db/migrations/ for one-off ALTERs
+docs/                long-form documentation, also rendered in the CMS
+workers/cloudinary-sign/   the upload-signing Worker (deployed separately)
+proxy.ts             secret CMS path and /admin honeypot routing
+tests/               node:test regression tests
 ```
 
-**Documentation lives in `docs/`** and is the long-term reference for maintainers (architecture, deployment, database, CMS and security, workflows, runbook). When you change how something works, update the matching doc in the same change. The CMS Docs page renders the same files: `lib/docs/registry.ts` imports each one as a string (`next.config.js` has a Turbopack rule running `*.md` through `raw-loader`; the bare `type: "raw"` rule compiled the imports to `undefined`), so a new file in `docs/` needs a line there. Mermaid is loaded only in the browser via `features/admin/docs/mermaid-lazy.tsx` (`next/dynamic`, `ssr: false`); a plain dynamic import still compiled ~3.4 MB of mermaid into the server bundle, which counts against the Worker size limit. Inside ```` ```mermaid ```` blocks, avoid `<placeholder>` text: Mermaid treats it as HTML.
+No `src/`. `@/` is the repo root. No barrel `index.ts` files; import the
+concrete module.
 
-There used to be two homepages: the original at `/` and a redesign built alongside it at `/v2`. The redesign replaced the original, everything only the original used was deleted, and `next.config.js` redirects `/v2` to `/`. Nothing should be named `v1`/`v2` any more.
+## Rules
 
-## Content is DB-backed, not hardcoded
+**Data and the CMS**
 
-[`app/page.tsx`](app/page.tsx) is a Server Component: it loads board members, events, journey entries, projects, members, public proposals and public builds in parallel via `lib/db` and passes them into the client [`HomePage`](features/home/home-page.tsx). Each homepage `<section id>` is a file under [`features/home/sections/`](features/home/sections/). Adding a homepage section means a new file there plus a line in `home-page.tsx`; do not grow `app/page.tsx` beyond fetching and composing. Nav items and the footer's page links live in [`features/site/nav.ts`](features/site/nav.ts).
+- Every route that reads D1 exports `dynamic = "force-dynamic"`, or Next
+  freezes the build-time result forever.
+- Public queries name their columns, never `SELECT *`. `phone`, `reg_no`,
+  submitter `name` and `auth_events` are private.
+- A fixed choice (status, category, icon, accent, role) is stored as a
+  **key**. The label, icon or colour comes from a lookup in `features/`,
+  looked up with `Object.hasOwn` and falling back for unknown keys. Never
+  store markup, class names or colours in the database. The CMS offers keys
+  in a `<select>` and validation rejects others.
+- A new column needs the `CREATE TABLE` in `schema.sql` **and** an `ALTER`
+  file in `db/migrations/` (schema.sql cannot alter an existing table).
+  Run it on production before deploying code that uses it.
+- D1 reports unique violations only in the message
+  (`"UNIQUE constraint failed"`); catch that and answer 409.
+- Adding a content type: table, `lib/db`, `lib/validation`, CRUD under
+  `app/api/admin/`, screens under `app/admin/(dashboard)/`, public UI in
+  `features/`. See `docs/03-local-development.md`.
 
-Inner pages wrap themselves in [`PageChrome`](features/site/page-chrome.tsx) (same navbar, footer and mascot). Links from inner pages to homepage sections are `/#<id>`, never bare `#<id>`, which would do nothing off the homepage.
+**CMS security**
 
-CMS screens live under `app/admin/(dashboard)/` (board, events, journey, projects, members, teams, proposals, builds) and call `lib/db/*`. Validation lives in `lib/validation/*` (plain functions, `Record<string, string>` errors).
+- The CMS is at `/<ADMIN_PATH>` (a secret), not `/admin`. `proxy.ts`
+  rewrites `/<ADMIN_PATH>/x` to `app/admin/x` and `/<ADMIN_PATH>/api/x` to
+  `app/api/admin/x`; `/admin` is the honeypot; other `/api/admin/*` 404.
+- **Never write a literal admin URL.** Use `adminUrl("/admin/...")` on the
+  server and `useAdminUrl()` in client components. A bare `/admin/...`
+  sends a maintainer to the honeypot.
+- Every page under `app/admin/(dashboard)/` calls `await requireAdminPage()`
+  itself, first line, even though the layout does too: layout and page
+  render in parallel, and a page without its own check once streamed the
+  applications list to a logged-out visitor.
+- Every handler under `app/api/admin/` starts with `requireAdminApi()`.
+- Session cookie `cms_session`: 8 h, `SameSite=Strict`, path
+  `/<ADMIN_PATH>`. Login locks an IP out after 5 failures in 15 minutes.
+- Never put the secret path in anything public, and never store a password,
+  including in the honeypot.
 
-**Anything a CMS row selects from a fixed set is stored as a key, never as markup or a colour.** `events.category` → `categoryGlyph()`, `journey_entries.icon` → `JOURNEY_ICONS`, `board_members.accent` → `BOARD_ACCENTS`, project/proposal/build statuses and roles likewise. The admin form offers the known keys as a `<select>`, validation rejects unknown ones, and the render path falls back rather than throwing. Public queries select named columns, never `*`, so private fields (phone, reg no) cannot leak.
+**Images**
 
-**Every route that reads D1 is `export const dynamic = "force-dynamic"`** (`app/page.tsx`, the inner pages, the public `GET` API routes). Without that, Next.js statically prerenders them at _build_ time and freezes whatever the DB returned during `next build`. Hit this for real; don't drop the export.
+- All media is in Cloudinary, uploaded from the browser with a signature
+  from `workers/cloudinary-sign`, which alone holds the Cloudinary secret.
+  `public/` is for site assets only.
+- In production the site reaches the signer through the **`SIGN_WORKER`
+  service binding** (`lib/cloudinary/sign.ts`). Fetching its `workers.dev`
+  URL from a Worker in the same account is blocked by Cloudflare and
+  returns 502. `UPLOAD_SIGN_URL` is for `npm run dev` only.
+- The site refuses a signature whose `params` do not echo the requested
+  folder and formats. If uploads fail with "invalid signature", redeploy the
+  signing Worker.
+- A new remote image host must be added to `next.config.js`
+  `images.remotePatterns`, or `next/image` answers 400.
 
-### Adding another CMS type
+**Frontend**
 
-1. Table in `db/schema.sql` + migrate
-2. `lib/db/<name>.ts` + `lib/validation/<name>.ts`
-3. Public `GET` in `app/api/<name>/route.ts` (`dynamic = "force-dynamic"`)
-4. CRUD under `app/api/admin/<name>/` calling `requireAdminApi()`
-5. Screens under `app/admin/(dashboard)/<name>/`
-6. Public UI in `features/<name>/` and a new `features/home/sections/` file if it belongs on the homepage
+- Server components cannot call exports of a `"use client"` module; shared
+  helpers go in plain modules.
+- Import `framer-motion`, never `motion/react`. Use
+  `lib/use-reduced-motion.ts`, not framer's hook (hydration mismatch).
+- Use `overflow-x-clip`, not `overflow-x-hidden`, above anything sticky.
+- Links to homepage sections from other pages are `/#id`.
+- The palette exists twice: `gh.*` in `tailwind.config.js` and HSL variables
+  in `app/globals.css`. Change both.
+- Keep the 3D Octocat mascot through any redesign.
+- Named exports; default exports only for `page.tsx` and `layout.tsx`.
 
-### Image uploads: Cloudinary + a standalone Cloudflare Worker
+**Copy**
 
-Photos go to Cloudinary, not `public/images/`. The upload flow is deliberately indirect because the Cloudinary API secret must never reach the Next.js app's own Worker or the browser:
+- No em dashes in visible text.
+- Do not overstate what the club does. The WhatsApp community group is open
+  to every student; the club itself recruits in rounds with an interview,
+  and "experience is not the filter". No invented events, alumni judges,
+  office hours or contribution drives.
+- Some copy lives in the database (events, journey); a copy review has to
+  include the CMS.
 
-1. Browser (`features/admin/image-upload-field.tsx`) calls same-origin `POST /api/admin/upload-sign` — protected by `requireAdminApi()`.
-2. That route calls the Worker at `workers/cloudinary-sign/` (deployed separately via `wrangler deploy`, not part of the Next.js build) server-to-server, authenticated with a shared secret (`WORKER_SHARED_SECRET`, matching values in Next.js env and `wrangler secret put`) — **not** the session cookie, since a cookie set by the Next.js app's domain is never sent to a Worker on a different domain.
-3. The Worker computes a Cloudinary signed-upload signature (SHA-1 via `crypto.subtle`, since Workers isn't a Node runtime) and returns it.
-4. The browser uploads the file directly to Cloudinary using that signature; the resulting `secure_url` is what gets stored in `image_url`/`images`.
+## Deploying
 
-The public build form uses the same Worker through `POST /api/builds/upload-sign`, which needs no session, so its signature is restricted: the Worker signs a fixed `folder` (`build-submissions`) and `allowed_formats`, and `lib/validation/build.ts` only accepts image URLs inside that folder.
+- `npm run deploy` builds through `scripts/without-local-env.mjs`, which
+  moves `.env` files aside, because OpenNext bakes every `.env` file into the
+  Worker bundle as `process.env` fallbacks. Never deploy with
+  `opennextjs-cloudflare build` directly.
+- Production settings are Worker secrets (`npx wrangler secret put`), set in
+  the club's Cloudflare account. Check `npx wrangler whoami` before any
+  remote command.
+- Mermaid in docs loads only in the browser (`features/admin/docs/mermaid-lazy.tsx`,
+  `ssr: false`); anything heavy imported server-side counts against the
+  Worker size limit. The bundle is already about 3.4 MB compressed.
+- `npm run cf-typegen` also reads `.env` and declares every variable as a
+  required string; keep only the binding changes from its output.
 
-`next.config.js` `remotePatterns` includes `res.cloudinary.com` for this reason — **any remote image host has to be added there or `next/image` 400s on it.**
+## Docs
 
-Admin uploads are signed into a per-kind folder (`board`, `members`, `projects`, `events`, `builds`; `lib/cloudinary/folders.ts`), and `/api/admin/upload-sign` refuses any other. Board, member and event image URLs must be Cloudinary URLs (`lib/validation/image.ts`). All media (board and member photos, event photos, project and build images) lives in Cloudinary and is managed through the CMS; `public/` holds only site assets (the Octocat model, logo, WhatsApp QR, doodle tile). Cloudflare is for hosting and D1, not media storage. Event photos are an ordered list whose first entry is the cover.
+`docs/` is the long-term reference for future boards. The CMS Docs page
+imports each file as text (a Turbopack rule sends `*.md` through
+`raw-loader`), so a new file needs a line in `lib/docs/registry.ts`. Inside
+Mermaid blocks avoid `<placeholder>` text; Mermaid treats it as HTML.
 
-## Palette: two parallel encodings
-
-The site is dark only. The GitHub palette is encoded twice, and changing one does not change the other:
-
-- shadcn HSL CSS variables on `:root` in `app/globals.css` (used by `components/ui` primitives and the admin)
-- literal `gh.*` Tailwind colours (`bg-gh-surface`, `text-gh-muted`) from `tailwind.config.js` (used everywhere else)
-
-A colour change usually needs both.
-
-## Conventions
-
-- Path alias `@/*` maps to the repo **root**, not `./src` — there is no `src/`.
-- Components use **named** exports. Default exports only in `app/**/page.tsx` and `layout.tsx` (plus a vendored component or two that also default-export).
-- Helpers a Server Component calls must live in a plain module, not a `"use client"` file: calling an export of a client module from the server throws at runtime (`features/builds/format.ts` exists for this reason).
-- framer-motion is imported as `framer-motion`, never `motion/react`: two package names means two runtimes, and the `MotionConfig reducedMotion="user"` around every page would not reach the second one.
-- Prettier (`.prettierrc`) enforces no semicolons and double quotes. Run `npm run format`.
-
-## Database (Cloudflare D1)
-
-No local server/container to run. The `DB` binding is declared in `wrangler.jsonc` (`d1_databases`), and `next.config.js`'s `initOpenNextCloudflareForDev()` wiring means plain `npm run dev` already has `env.DB` available, backed by wrangler's local Miniflare D1 emulation under `.wrangler/state` (gitignored). First-time setup: `cp .env.example .env` and fill in `ADMIN_PASSWORD` and a `SESSION_SECRET` (`openssl rand -hex 32`) — D1 itself needs no connection-string env var, it's a binding, not a URL.
-
-**`db/schema.sql` cannot add a column to an existing table.** It is all `CREATE TABLE IF NOT EXISTS`, so it does nothing to a table that already exists, and SQLite has no `ADD COLUMN IF NOT EXISTS`. Adding a column means editing the `CREATE` (for fresh databases) _and_ writing a one-off `ALTER` under `db/migrations/`, run with `npm run db:patch:local -- db/migrations/<file>.sql` (or `db:patch:remote`). Those run exactly once per database and error if repeated. See `db/migrations/2026-09-board-member-accent.sql`.
-
-**Schema changes don't auto-apply.** `db/schema.sql` only runs when you explicitly execute it — `npm run db:migrate:local` (local Miniflare D1) or `npm run db:migrate:remote` (the real deployed D1 database) — both just `wrangler d1 execute --file=db/schema.sql` against `--local`/`--remote`. Editing `db/schema.sql` does nothing on its own until you rerun the relevant script. A 3-table schema doesn't need real migration tooling yet (`wrangler d1 migrations`) — reach for that if it starts churning.
-
-`lib/db/client.ts` calls `getCloudflareContext({ async: true })` (from `@opennextjs/cloudflare`) per request to get `env.DB`. Domain files (`applications.ts`, `board-members.ts`, `events.ts`) import `getDb()` from there and use D1's `prepare(sql).bind(...).first()/.all()/.run()` API — no pooling/connection-caching needed. `events.images` is stored as JSON-encoded `TEXT` (D1/SQLite has no array type); the encode/decode is contained entirely inside `lib/db/events.ts`, every caller still sees a plain `string[]`.
-
-## Admin auth
-
-No auth library — one shared password (`ADMIN_PASSWORD` env var) protects every CMS page (except login) and API route. `lib/auth/session.ts` signs a cookie (`${expiry}.${hmac}`, HMAC keyed by `SESSION_SECRET`, verified with `crypto.timingSafeEqual`) rather than storing sessions anywhere. **Rotating `SESSION_SECRET` and restarting is the "log everyone out" procedure** — there's no session store to clear.
-
-Page auth lives in `app/admin/(dashboard)/layout.tsx` via `requireAdminPage()` — `/admin/login` is outside that group so it stays public. API auth is `requireAdminApi()` at the top of every `/api/admin/**` handler except login. `features/admin/admin-nav.tsx` is the shared nav + logout button. `cookies()`, `params`, and `searchParams` are async in Next 16 — always `await` them (see `getSessionCookie()` in `lib/auth/session.ts`).
-
-**Every page under `app/admin/(dashboard)/` calls `await requireAdminPage()` itself, first thing, not only the layout.** Next renders a layout and its page in parallel, so the layout's `redirect()` does not stop the page from querying D1 and streaming the result: logged out, `curl /admin` returned the full applications list (names, emails, phones) inside a response that also redirected to login. A new admin page without its own check leaks whatever it reads.
-
-### The CMS is not at /admin
-
-The routes live in `app/admin` and `app/api/admin`, but **the public URL is a secret segment**, `ADMIN_PATH` (env; `wrangler secret put` in production). [`proxy.ts`](proxy.ts) rewrites `/<ADMIN_PATH>/x` to `/admin/x` and `/<ADMIN_PATH>/api/x` to `/api/admin/x`. Every `/admin` URL is rewritten to the honeypot (`app/honeypot`, `features/honeypot/`), `POST /api/admin/login` goes to its decoy endpoint, and any other `/api/admin/*`, `/honeypot` or `/api/honeypot` is a 404. With `ADMIN_PATH` unset no admin route answers at all.
-
-- **Never write a literal admin URL into a link, fetch, redirect or form action.** Name the internal route and map it: `adminUrl("/admin/board")` on the server (`lib/auth/admin-path.ts`), `const adminHref = useAdminUrl()` in client components (`features/admin/admin-base.tsx`, provided by `app/admin/layout.tsx`). A bare `/admin/...` sends the maintainer to the honeypot; a bare `/api/admin/...` 404s. `AdminNav active=` stays internal.
-- The session cookie is `cms_session`: 8 hours, `SameSite=Strict`, path `/<ADMIN_PATH>`. The API sits under the same segment precisely so one cookie path covers pages and API (an old `/admin` cookie path once 401'd every `/api/admin` route). Opened from another site, a CMS link lands on login because Strict withholds the cookie; reload.
-- Login locks an IP out after 5 wrong passwords in 15 minutes (`lib/db/auth-events.ts`). Real logins and honeypot hits are in `auth_events`, shown on the CMS Security page. Nothing ever stores a password, including the decoy's.
-- Never put the segment in anything public: robots.txt, the sitemap, client code outside `app/admin`, commits.
-
-## Gotchas
-
-- **`overflow-x-hidden` silently breaks `position: sticky` inside it.** Setting `overflow` to `hidden` on one axis forces the other to `auto`, which makes the element a scroll container; every sticky descendant then resolves against a scrollport that never moves. `features/home/home-page.tsx` uses `overflow-x-clip`, which clips identically without establishing one. If something sticky stops sticking, check this first.
-- `tailwind.config.js` `content` must include `./features/**` (and `./app/**`, `./components/**`). Tailwind only emits classes it finds in those globs — after the homepage moved out of `app/page.tsx`, missing `features/` stripped the hero/stat/grid utilities and collapsed the layout.
-- `npm run lint` runs ESLint 9 via `eslint.config.mjs` (`eslint-config-next`). `next lint` was removed in Next.js 16.
-- The public `applications` table has a `UNIQUE` constraint on `email` — `app/api/applications/route.ts` catches D1's thrown error (message includes `"UNIQUE constraint failed"`, no `.code` field like Postgres had) and returns 409, don't let it bubble as a 500.
+`TODO.md` and `notes.md` are the maintainers' local working notes and are
+git-ignored. Anything a future maintainer must know goes in `docs/`.

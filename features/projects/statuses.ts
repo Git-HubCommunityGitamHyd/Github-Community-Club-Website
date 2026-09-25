@@ -42,5 +42,7 @@ export const DEFAULT_PROJECT_STATUS = "in-progress"
 
 /** Never throws on an unknown key; the page renders rather than breaking. */
 export function projectStatus(key: string | null | undefined): ProjectStatus {
-  return PROJECT_STATUSES[key ?? ""] ?? PROJECT_STATUSES[DEFAULT_PROJECT_STATUS]
+  return key && Object.hasOwn(PROJECT_STATUSES, key)
+    ? PROJECT_STATUSES[key]
+    : PROJECT_STATUSES[DEFAULT_PROJECT_STATUS]
 }

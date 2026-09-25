@@ -105,7 +105,7 @@ export function ProjectForm({
 }) {
   const router = useRouter()
   const adminHref = useAdminUrl()
-  const [form, setForm] = useState<FormState>(toFormState(initial))
+  const [form, setForm] = useState<FormState>(() => toFormState(initial))
   const [team, setTeam] = useState<TeamRow[]>(() =>
     initialTeam.map((person) => ({
       key: String(person.id),
